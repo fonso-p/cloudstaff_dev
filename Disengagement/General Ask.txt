@@ -1,0 +1,28 @@
+Hey Jobs, I remembered the other data question I was trying to think of at the end of our call 🙂
+Separate from the AI claims work, I’m trying to reverse engineer what a high-growth-potential account actually looks like for Cloudstaff, rather than defining the ICP primarily from assumptions.
+ 
+What I’d like to understand is whether we can use historical client/account data to compare accounts that:
+- reached 5+ seats quickly
+- reached 5+ seats more slowly
+- never reached 5 seats
+- churned
+Mark gave me some of this analysis in service of helping me identify a cohort of clients to speak with for primary research, so I feel like this data exists somewhere. It's been suggested that 5 seats is an important threshold for long-term retention, so I’m especially interested in what predicts whether an account gets there, how quickly they get there, and then what tends to happen after that.
+The fields I’m thinking about initially are:
+- region, with APAC and AMER analyzed separately
+- industry / vertical
+- company size, if we have it
+- starting seat count
+- initial function / role type
+- seat growth over time
+- time to 5 seats
+- time to a second function / department
+- expansion within the original function vs. expansion into new functions
+- tenure / retention / churn
+- current and peak seat count
+- gross margin or account economics, if appropriate
+
+Ultimately, I’m trying to understand what can we observe early in a client relationship that predicts whether an account will reach five seats, continue expanding, and become a meaningfully larger Cloudstaff customer?
+ 
+I don’t think we need to boil the ocean on the first pass. Even a relatively simple cohort analysis would help us see which variables are actually predictive and where we should dig deeper.
+ 
+Does that feel like something you and the team could pull together? Happy to talk through the cohort definitions with you before anyone starts building anything.
