@@ -1,0 +1,206 @@
+[
+{
+"key": "web_max_nl",
+"label": "Website max points, New Logo",
+"value": 35,
+"kind": "points"
+},
+{
+"key": "web_max_og",
+"label": "Website max points, Organic Growth",
+"value": 50,
+"kind": "points"
+},
+{
+"key": "news_max_nl",
+"label": "News and jobs max points, New Logo",
+"value": 35,
+"kind": "points"
+},
+{
+"key": "news_max_og",
+"label": "News and jobs max points, Organic Growth",
+"value": 50,
+"kind": "points"
+},
+{
+"key": "dia_max",
+"label": "Diamond referral points (New Logo)",
+"value": 15,
+"kind": "points"
+},
+{
+"key": "bpo_max",
+"label": "Prior BPO points (New Logo)",
+"value": 15,
+"kind": "points"
+},
+{
+"key": "base_web",
+"label": "Website baseline when unknown",
+"value": 0.35,
+"kind": "share"
+},
+{
+"key": "base_news",
+"label": "News and jobs baseline when unknown",
+"value": 0.3,
+"kind": "share"
+},
+{
+"key": "tb_share",
+"label": "Website: Team Builder visit share",
+"value": 0.4,
+"kind": "share"
+},
+{
+"key": "ff_share",
+"label": "Website: form fill share",
+"value": 0.3,
+"kind": "share"
+},
+{
+"key": "vol_share",
+"label": "Website: visit volume share",
+"value": 0.3,
+"kind": "share"
+},
+{
+"key": "news_share",
+"label": "News and jobs: strongest news share",
+"value": 0.6,
+"kind": "share"
+},
+{
+"key": "jobs_share",
+"label": "News and jobs: hiring share",
+"value": 0.4,
+"kind": "share"
+},
+{
+"key": "vol_cap",
+"label": "Visits in 30 days for full volume credit",
+"value": 20,
+"kind": "count"
+},
+{
+"key": "jobs_cap",
+"label": "Job postings for full hiring credit",
+"value": 20,
+"kind": "count"
+},
+{
+"key": "tier1",
+"label": "Tier 1 minimum score",
+"value": 70,
+"kind": "count"
+},
+{
+"key": "tier2",
+"label": "Tier 2 minimum score",
+"value": 40,
+"kind": "count"
+},
+{
+"key": "bdm_min",
+"label": "New Logo score routed to BDM",
+"value": 60,
+"kind": "count"
+},
+{
+"key": "hot_days",
+"label": "Recent news window for Act now (days)",
+"value": 30,
+"kind": "count"
+},
+{
+"key": "mod_min",
+"label": "Industry multiplier at weakest trend",
+"value": 0.9,
+"kind": "factor"
+},
+{
+"key": "mod_max",
+"label": "Industry multiplier at strongest trend",
+"value": 1.1,
+"kind": "factor"
+},
+{
+"key": "hot_strength",
+"label": "Minimum news strength for Act now",
+"value": 1.0,
+"kind": "factor"
+},
+{
+"key": "news_1",
+"label": "Funding round",
+"value": 1.0,
+"kind": "news"
+},
+{
+"key": "news_2",
+"label": "PE buyout",
+"value": 1.0,
+"kind": "news"
+},
+{
+"key": "news_3",
+"label": "M&A",
+"value": 0.8,
+"kind": "news"
+},
+{
+"key": "news_4",
+"label": "Expansion / new office",
+"value": 0.7,
+"kind": "news"
+},
+{
+"key": "news_5",
+"label": "Restructuring",
+"value": 0.5,
+"kind": "news"
+},
+{
+"key": "news_6",
+"label": "Leadership change",
+"value": 0.3,
+"kind": "news"
+},
+{
+"key": "news_7",
+"label": "Other / Unclassified",
+"value": 0.3,
+"kind": "news"
+},
+{
+"key": "news_8",
+"label": "None",
+"value": 0.0,
+"kind": "news"
+},
+{
+"key": "rec_1",
+"label": "0\u201330 days",
+"value": 1.0,
+"kind": "recency"
+},
+{
+"key": "rec_2",
+"label": "31\u201390 days",
+"value": 0.7,
+"kind": "recency"
+},
+{
+"key": "rec_3",
+"label": "91\u2013180 days",
+"value": 0.4,
+"kind": "recency"
+},
+{
+"key": "rec_4",
+"label": "Over 180 days",
+"value": 0.0,
+"kind": "recency"
+}
+]

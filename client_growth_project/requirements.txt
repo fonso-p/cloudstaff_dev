@@ -1,0 +1,18 @@
+pandas>=2.0
+openpyxl>=3.1
+numpy>=1.24
+scipy>=1.10
+pillow>=10.0
+# Windows + Excel (optional): lets QA recalc with real Excel and fills preview values
+pywin32>=306; sys_platform == "win32"
+# Notebooks (reproducibility rule)
+matplotlib>=3.7
+jupyter>=1.0
+ipykernel>=6.0
+nbformat>=5.9
+nbconvert>=7.0
+# Machine learning (early signal prediction)
+scikit-learn>=1.4
+lightgbm>=4.0
+xgboost>=2.0
+shap>=0.44

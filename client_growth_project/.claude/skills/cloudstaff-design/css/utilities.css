@@ -1,0 +1,666 @@
+/*! Cloudstaff Design System — Utilities & Layout
+ *  Layout primitives (.stack-*, .cluster, .grid-*) and utility classes.
+ *  Responsive at every breakpoint:
+ *    sm  640px+   md  768px+   lg  1024px+   xl  1280px+   2xl 1536px+
+ */
+
+@layer layout {
+
+  /* ============================================================
+     Application shell
+     ============================================================ */
+  html { font-size: 16px; }
+  body {
+    font-family: var(--font-family-body);
+    color: var(--color-foreground-primary);
+    background: var(--color-background-page);
+    line-height: var(--line-height-normal);
+  }
+  .application {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--color-background-page);
+    color: var(--color-foreground-primary);
+  }
+
+  /* Page wrapper with safe-area-aware padding for iOS notches and Android edges */
+  .page {
+    padding: var(--space-2xl);
+    padding-top: max(var(--space-2xl), var(--safe-area-inset-top));
+    padding-right: max(var(--space-2xl), var(--safe-area-inset-right));
+    padding-bottom: max(var(--space-2xl), var(--safe-area-inset-bottom));
+    padding-left: max(var(--space-2xl), var(--safe-area-inset-left));
+  }
+  @media (max-width: 767.98px) {
+    .page { padding: var(--space-lg);
+      padding-top: max(var(--space-lg), var(--safe-area-inset-top));
+      padding-right: max(var(--space-lg), var(--safe-area-inset-right));
+      padding-bottom: max(var(--space-lg), var(--safe-area-inset-bottom));
+      padding-left: max(var(--space-lg), var(--safe-area-inset-left));
+    }
+  }
+
+  /* Containers — constrain reading/page width */
+  .container, .container-wide, .container-narrow, .container-fluid {
+    width: 100%;
+    margin-inline: auto;
+  }
+  .container { max-width: var(--content-width-wide); }
+  .container-wide { max-width: var(--content-width-full); }
+  .container-narrow { max-width: var(--content-width-narrow); }
+  .container-medium { max-width: var(--content-width-medium); }
+  .container-prose { max-width: var(--content-width-prose); }
+  .container-fluid { max-width: 100%; }
+
+  .page-section { margin-block: var(--space-3xl); }
+  .page-section:first-child { margin-top: 0; }
+  @media (max-width: 767.98px) {
+    .page-section { margin-block: var(--space-2xl); }
+  }
+
+  /* ============================================================
+     Stack — vertical flow with consistent gap
+     ============================================================ */
+  .stack-2xs > * + * { margin-top: var(--space-2xs); }
+  .stack-xs > * + * { margin-top: var(--space-xs); }
+  .stack-sm > * + * { margin-top: var(--space-sm); }
+  .stack-md > * + * { margin-top: var(--space-md); }
+  .stack-lg > * + * { margin-top: var(--space-lg); }
+  .stack-xl > * + * { margin-top: var(--space-xl); }
+  .stack-2xl > * + * { margin-top: var(--space-2xl); }
+  .stack-3xl > * + * { margin-top: var(--space-3xl); }
+
+  /* ============================================================
+     Cluster — horizontal flow with wrap
+     ============================================================ */
+  .cluster {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    align-items: center;
+  }
+  .cluster-sm { display: flex; flex-wrap: wrap; gap: var(--space-sm); align-items: center; }
+  .cluster-lg { display: flex; flex-wrap: wrap; gap: var(--space-lg); align-items: center; }
+  .cluster.justify-between { justify-content: space-between; }
+  .cluster.justify-start { justify-content: flex-start; }
+  .cluster.justify-end { justify-content: flex-end; }
+  .cluster.justify-center { justify-content: center; }
+  .cluster.items-start { align-items: flex-start; }
+  .cluster.items-end { align-items: flex-end; }
+  .cluster.items-stretch { align-items: stretch; }
+
+  /* On mobile, clusters often want to become stacks */
+  .cluster.cluster-stack-on-mobile {
+    /* default: cluster behaviour */
+  }
+  @media (max-width: 767.98px) {
+    .cluster.cluster-stack-on-mobile {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .cluster.cluster-stack-on-mobile > * { width: 100%; }
+  }
+
+  /* ============================================================
+     Grid — responsive at every breakpoint
+     Default: 1 column. Bigger at sm/md/lg breakpoints.
+
+     ROW ALIGNMENT: grid items default to align-items:stretch, which
+     means cards in the same row reach the height of the tallest cell.
+     Combined with the card resilience rules (.card has height:100%),
+     this produces tidy equal-height rows automatically — consumers
+     don't need to opt in.
+
+     COLUMN BLOWOUT GUARD: every column uses minmax(0, 1fr) instead
+     of the default minmax(auto, 1fr). The default makes columns
+     refuse to shrink below their content's intrinsic minimum, which
+     is what lets a long URL or code string push the entire row
+     wider than the container. With minmax(0, ...) the column can
+     shrink down to zero and the card's overflow-wrap handles the
+     content gracefully.
+     ============================================================ */
+  .grid {
+    display: grid;
+    gap: var(--space-lg);
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  /* Mobile-first: explicit column counts kick in at sm and up */
+  .grid-2 { display: grid; gap: var(--space-lg); grid-template-columns: 1fr; align-items: stretch; }
+  .grid-3 { display: grid; gap: var(--space-lg); grid-template-columns: 1fr; align-items: stretch; }
+  .grid-4 { display: grid; gap: var(--space-lg); grid-template-columns: 1fr; align-items: stretch; }
+  .grid-12 { display: grid; gap: var(--space-lg); grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: stretch; }
+
+  /* sm: 640px+ — large phone landscape, small tablet */
+  @media (min-width: 640px) {
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  /* md: 768px+ — tablet portrait */
+  @media (min-width: 768px) {
+    .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  /* lg: 1024px+ — tablet landscape, small laptop */
+  @media (min-width: 1024px) {
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  /* Auto-fit grid for cards: items size between min-width and 1fr */
+  .auto-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--space-lg);
+  }
+  .auto-grid-sm {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: var(--space-md);
+  }
+  .auto-grid-lg {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+    gap: var(--space-lg);
+  }
+
+  /* Dashboard 12-col grid — collapses at lg, then md */
+  .dashboard-grid {
+    display: grid;
+    gap: var(--space-lg);
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .span-12 { grid-column: span 12; }
+  .span-8  { grid-column: span 12; }
+  .span-6  { grid-column: span 12; }
+  .span-4  { grid-column: span 12; }
+  .span-3  { grid-column: span 12; }
+  @media (min-width: 768px) {
+    .span-8 { grid-column: span 8; }
+    .span-6 { grid-column: span 6; }
+    .span-4 { grid-column: span 6; }
+    .span-3 { grid-column: span 6; }
+  }
+  @media (min-width: 1024px) {
+    .span-4 { grid-column: span 4; }
+    .span-3 { grid-column: span 3; }
+  }
+
+  /* ============================================================
+     App shell — sidebar + main, with mobile drawer behaviour
+     ============================================================ */
+  .app-shell {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  @media (min-width: 1024px) {
+    .app-shell {
+      grid-template-columns: 16rem 1fr;
+    }
+  }
+  .app-shell-sidebar {
+    background: var(--color-surface-base);
+    border-right: 1px solid var(--color-border-subtle);
+    padding: var(--space-xl) var(--space-lg);
+    padding-top: max(var(--space-xl), var(--safe-area-inset-top));
+  }
+  /* On mobile, the sidebar slides in as an overlay drawer */
+  @media (max-width: 1023.98px) {
+    .app-shell-sidebar {
+      position: fixed;
+      top: 0; bottom: 0; left: 0;
+      width: min(20rem, 85vw);
+      z-index: var(--z-index-drawer);
+      transform: translateX(-100%);
+      transition: transform var(--duration-standard) var(--ease-standard);
+      box-shadow: var(--shadow-xl);
+      padding-top: max(var(--space-xl), var(--safe-area-inset-top));
+      padding-bottom: max(var(--space-xl), var(--safe-area-inset-bottom));
+    }
+    .app-shell.is-sidebar-open .app-shell-sidebar {
+      transform: translateX(0);
+    }
+    /* Backdrop appears when open */
+    .app-shell.is-sidebar-open::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: var(--color-overlay-scrim);
+      z-index: calc(var(--z-index-drawer) - 1);
+    }
+  }
+  .app-shell-main {
+    overflow: auto;
+    min-width: 0;
+  }
+
+  /* Mobile menu button — hidden on desktop, visible on small screens */
+  .app-menu-trigger {
+    display: inline-flex;
+  }
+  @media (min-width: 1024px) {
+    .app-menu-trigger { display: none; }
+  }
+
+  /* ============================================================
+     Bottom tab bar — primary navigation pattern for mobile
+     ============================================================ */
+  .bottom-tabs {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+    background: var(--color-surface-base);
+    border-top: 1px solid var(--color-border-subtle);
+    padding-bottom: var(--safe-area-inset-bottom);
+    z-index: var(--z-index-sticky);
+    box-shadow: var(--shadow-md);
+  }
+  .bottom-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: var(--touch-target-comfortable);
+    padding: var(--space-xs) var(--space-2xs);
+    background: transparent;
+    border: 0;
+    color: var(--color-foreground-secondary);
+    font-size: var(--font-size-2xs);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+  }
+  .bottom-tab > i {
+    font-size: 1.25rem;
+  }
+  .bottom-tab.is-active {
+    color: var(--color-brand-primary);
+  }
+  /* Bottom tabs are mobile-only (phones) — hide on tablet and up */
+  @media (min-width: 768px) {
+    .bottom-tabs { display: none; }
+  }
+}
+
+@layer utilities {
+
+  /* ============================================================
+     Focus & selection
+     ============================================================ */
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+  }
+  /* Inputs override the global ring — focus is shown by border-colour change only */
+  input:focus-visible, textarea:focus-visible, select:focus-visible,
+  .input:focus-visible, .textarea:focus-visible, .select:focus-visible, .form-control:focus-visible {
+    box-shadow: none;
+  }
+  ::selection {
+    background: var(--color-selection-background);
+    color: var(--color-selection-foreground);
+  }
+
+  /* ============================================================
+     Screen-reader and accessibility utilities
+     ============================================================ */
+  .sr-only, .visually-hidden {
+    position: absolute !important;
+    width: 1px !important; height: 1px !important;
+    padding: 0 !important; margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+  /* Restore visibility when the sr-only element gains focus (skip-link pattern) */
+  .sr-only-focusable:focus,
+  .sr-only-focusable:active {
+    position: static !important;
+    width: auto !important; height: auto !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
+  }
+
+  /* ============================================================
+     Display utilities
+     ============================================================ */
+  .hidden { display: none !important; }
+  .block { display: block !important; }
+  .inline { display: inline !important; }
+  .inline-block { display: inline-block !important; }
+  .flex { display: flex !important; }
+  .inline-flex { display: inline-flex !important; }
+  .grid { display: grid !important; }
+
+  /* Per-breakpoint visibility utilities (mobile-first naming) */
+  .hide-on-mobile { /* hidden by media query below */ }
+  .show-on-mobile { display: none; }
+  .hide-on-tablet { /* hidden by media query below */ }
+  .show-on-tablet { display: none; }
+  .hide-on-desktop { /* hidden by media query below */ }
+  .show-on-desktop { display: none; }
+
+  /* mobile: under 768px */
+  @media (max-width: 767.98px) {
+    .hide-on-mobile { display: none !important; }
+    .show-on-mobile { display: revert !important; }
+    .show-on-mobile.show-flex { display: flex !important; }
+    .show-on-mobile.show-grid { display: grid !important; }
+  }
+  /* tablet: 768px–1023.98px */
+  @media (min-width: 768px) and (max-width: 1023.98px) {
+    .hide-on-tablet { display: none !important; }
+    .show-on-tablet { display: revert !important; }
+    .show-on-tablet.show-flex { display: flex !important; }
+    .show-on-tablet.show-grid { display: grid !important; }
+  }
+  /* desktop: 1024px and up */
+  @media (min-width: 1024px) {
+    .hide-on-desktop { display: none !important; }
+    .show-on-desktop { display: revert !important; }
+    .show-on-desktop.show-flex { display: flex !important; }
+    .show-on-desktop.show-grid { display: grid !important; }
+  }
+
+  /* Legacy aliases — kept for backwards compatibility */
+  .desktop-only { /* visible on desktop; hidden on mobile via media query */ }
+  .mobile-only { display: none; }
+  @media (max-width: 767.98px) {
+    .desktop-only { display: none !important; }
+    .mobile-only { display: revert !important; }
+  }
+
+  /* ============================================================
+     Flex utilities
+     ============================================================ */
+  .flex-col { flex-direction: column !important; }
+  .flex-row { flex-direction: row !important; }
+  .flex-wrap { flex-wrap: wrap !important; }
+  .flex-nowrap { flex-wrap: nowrap !important; }
+  .items-start { align-items: flex-start !important; }
+  .items-center { align-items: center !important; }
+  .items-end { align-items: flex-end !important; }
+  .items-stretch { align-items: stretch !important; }
+  .justify-start { justify-content: flex-start !important; }
+  .justify-center { justify-content: center !important; }
+  .justify-end { justify-content: flex-end !important; }
+  .justify-between { justify-content: space-between !important; }
+  .justify-around { justify-content: space-around !important; }
+  .flex-1 { flex: 1 1 0% !important; }
+  .flex-auto { flex: 1 1 auto !important; }
+  .flex-none { flex: none !important; }
+
+  /* ============================================================
+     Width / sizing
+     ============================================================ */
+  .w-full { width: 100% !important; }
+  .w-auto { width: auto !important; }
+  .w-fit { width: fit-content !important; }
+  .h-full { height: 100% !important; }
+  .h-screen { height: 100vh !important; height: 100dvh !important; }
+  .min-h-screen { min-height: 100vh !important; min-height: 100dvh !important; }
+  .max-w-sm { max-width: 24rem; }
+  .max-w-md { max-width: 32rem; }
+  .max-w-lg { max-width: 48rem; }
+  .max-w-xl { max-width: 64rem; }
+  .max-w-prose { max-width: var(--content-width-prose); }
+  .max-w-narrow { max-width: var(--content-width-narrow); }
+
+  /* ============================================================
+     Overflow / scroll
+     ============================================================ */
+  .overflow-auto { overflow: auto !important; }
+  .overflow-hidden { overflow: hidden !important; }
+  .overflow-x-auto { overflow-x: auto !important; }
+  .overflow-y-auto { overflow-y: auto !important; }
+  /* Smooth scroll on iOS */
+  .overflow-auto, .overflow-x-auto, .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ============================================================
+     Spacing utilities — generated for the most common cases
+     ============================================================ */
+  .p-xs { padding: var(--space-xs) !important; }
+  .p-sm { padding: var(--space-sm) !important; }
+  .p-md { padding: var(--space-md) !important; }
+  .p-lg { padding: var(--space-lg) !important; }
+  .p-xl { padding: var(--space-xl) !important; }
+  .p-2xl { padding: var(--space-2xl) !important; }
+  .px-sm { padding-inline: var(--space-sm) !important; }
+  .px-md { padding-inline: var(--space-md) !important; }
+  .px-lg { padding-inline: var(--space-lg) !important; }
+  .px-xl { padding-inline: var(--space-xl) !important; }
+  .py-sm { padding-block: var(--space-sm) !important; }
+  .py-md { padding-block: var(--space-md) !important; }
+  .py-lg { padding-block: var(--space-lg) !important; }
+  .py-xl { padding-block: var(--space-xl) !important; }
+  .gap-xs { gap: var(--space-xs) !important; }
+  .gap-sm { gap: var(--space-sm) !important; }
+  .gap-md { gap: var(--space-md) !important; }
+  .gap-lg { gap: var(--space-lg) !important; }
+  .gap-xl { gap: var(--space-xl) !important; }
+
+  /* ============================================================
+     Background and surface
+     ============================================================ */
+  .bg-page { background: var(--color-background-page) !important; }
+  .bg-canvas { background: var(--color-background-canvas) !important; }
+  .bg-surface { background: var(--color-surface-base) !important; }
+  .bg-brand { background: var(--color-brand-primary) !important; color: var(--color-brand-primary-contrast) !important; }
+
+  /* ============================================================
+     Brand gradient backgrounds
+     ============================================================
+     Apply a canonical gradient as a background. The saturated
+     variants (brand, vibrant, warm, cool) automatically pair with
+     white text — they're built for hero surfaces and CTA cards.
+     The subtle variant uses primary text colour since it's a
+     low-contrast tinted background. */
+  .bg-gradient-brand   { background: var(--gradient-brand)   !important; color: var(--color-static-white) !important; }
+  .bg-gradient-vibrant { background: var(--gradient-vibrant) !important; color: var(--color-static-white) !important; }
+  .bg-gradient-warm    { background: var(--gradient-warm)    !important; color: var(--color-static-white) !important; }
+  .bg-gradient-cool    { background: var(--gradient-cool)    !important; color: var(--color-static-white) !important; }
+  .bg-gradient-subtle  { background: var(--gradient-subtle)  !important; }
+
+  /* Cascade white text to children of saturated gradient surfaces.
+     Heading rules and the base p rule set their own colour, which
+     would override the parent's white otherwise. */
+  .bg-gradient-brand h1,   .bg-gradient-brand h2,   .bg-gradient-brand h3,   .bg-gradient-brand h4,   .bg-gradient-brand h5,   .bg-gradient-brand h6,   .bg-gradient-brand p,   .bg-gradient-brand strong,   .bg-gradient-brand span,
+  .bg-gradient-vibrant h1, .bg-gradient-vibrant h2, .bg-gradient-vibrant h3, .bg-gradient-vibrant h4, .bg-gradient-vibrant h5, .bg-gradient-vibrant h6, .bg-gradient-vibrant p, .bg-gradient-vibrant strong, .bg-gradient-vibrant span,
+  .bg-gradient-warm h1,    .bg-gradient-warm h2,    .bg-gradient-warm h3,    .bg-gradient-warm h4,    .bg-gradient-warm h5,    .bg-gradient-warm h6,    .bg-gradient-warm p,    .bg-gradient-warm strong,    .bg-gradient-warm span,
+  .bg-gradient-cool h1,    .bg-gradient-cool h2,    .bg-gradient-cool h3,    .bg-gradient-cool h4,    .bg-gradient-cool h5,    .bg-gradient-cool h6,    .bg-gradient-cool p,    .bg-gradient-cool strong,    .bg-gradient-cool span {
+    color: var(--color-static-white) !important;
+  }
+
+  /* ============================================================
+     Border radius
+     ============================================================ */
+  .radius-sm { border-radius: var(--radius-sm) !important; }
+  .radius-md { border-radius: var(--radius-md) !important; }
+  .radius-lg { border-radius: var(--radius-lg) !important; }
+  .radius-xl { border-radius: var(--radius-xl) !important; }
+  .radius-2xl { border-radius: var(--radius-2xl) !important; }
+  .radius-pill { border-radius: var(--radius-pill) !important; }
+  .radius-round { border-radius: 50% !important; }
+
+  /* ============================================================
+     Shadow
+     ============================================================ */
+  .shadow-sm { box-shadow: var(--shadow-sm) !important; }
+  .shadow-md { box-shadow: var(--shadow-md) !important; }
+  .shadow-lg { box-shadow: var(--shadow-lg) !important; }
+  .shadow-xl { box-shadow: var(--shadow-xl) !important; }
+  .shadow-none { box-shadow: none !important; }
+
+  /* ============================================================
+     Text utilities — color, size, alignment
+     ============================================================ */
+  .text-on-brand { color: var(--color-brand-primary-contrast) !important; }
+  .text-brand { color: var(--color-brand-primary) !important; }
+  /* Semantic text colour utilities — pair with the feedback colour family.
+     Use for inline emphasis (a percentage going up/down, a status word
+     embedded in body text) where a full .badge or .alert would be too
+     heavy. Token-driven so dark mode and partner rebrands cascade. */
+  .text-success { color: var(--color-utility-success) !important; }
+  .text-warning { color: var(--color-utility-warning) !important; }
+  .text-danger  { color: var(--color-utility-danger) !important; }
+  .text-info    { color: var(--color-utility-info) !important; }
+  .text-muted   { color: var(--color-foreground-muted) !important; }
+  .text-secondary { color: var(--color-foreground-secondary) !important; }
+  .text-left { text-align: left !important; }
+  .text-center { text-align: center !important; }
+  .text-right { text-align: right !important; }
+  .text-balance { text-wrap: balance; }    /* good for headings */
+  .text-pretty { text-wrap: pretty; }      /* good for body */
+
+  /* Font weight utilities — pair with token-driven weights from
+     foundation. Use these on any element where you need to override
+     the default weight without writing inline styles. */
+  .font-light    { font-weight: var(--font-weight-light) !important; }
+  .font-regular  { font-weight: var(--font-weight-regular) !important; }
+  .font-medium   { font-weight: var(--font-weight-medium) !important; }
+  .font-semibold { font-weight: var(--font-weight-semibold) !important; }
+  .font-bold     { font-weight: var(--font-weight-bold) !important; }
+
+  /* ============================================================
+     Gradient text — feature headings and hero titles
+     ============================================================
+     Fills the text glyphs with a brand gradient using
+     background-clip: text. Includes a colour fallback (set to the
+     gradient's starting colour) so the text is readable on browsers
+     that don't support background-clip: text — all current
+     evergreen browsers do, but the fallback keeps it safe.
+
+     Use on h1/h2 hero titles, feature-callout headlines, or any
+     short, prominent text where the gradient adds visual weight.
+     Avoid on body text: long passages with gradient fills become
+     hard to read. */
+  .text-gradient-brand,
+  .text-gradient-vibrant,
+  .text-gradient-warm,
+  .text-gradient-cool {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    /* Inline-block keeps the gradient bounded to the text width,
+       not the container width. Important for centred or short text. */
+    display: inline-block;
+  }
+  .text-gradient-brand   { background-image: var(--gradient-brand);   }
+  .text-gradient-vibrant { background-image: var(--gradient-vibrant); }
+  .text-gradient-warm    { background-image: var(--gradient-warm);    }
+  .text-gradient-cool    { background-image: var(--gradient-cool);    }
+
+  /* Fallback colour for browsers without background-clip: text.
+     @supports detects the property; inside it, transparent text is
+     safe. Outside, the colour declared above stays opaque. */
+  @supports not ((background-clip: text) or (-webkit-background-clip: text)) {
+    .text-gradient-brand   { color: var(--color-brand-primary); -webkit-text-fill-color: currentColor; }
+    .text-gradient-vibrant { color: var(--color-feature-03);    -webkit-text-fill-color: currentColor; }
+    .text-gradient-warm    { color: var(--color-feature-07);    -webkit-text-fill-color: currentColor; }
+    .text-gradient-cool    { color: var(--color-feature-04);    -webkit-text-fill-color: currentColor; }
+  }
+  .truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ============================================================
+     Avatar size additions and other carry-overs
+     ============================================================ */
+  .avatar-xs { width: 1.25rem; height: 1.25rem; font-size: 0.625rem; }
+  .avatar-xl { width: 3rem; height: 3rem; font-size: 1rem; }
+  .badge-sm { padding: 2px var(--space-xs); font-size: 0.6875rem; gap: 4px; }
+  .alert-icon { font-size: 1.125rem; flex-shrink: 0; margin-top: 2px; }
+
+  /* ============================================================
+     Demo-only helpers (badges on brand backgrounds, demo footer)
+     ============================================================ */
+  .demo-footer {
+    padding: var(--space-2xl) 0 var(--space-3xl);
+    text-align: center;
+    border-top: 1px solid var(--color-divider);
+    margin-top: var(--space-3xl);
+  }
+  .demo-intro .badge,
+  .badge-on-brand {
+    background: rgba(255, 255, 255, 0.18) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.32) !important;
+    backdrop-filter: blur(4px);
+  }
+
+  /* ============================================================
+     .pane — canonical labelled sub-section container
+     ============================================================
+     The ONE container pattern for stacking labelled sub-sections
+     inside a long page (documentation areas, settings screens,
+     long admin pages). Every consumer should reach for this
+     instead of inventing a wrapper.
+
+     Each .pane gets:
+       • padding-top from --component-pane-padding (32px default)
+       • a hairline top divider from --component-pane-rule-*
+       • a comfortable internal grid gap on any .grid-N or
+         .auto-grid inside it, from --component-pane-gap
+
+     The FIRST pane in a sequence uses .pane-first to skip the
+     divider (the section header above already separates it).
+
+     Pattern:
+       <div class="stack-3xl">
+         <div class="pane pane-first stack-md">
+           <h3>First sub-section</h3>
+           <p>…intro prose…</p>
+           <div class="grid-3"><!-- cards --></div>
+         </div>
+         <div class="pane stack-md">
+           <h3>Second sub-section</h3>
+           ...
+         </div>
+       </div>
+
+     RULES:
+       1. ALWAYS use .pane for labelled sub-sections in any long
+          page. Never invent a wrapper.
+       2. NEVER hardcode padding/gap/rule values — read them from
+          --component-pane-* so partner rebrands work. */
+  .pane {
+    padding-top: var(--component-pane-padding);
+    border-top: var(--component-pane-rule-width) solid var(--component-pane-rule-color);
+  }
+  .pane.pane-first,
+  .pane:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+  .pane .grid-3,
+  .pane .grid-2,
+  .pane .grid-4,
+  .pane .auto-grid {
+    gap: var(--component-pane-gap);
+  }
+}

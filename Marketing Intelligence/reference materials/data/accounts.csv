@@ -1,0 +1,401 @@
+account_id,company_name,goal,industry,employee_band,region,web_visits_30d,team_builder_visit,form_fill_30d,news_signal,news_signal_date,job_postings_30d,hiring_spike,diamond_referral,prior_bpo_flag,industry_trend,industry_modifier,web_signal,news_jobs_signal,web_pts,news_jobs_pts,diamond_pts,bpo_pts,base_points,priority_score,estimated_fields,data_coverage,hot_trigger,tier,assigned_team,sort_key
+ACC-1001,Orchard Medical,New Logo,Healthcare,,AU-NSW,,,,,,,,,,0.8,1.06,,,12.3,10.5,0,0,22.8,24,"Website, News",0.3,,Tier 3,SDR,24
+ACC-1002,Foxglove Hospitality,New Logo,,201-500,AU-QLD,,,,Expansion / new office,2026-07-24,4,No,,Yes,,1.0,,0.248,12.3,8.7,0,15,36.0,36,Website,0.65,,Tier 3,SDR,36
+ACC-1003,Gullwing Transport,New Logo,Logistics,,NZ,,,,,,,,,,0.7,1.04,,,12.3,10.5,0,0,22.8,24,"Website, News",0.3,,Tier 3,SDR,24
+ACC-1004,Silverline Logistics,New Logo,Logistics,51-200,AU-NSW,,,,,,,,No,No,0.7,1.04,,,12.3,10.5,0,0,22.8,24,"Website, News",0.3,,Tier 3,SDR,24
+ACC-1005,Clearwater Labs,Organic Growth,SaaS / Tech,11-50,AU-SA,12,No,0,Funding round,2026-10-13,12,No,N/A,N/A,0.8,1.06,0.18,0.84,9.0,42.0,N/A,N/A,51.0,54,,1.0,Funding round,Tier 2,AM,1054
+ACC-1006,Sterling Civil,Organic Growth,Construction,,AU-SA,0,No,0,,,,,N/A,N/A,0.6,1.02,0.0,,0.0,15.0,N/A,N/A,15.0,15,News,0.5,,Tier 3,AM,15
+ACC-1007,Lumen Medical,Organic Growth,Healthcare,11-50,AU-QLD,13,No,2,None,,13,No,N/A,N/A,0.8,1.06,0.495,0.26,24.8,13.0,N/A,N/A,37.8,40,,1.0,Form fill,Tier 2,AM,1040
+ACC-1008,Summit Software,Organic Growth,SaaS / Tech,,AU-QLD,,,,PE buyout,2026-07-10,12,No,N/A,N/A,0.8,1.06,,0.48,17.5,24.0,N/A,N/A,41.5,44,Website,0.5,,Tier 2,AM,44
+ACC-1009,Juniper Learning,New Logo,,1-10,AU-NSW,4,No,0,,,,,,,,1.0,0.06,,2.1,10.5,0,0,12.6,13,News,0.65,,Tier 3,SDR,13
+ACC-1010,Thornbury Property Group,New Logo,Real Estate,1-10,,16,No,1,,,,,No,,0.4,0.98,0.54,,18.9,10.5,0,0,29.4,29,News,0.65,Form fill,Tier 3,BDM,1029
+ACC-1011,Ironbark Creative,New Logo,,11-50,UK,,,,Funding round,2026-11-05,27,No,,Yes,,1.0,,1.0,12.3,35.0,0,15,62.3,62,Website,0.65,Funding round,Tier 2,BDM,1062
+ACC-1012,Gullwing Venues,New Logo,Hospitality,1-10,,,,,None,,,,,,0.4,0.98,,0.0,12.3,0.0,0,0,12.3,12,Website,0.65,,Tier 3,SDR,12
+ACC-1013,Granite Supply Co,Organic Growth,Logistics,201-500,NZ,8,No,0,None,,5,No,N/A,N/A,0.7,1.04,0.12,0.1,6.0,5.0,N/A,N/A,11.0,11,,1.0,,Tier 3,AM,11
+ACC-1014,Ironbark Software,Organic Growth,SaaS / Tech,,AU-SA,,,,Expansion / new office,2026-08-12,32,Yes,N/A,N/A,0.8,1.06,,0.694,17.5,34.7,N/A,N/A,52.2,55,Website,0.5,,Tier 2,AM,55
+ACC-1015,Lumen Legal,New Logo,Legal,51-200,AU-SA,0,No,0,,,,,No,Yes,0.5,1.0,0.0,,0.0,10.5,0,15,25.5,26,News,0.65,,Tier 3,SDR,26
+ACC-1016,Riverstone Lawyers,Organic Growth,Legal,11-50,NZ,25,Yes,0,PE buyout,2026-10-29,28,Yes,N/A,N/A,0.5,1.0,0.7,1.0,35.0,50.0,N/A,N/A,85.0,85,,1.0,Team Builder visit,Tier 1,AM,1085
+ACC-1017,Silverline Realty,Organic Growth,Real Estate,11-50,UK,17,No,0,,,,,N/A,N/A,0.4,0.98,0.255,,12.8,15.0,N/A,N/A,27.8,27,News,0.5,,Tier 3,AM,27
+ACC-1018,Orchard Transport,Organic Growth,Logistics,1-10,AU-SA,,,,Funding round,2026-07-20,5,No,N/A,N/A,0.7,1.04,,0.34,17.5,17.0,N/A,N/A,34.5,36,Website,0.5,,Tier 3,AM,36
+ACC-1019,Pinnacle Construction,New Logo,Construction,11-50,AU-VIC,0,No,0,None,,,,,,0.6,1.02,0.0,0.0,0.0,0.0,0,0,0.0,0,,1.0,,Tier 3,SDR,0
+ACC-1020,Marlow Commerce,New Logo,E-commerce,11-50,AU-SA,,,,PE buyout,2026-05-25,18,Yes,No,,0.9,1.08,,0.64,12.3,22.4,0,0,34.7,37,Website,0.65,,Tier 3,SDR,37
+ACC-1021,Silverline Venues,New Logo,Hospitality,11-50,AU-WA,13,No,0,,,,,,No,0.4,0.98,0.195,,6.8,10.5,0,0,17.3,17,News,0.65,,Tier 3,SDR,17
+ACC-1022,Marlow Insurance,New Logo,Insurance,201-500,UK,,,,,,,,,,0.5,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1023,Ember College,New Logo,Education,500+,UK,13,No,0,Leadership change,2026-07-20,,,No,,0.3,0.96,0.195,0.072,6.8,2.5,0,0,9.3,9,,1.0,,Tier 3,SDR,9
+ACC-1024,Clearwater Commerce,Organic Growth,E-commerce,201-500,AU-WA,20,Yes,0,PE buyout,2026-07-30,7,No,N/A,N/A,0.9,1.08,0.7,0.38,35.0,19.0,N/A,N/A,54.0,58,,1.0,Team Builder visit,Tier 2,AM,1058
+ACC-1025,Foxglove Civil,New Logo,Construction,201-500,,,,,PE buyout,2026-08-12,,,,Yes,0.6,1.02,,0.42,12.3,14.7,0,15,42.0,43,Website,0.65,,Tier 2,SDR,43
+ACC-1026,Vantage Software,Organic Growth,,11-50,NZ,19,Yes,1,Other / Unclassified,2026-10-08,,,N/A,N/A,,1.0,0.985,0.126,49.3,6.3,N/A,N/A,55.6,56,,1.0,Form fill,Tier 2,AM,1056
+ACC-1027,Vantage Medical,New Logo,Healthcare,11-50,AU-VIC,15,Yes,0,None,,26,Yes,,Yes,0.8,1.06,0.625,0.4,21.9,14.0,0,15,50.9,54,,1.0,,Tier 2,SDR,54
+ACC-1028,Coral Accountants,New Logo,Accounting & Finance,201-500,AU-VIC,,,,,,,,,,0.7,1.04,,,12.3,10.5,0,0,22.8,24,"Website, News",0.3,,Tier 3,SDR,24
+ACC-1029,Ember Lawyers,Organic Growth,Legal,500+,AU-WA,8,No,0,None,,4,No,N/A,N/A,0.5,1.0,0.12,0.08,6.0,4.0,N/A,N/A,10.0,10,,1.0,,Tier 3,AM,10
+ACC-1030,Lumen Goods Online,New Logo,E-commerce,11-50,,4,No,0,None,,,,No,,0.9,1.08,0.06,0.0,2.1,0.0,0,0,2.1,2,,1.0,,Tier 3,SDR,2
+ACC-1031,Gullwing College,Organic Growth,Education,51-200,AU-VIC,10,No,0,None,,0,No,N/A,N/A,0.3,0.96,0.15,0.0,7.5,0.0,N/A,N/A,7.5,7,,1.0,,Tier 3,AM,7
+ACC-1032,Ironbark Advisory,New Logo,Accounting & Finance,,,,,,,,,,,,0.7,1.04,,,12.3,10.5,0,0,22.8,24,"Website, News",0.3,,Tier 3,SDR,24
+ACC-1033,Harbor Transport,New Logo,,201-500,AU-VIC,,,,,,,,,Yes,,1.0,,,12.3,10.5,0,15,37.8,38,"Website, News",0.3,,Tier 3,SDR,38
+ACC-1034,Beacon Software,Organic Growth,SaaS / Tech,201-500,AU-SA,15,No,0,Funding round,2026-10-01,24,Yes,N/A,N/A,0.8,1.06,0.225,0.82,11.3,41.0,N/A,N/A,52.3,55,,1.0,,Tier 2,AM,55
+ACC-1035,Thornbury Hospitality,New Logo,Hospitality,,AU-SA,0,No,0,None,,0,No,,,0.4,0.98,0.0,0.0,0.0,0.0,0,0,0.0,0,,1.0,,Tier 3,SDR,0
+ACC-1036,Beacon Lawyers,Organic Growth,,201-500,UK,21,No,0,,,,,N/A,N/A,,1.0,0.3,,15.0,15.0,N/A,N/A,30.0,30,News,0.5,,Tier 3,AM,30
+ACC-1037,Vantage College,Organic Growth,Education,201-500,UK,16,Yes,0,Restructuring,2026-11-01,,,N/A,N/A,0.3,0.96,0.64,0.3,32.0,15.0,N/A,N/A,47.0,45,,1.0,Team Builder visit,Tier 2,AM,1045
+ACC-1038,Marlow Freight,Organic Growth,Logistics,201-500,AU-NSW,,,,None,,11,No,N/A,N/A,0.7,1.04,,0.22,17.5,11.0,N/A,N/A,28.5,30,Website,0.5,,Tier 3,AM,30
+ACC-1039,Vantage Logistics,New Logo,Logistics,1-10,AU-VIC,,,,,,,,,Yes,0.7,1.04,,,12.3,10.5,0,15,37.8,39,"Website, News",0.3,,Tier 3,SDR,39
+ACC-1040,Thornbury Construction,New Logo,Construction,11-50,AU-SA,0,No,0,,,,,,No,0.6,1.02,0.0,,0.0,10.5,0,0,10.5,11,News,0.65,,Tier 3,SDR,11
+ACC-1041,Beacon Venues,Organic Growth,Hospitality,51-200,US,13,No,0,,,,,N/A,N/A,0.4,0.98,0.195,,9.8,15.0,N/A,N/A,24.8,24,News,0.5,,Tier 3,AM,24
+ACC-1042,Larkspur Hospitality,New Logo,,51-200,UK,,,,PE buyout,2026-04-15,16,No,Yes,,,1.0,,0.32,12.3,11.2,15,0,38.5,39,Website,0.65,Diamond referral,Tier 3,BDM,1039
+ACC-1043,Marlow Software,Organic Growth,SaaS / Tech,,,0,No,0,None,,12,No,N/A,N/A,0.8,1.06,0.0,0.24,0.0,12.0,N/A,N/A,12.0,13,,1.0,,Tier 3,AM,13
+ACC-1044,Silverline Cover,New Logo,Insurance,11-50,AU-VIC,,,,,,,,,,0.5,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1045,Sterling Estates,New Logo,Real Estate,500+,UK,28,Yes,0,,,,,,Yes,0.4,0.98,0.7,,24.5,10.5,0,15,50.0,49,News,0.65,,Tier 2,SDR,49
+ACC-1046,Ironbark Insurance,Organic Growth,Insurance,,US,,,,None,,23,Yes,N/A,N/A,0.5,1.0,,0.4,17.5,20.0,N/A,N/A,37.5,38,Website,0.5,,Tier 3,AM,38
+ACC-1047,Driftwood Financial,New Logo,Accounting & Finance,11-50,AU-NSW,,,,,,,,,,0.7,1.04,,,12.3,10.5,0,0,22.8,24,"Website, News",0.3,,Tier 3,SDR,24
+ACC-1048,Clearwater Tax & Co,Organic Growth,Accounting & Finance,51-200,UK,17,No,0,Other / Unclassified,2026-06-17,29,No,N/A,N/A,0.7,1.04,0.255,0.472,12.8,23.6,N/A,N/A,36.4,38,,1.0,,Tier 3,AM,38
+ACC-1049,Harbor Construction,Organic Growth,Construction,51-200,AU-WA,12,No,0,,,,,N/A,N/A,0.6,1.02,0.18,,9.0,15.0,N/A,N/A,24.0,24,News,0.5,,Tier 3,AM,24
+ACC-1050,Beacon Cover,Organic Growth,Insurance,1-10,AU-QLD,11,No,0,,,,,N/A,N/A,0.5,1.0,0.165,,8.3,15.0,N/A,N/A,23.3,23,News,0.5,,Tier 3,AM,23
+ACC-1051,Waratah Supply Co,New Logo,Logistics,51-200,,,,,None,,14,No,Yes,Yes,0.7,1.04,,0.28,12.3,9.8,15,15,52.1,54,Website,0.65,Diamond referral,Tier 2,BDM,1054
+ACC-1052,Northwind Allied Health,New Logo,Healthcare,11-50,AU-QLD,10,No,0,,,,,,Yes,0.8,1.06,0.15,,5.3,10.5,0,15,30.8,33,News,0.65,,Tier 3,SDR,33
+ACC-1053,Clearwater Realty,Organic Growth,Real Estate,500+,UK,28,Yes,0,Other / Unclassified,2026-10-28,11,No,N/A,N/A,0.4,0.98,0.7,0.4,35.0,20.0,N/A,N/A,55.0,54,,1.0,Team Builder visit,Tier 2,AM,1054
+ACC-1054,Bluegum Insurance,New Logo,Insurance,51-200,AU-SA,,,,Restructuring,2026-07-30,25,No,,Yes,0.5,1.0,,0.52,12.3,18.2,0,15,45.5,46,Website,0.65,,Tier 2,SDR,46
+ACC-1055,Oakridge Property Group,New Logo,Real Estate,1-10,AU-VIC,,,,None,,,,No,,0.4,0.98,,0.0,12.3,0.0,0,0,12.3,12,Website,0.65,,Tier 3,SDR,12
+ACC-1056,Coral Learning,New Logo,Education,51-200,NZ,,,,,,,,No,,0.3,0.96,,,12.3,10.5,0,0,22.8,22,"Website, News",0.3,,Tier 3,SDR,22
+ACC-1057,Gullwing Goods Online,New Logo,E-commerce,500+,AU-NSW,,,,None,,,,No,,0.9,1.08,,0.0,12.3,0.0,0,0,12.3,13,Website,0.65,,Tier 3,SDR,13
+ACC-1058,Harbor Store,New Logo,,11-50,UK,,,,,,,,,,,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1059,Northwind Logistics,New Logo,Logistics,201-500,US,,,,Expansion / new office,2026-08-15,0,No,Yes,No,0.7,1.04,,0.294,12.3,10.3,15,0,37.6,39,Website,0.65,Diamond referral,Tier 3,BDM,1039
+ACC-1060,Cobalt Allied Health,New Logo,,11-50,NZ,,,,Funding round,2026-02-24,6,No,,,,1.0,,0.12,12.3,4.2,0,0,16.5,17,Website,0.65,,Tier 3,SDR,17
+ACC-1061,Tasman Builders,New Logo,Construction,51-200,,16,No,0,,,,,,Yes,0.6,1.02,0.24,,8.4,10.5,0,15,33.9,35,News,0.65,,Tier 3,SDR,35
+ACC-1062,Yarra Creative,New Logo,Marketing Agency,,AU-QLD,13,Yes,0,,,,,,,0.6,1.02,0.595,,20.8,10.5,0,0,31.3,32,News,0.65,,Tier 3,SDR,32
+ACC-1063,Clearwater Systems,New Logo,,51-200,AU-NSW,,,,Leadership change,2026-07-14,13,No,,,,1.0,,0.332,12.3,11.6,0,0,23.9,24,Website,0.65,,Tier 3,SDR,24
+ACC-1064,Pinnacle Underwriting,New Logo,Insurance,51-200,AU-VIC,,,,,,,,No,,0.5,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1065,Silverline Media,New Logo,Marketing Agency,51-200,,,,,Restructuring,2026-07-08,14,No,,No,0.6,1.02,,0.4,12.3,14.0,0,0,26.3,27,Website,0.65,,Tier 3,SDR,27
+ACC-1066,Halcyon Law Partners,New Logo,Legal,51-200,AU-VIC,,,,,,,,No,No,0.5,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1067,Fernhill Property Group,Organic Growth,Real Estate,500+,AU-NSW,11,Yes,0,None,,,,N/A,N/A,0.4,0.98,0.565,0.0,28.3,0.0,N/A,N/A,28.3,28,,1.0,Team Builder visit,Tier 3,AM,1028
+ACC-1068,Juniper Civil,New Logo,Construction,11-50,AU-SA,15,No,3,None,,18,Yes,,,0.6,1.02,0.525,0.4,18.4,14.0,0,0,32.4,33,,1.0,Form fill,Tier 3,BDM,1033
+ACC-1069,Thornbury Law Partners,New Logo,Legal,11-50,AU-QLD,14,No,0,Expansion / new office,2026-08-14,13,No,No,Yes,0.5,1.0,0.21,0.554,7.4,19.4,0,15,41.8,42,,1.0,,Tier 2,SDR,42
+ACC-1070,Redgate Store,New Logo,E-commerce,201-500,AU-NSW,3,No,0,None,,2,No,No,,0.9,1.08,0.045,0.04,1.6,1.4,0,0,3.0,3,,1.0,,Tier 3,SDR,3
+ACC-1071,Coral Supply Co,New Logo,Logistics,11-50,AU-QLD,,,,,,,,,Yes,0.7,1.04,,,12.3,10.5,0,15,37.8,39,"Website, News",0.3,,Tier 3,SDR,39
+ACC-1072,Yarra Digital,New Logo,Marketing Agency,1-10,AU-VIC,,,,None,,12,No,,No,0.6,1.02,,0.24,12.3,8.4,0,0,20.7,21,Website,0.65,,Tier 3,SDR,21
+ACC-1073,Fernhill Digital,Organic Growth,Marketing Agency,11-50,,6,No,2,None,,8,No,N/A,N/A,0.6,1.02,0.39,0.16,19.5,8.0,N/A,N/A,27.5,28,,1.0,Form fill,Tier 3,AM,1028
+ACC-1074,Pinnacle Learning,Organic Growth,Education,,US,0,No,0,None,,0,No,N/A,N/A,0.3,0.96,0.0,0.0,0.0,0.0,N/A,N/A,0.0,0,,1.0,,Tier 3,AM,0
+ACC-1075,Quarry Freight,New Logo,Logistics,,AU-SA,,,,Expansion / new office,2026-09-27,,,,Yes,0.7,1.04,,0.294,12.3,10.3,0,15,37.6,39,Website,0.65,,Tier 3,SDR,39
+ACC-1076,Northwind Accountants,New Logo,Accounting & Finance,,,19,No,1,M&A,2026-08-24,14,No,No,,0.7,1.04,0.585,0.616,20.5,21.6,0,0,42.1,44,,1.0,Form fill,Tier 2,BDM,1044
+ACC-1077,Juniper Media,New Logo,,500+,AU-VIC,,,,,,,,No,,,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1078,Pinnacle Insurance,Organic Growth,Insurance,51-200,AU-VIC,0,No,0,,,,,N/A,N/A,0.5,1.0,0.0,,0.0,15.0,N/A,N/A,15.0,15,News,0.5,,Tier 3,AM,15
+ACC-1079,Wattle Hospitality,Organic Growth,,1-10,NZ,27,Yes,0,Restructuring,2026-08-11,,,N/A,N/A,,1.0,0.7,0.21,35.0,10.5,N/A,N/A,45.5,46,,1.0,Team Builder visit,Tier 2,AM,1046
+ACC-1080,Bluegum Learning,New Logo,Education,500+,AU-QLD,,,,Funding round,2026-10-22,,,No,,0.3,0.96,,0.6,12.3,21.0,0,0,33.3,32,Website,0.65,Funding round,Tier 3,BDM,1032
+ACC-1081,Tasman Creative,Organic Growth,,500+,,14,No,0,None,,0,No,N/A,N/A,,1.0,0.21,0.0,10.5,0.0,N/A,N/A,10.5,11,,1.0,,Tier 3,AM,11
+ACC-1082,Oakridge Dental Group,Organic Growth,Healthcare,201-500,AU-VIC,16,No,0,Restructuring,2026-08-05,22,Yes,N/A,N/A,0.8,1.06,0.24,0.52,12.0,26.0,N/A,N/A,38.0,40,,1.0,,Tier 2,AM,40
+ACC-1083,Granite Goods Online,New Logo,,500+,AU-QLD,0,No,0,PE buyout,2026-04-27,12,No,,,,1.0,0.0,0.24,0.0,8.4,0,0,8.4,8,,1.0,,Tier 3,SDR,8
+ACC-1084,Yarra Construction,Organic Growth,Construction,1-10,AU-SA,10,No,0,,,,,N/A,N/A,0.6,1.02,0.15,,7.5,15.0,N/A,N/A,22.5,23,News,0.5,,Tier 3,AM,23
+ACC-1085,Gullwing Underwriting,Organic Growth,Insurance,500+,AU-QLD,,,,Funding round,2026-10-26,28,Yes,N/A,N/A,0.5,1.0,,1.0,17.5,50.0,N/A,N/A,67.5,68,Website,0.5,Funding round,Tier 2,AM,1068
+ACC-1086,Yarra Labs,New Logo,SaaS / Tech,51-200,UK,21,No,0,,,,,,,0.8,1.06,0.3,,10.5,10.5,0,0,21.0,22,News,0.65,,Tier 3,SDR,22
+ACC-1087,Thornbury Systems,New Logo,SaaS / Tech,,US,,,,Other / Unclassified,2026-10-22,,,No,Yes,0.8,1.06,,0.18,12.3,6.3,0,15,33.6,36,Website,0.65,,Tier 3,SDR,36
+ACC-1088,Yarra Civil,New Logo,Construction,51-200,UK,4,No,0,None,,,,,,0.6,1.02,0.06,0.0,2.1,0.0,0,0,2.1,2,,1.0,,Tier 3,SDR,2
+ACC-1089,Tasman Advisory,Organic Growth,Accounting & Finance,51-200,US,16,Yes,3,,,,,N/A,N/A,0.7,1.04,0.94,,47.0,15.0,N/A,N/A,62.0,64,News,0.5,Form fill,Tier 2,AM,1064
+ACC-1090,Lumen College,New Logo,Education,11-50,AU-WA,,,,Expansion / new office,2026-10-27,21,No,Yes,,0.3,0.96,,0.82,12.3,28.7,15,0,56.0,54,Website,0.65,Diamond referral,Tier 2,BDM,1054
+ACC-1091,Thornbury Media,Organic Growth,Marketing Agency,,AU-WA,30,Yes,0,Leadership change,2026-08-19,,,N/A,N/A,0.6,1.02,0.7,0.126,35.0,6.3,N/A,N/A,41.3,42,,1.0,Team Builder visit,Tier 2,AM,1042
+ACC-1092,Kestrel Accountants,New Logo,Accounting & Finance,500+,AU-QLD,0,No,0,,,,,No,No,0.7,1.04,0.0,,0.0,10.5,0,0,10.5,11,News,0.65,,Tier 3,SDR,11
+ACC-1093,Wattle Accountants,New Logo,Accounting & Finance,,US,25,Yes,2,PE buyout,2026-09-12,,,No,,0.7,1.04,1.0,0.42,35.0,14.7,0,0,49.7,52,,1.0,Form fill,Tier 2,BDM,1052
+ACC-1094,Juniper Advisory,New Logo,Accounting & Finance,51-200,AU-SA,,,,,,,,,,0.7,1.04,,,12.3,10.5,0,0,22.8,24,"Website, News",0.3,,Tier 3,SDR,24
+ACC-1095,Juniper Cloud,New Logo,SaaS / Tech,11-50,AU-VIC,,,,,,,,No,,0.8,1.06,,,12.3,10.5,0,0,22.8,24,"Website, News",0.3,,Tier 3,SDR,24
+ACC-1096,Foxglove Creative,Organic Growth,Marketing Agency,201-500,,0,No,0,None,,11,No,N/A,N/A,0.6,1.02,0.0,0.22,0.0,11.0,N/A,N/A,11.0,11,,1.0,,Tier 3,AM,11
+ACC-1097,Vantage Underwriting,Organic Growth,,201-500,,14,No,0,None,,0,No,N/A,N/A,,1.0,0.21,0.0,10.5,0.0,N/A,N/A,10.5,11,,1.0,,Tier 3,AM,11
+ACC-1098,Foxglove Academy,Organic Growth,Education,11-50,AU-NSW,22,Yes,2,,,,,N/A,N/A,0.3,0.96,1.0,,50.0,15.0,N/A,N/A,65.0,62,News,0.5,Form fill,Tier 2,AM,1062
+ACC-1099,Coral Hotels,Organic Growth,Hospitality,,,21,Yes,0,Restructuring,2026-09-21,,,N/A,N/A,0.4,0.98,0.7,0.21,35.0,10.5,N/A,N/A,45.5,45,,1.0,Team Builder visit,Tier 2,AM,1045
+ACC-1100,Clearwater Estates,New Logo,Real Estate,,AU-WA,,,,,,,,,,0.4,0.98,,,12.3,10.5,0,0,22.8,22,"Website, News",0.3,,Tier 3,SDR,22
+ACC-1101,Quarry Lawyers,New Logo,Legal,51-200,US,,,,,,,,,,0.5,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1102,Redgate Tax & Co,New Logo,Accounting & Finance,51-200,,10,No,0,None,,18,Yes,No,,0.7,1.04,0.15,0.4,5.3,14.0,0,0,19.3,20,,1.0,,Tier 3,SDR,20
+ACC-1103,Cobalt Medical,Organic Growth,Healthcare,51-200,NZ,19,No,0,M&A,2026-08-04,,,N/A,N/A,0.8,1.06,0.285,0.192,14.3,9.6,N/A,N/A,23.9,25,,1.0,,Tier 3,AM,25
+ACC-1104,Gullwing Tax & Co,Organic Growth,Accounting & Finance,500+,NZ,,,,None,,12,No,N/A,N/A,0.7,1.04,,0.24,17.5,12.0,N/A,N/A,29.5,31,Website,0.5,,Tier 3,AM,31
+ACC-1105,Halcyon Legal,New Logo,Legal,1-10,AU-VIC,12,No,0,,,,,No,,0.5,1.0,0.18,,6.3,10.5,0,0,16.8,17,News,0.65,,Tier 3,SDR,17
+ACC-1106,Thornbury College,Organic Growth,,51-200,AU-SA,,,,None,,9,No,N/A,N/A,,1.0,,0.18,17.5,9.0,N/A,N/A,26.5,27,Website,0.5,,Tier 3,AM,27
+ACC-1107,Ironbark Logistics,New Logo,Logistics,1-10,US,,,,,,,,,Yes,0.7,1.04,,,12.3,10.5,0,15,37.8,39,"Website, News",0.3,,Tier 3,SDR,39
+ACC-1108,Kestrel Freight,New Logo,Logistics,1-10,US,,,,,,,,,,0.7,1.04,,,12.3,10.5,0,0,22.8,24,"Website, News",0.3,,Tier 3,SDR,24
+ACC-1109,Driftwood Medical,New Logo,Healthcare,500+,AU-NSW,,,,PE buyout,2026-10-02,13,No,No,,0.8,1.06,,0.68,12.3,23.8,0,0,36.1,38,Website,0.65,,Tier 3,SDR,38
+ACC-1110,Foxglove Construction,New Logo,Construction,,NZ,,,,,,,,,No,0.6,1.02,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1111,Marlow Systems,New Logo,SaaS / Tech,201-500,US,,,,None,,0,No,No,No,0.8,1.06,,0.0,12.3,0.0,0,0,12.3,13,Website,0.65,,Tier 3,SDR,13
+ACC-1112,Redgate College,New Logo,Education,51-200,AU-VIC,,,,,,,,,Yes,0.3,0.96,,,12.3,10.5,0,15,37.8,36,"Website, News",0.3,,Tier 3,SDR,36
+ACC-1113,Gullwing Store,Organic Growth,,1-10,AU-WA,9,No,0,,,,,N/A,N/A,,1.0,0.135,,6.8,15.0,N/A,N/A,21.8,22,News,0.5,,Tier 3,AM,22
+ACC-1114,Thornbury Accountants,Organic Growth,Accounting & Finance,201-500,AU-SA,,,,None,,10,No,N/A,N/A,0.7,1.04,,0.2,17.5,10.0,N/A,N/A,27.5,29,Website,0.5,,Tier 3,AM,29
+ACC-1115,Fernhill Underwriting,New Logo,,11-50,AU-QLD,0,No,0,,,,,,,,1.0,0.0,,0.0,10.5,0,0,10.5,11,News,0.65,,Tier 3,SDR,11
+ACC-1116,Clearwater Property Group,New Logo,Real Estate,500+,AU-NSW,11,No,0,PE buyout,2026-09-16,,,No,No,0.4,0.98,0.165,0.42,5.8,14.7,0,0,20.5,20,,1.0,,Tier 3,SDR,20
+ACC-1117,Thornbury Cloud,New Logo,SaaS / Tech,,AU-VIC,,,,,,,,,Yes,0.8,1.06,,,12.3,10.5,0,15,37.8,40,"Website, News",0.3,,Tier 2,SDR,40
+ACC-1118,Quarry Software,New Logo,SaaS / Tech,201-500,AU-QLD,,,,,,,,Yes,,0.8,1.06,,,12.3,10.5,15,0,37.8,40,"Website, News",0.3,Diamond referral,Tier 2,BDM,1040
+ACC-1119,Redgate Transport,New Logo,Logistics,201-500,UK,,,,,,,,,Yes,0.7,1.04,,,12.3,10.5,0,15,37.8,39,"Website, News",0.3,,Tier 3,SDR,39
+ACC-1120,Ironbark College,New Logo,Education,51-200,UK,,,,,,,,Yes,,0.3,0.96,,,12.3,10.5,15,0,37.8,36,"Website, News",0.3,Diamond referral,Tier 3,BDM,1036
+ACC-1121,Pinnacle Clinics,New Logo,Healthcare,1-10,AU-QLD,,,,,,,,Yes,,0.8,1.06,,,12.3,10.5,15,0,37.8,40,"Website, News",0.3,Diamond referral,Tier 2,BDM,1040
+ACC-1122,Clearwater College,New Logo,Education,11-50,AU-SA,17,No,0,,,,,Yes,,0.3,0.96,0.255,,8.9,10.5,15,0,34.4,33,News,0.65,Diamond referral,Tier 3,BDM,1033
+ACC-1123,Meridian Civil,New Logo,Construction,11-50,UK,,,,,,,,,,0.6,1.02,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1124,Waratah Medical,New Logo,Healthcare,201-500,UK,,,,,,,,Yes,,0.8,1.06,,,12.3,10.5,15,0,37.8,40,"Website, News",0.3,Diamond referral,Tier 2,BDM,1040
+ACC-1125,Silverline Tax & Co,Organic Growth,Accounting & Finance,51-200,NZ,17,Yes,0,None,,,,N/A,N/A,0.7,1.04,0.655,0.0,32.8,0.0,N/A,N/A,32.8,34,,1.0,Team Builder visit,Tier 3,AM,1034
+ACC-1126,Lumen Underwriting,New Logo,Insurance,500+,AU-WA,10,No,0,,,,,No,,0.5,1.0,0.15,,5.3,10.5,0,0,15.8,16,News,0.65,,Tier 3,SDR,16
+ACC-1127,Yarra Accountants,Organic Growth,,11-50,AU-QLD,,,,None,,3,No,N/A,N/A,,1.0,,0.06,17.5,3.0,N/A,N/A,20.5,21,Website,0.5,,Tier 3,AM,21
+ACC-1128,Oakridge Tax & Co,New Logo,,51-200,NZ,,,,,,,,,,,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1129,Sterling Transport,New Logo,Logistics,51-200,AU-QLD,,,,,,,,No,,0.7,1.04,,,12.3,10.5,0,0,22.8,24,"Website, News",0.3,,Tier 3,SDR,24
+ACC-1130,Sterling Freight,Organic Growth,,11-50,AU-QLD,1,No,0,Expansion / new office,2026-03-01,,,N/A,N/A,,1.0,0.015,0.0,0.8,0.0,N/A,N/A,0.8,1,,1.0,,Tier 3,AM,1
+ACC-1131,Driftwood Tax & Co,Organic Growth,Accounting & Finance,,UK,,,,Other / Unclassified,2026-10-12,,,N/A,N/A,0.7,1.04,,0.18,17.5,9.0,N/A,N/A,26.5,28,Website,0.5,,Tier 3,AM,28
+ACC-1132,Summit Civil,Organic Growth,Construction,11-50,,16,Yes,0,PE buyout,2026-05-29,,,N/A,N/A,0.6,1.02,0.64,0.24,32.0,12.0,N/A,N/A,44.0,45,,1.0,Team Builder visit,Tier 2,AM,1045
+ACC-1133,Quarry Hospitality,Organic Growth,Hospitality,1-10,AU-SA,,,,M&A,2026-08-01,21,No,N/A,N/A,0.4,0.98,,0.592,17.5,29.6,N/A,N/A,47.1,46,Website,0.5,,Tier 2,AM,46
+ACC-1134,Coral Builders,Organic Growth,Construction,51-200,US,15,No,1,,,,,N/A,N/A,0.6,1.02,0.525,,26.3,15.0,N/A,N/A,41.3,42,News,0.5,Form fill,Tier 2,AM,1042
+ACC-1135,Marlow Allied Health,Organic Growth,Healthcare,,AU-QLD,,,,,,,,N/A,N/A,0.8,1.06,,,17.5,15.0,N/A,N/A,32.5,34,"Website, News",0.0,,Tier 3,AM,34
+ACC-1136,Redgate Estates,New Logo,Real Estate,51-200,AU-WA,,,,,,,,No,,0.4,0.98,,,12.3,10.5,0,0,22.8,22,"Website, News",0.3,,Tier 3,SDR,22
+ACC-1137,Harbor Advisory,New Logo,,51-200,AU-VIC,14,No,0,,,,,,,,1.0,0.21,,7.4,10.5,0,0,17.9,18,News,0.65,,Tier 3,SDR,18
+ACC-1138,Juniper Creative,New Logo,Marketing Agency,,AU-VIC,,,,,,,,Yes,,0.6,1.02,,,12.3,10.5,15,0,37.8,39,"Website, News",0.3,Diamond referral,Tier 3,BDM,1039
+ACC-1139,Juniper Underwriting,Organic Growth,Insurance,51-200,AU-VIC,19,Yes,0,M&A,2026-10-04,19,Yes,N/A,N/A,0.5,1.0,0.685,0.736,34.3,36.8,N/A,N/A,71.1,71,,1.0,Team Builder visit,Tier 1,AM,1071
+ACC-1140,Juniper Medical,New Logo,Healthcare,201-500,AU-WA,7,No,3,,,,,,,0.8,1.06,0.405,,14.2,10.5,0,0,24.7,26,News,0.65,Form fill,Tier 3,BDM,1026
+ACC-1141,Larkspur Allied Health,New Logo,Healthcare,,AU-SA,,,,None,,5,No,,No,0.8,1.06,,0.1,12.3,3.5,0,0,15.8,17,Website,0.65,,Tier 3,SDR,17
+ACC-1142,Northwind Supply Co,New Logo,Logistics,51-200,AU-SA,,,,Leadership change,2026-10-04,,,No,No,0.7,1.04,,0.126,12.3,4.4,0,0,16.7,17,Website,0.65,,Tier 3,SDR,17
+ACC-1143,Cobalt Goods Online,Organic Growth,,500+,,23,Yes,0,,,,,N/A,N/A,,1.0,0.7,,35.0,15.0,N/A,N/A,50.0,50,News,0.5,Team Builder visit,Tier 2,AM,1050
+ACC-1144,Vantage Law Partners,New Logo,Legal,,,25,Yes,0,M&A,2026-10-16,25,No,No,Yes,0.5,1.0,0.7,0.88,24.5,30.8,0,15,70.3,70,,1.0,,Tier 1,BDM,70
+ACC-1145,Coral Store,New Logo,E-commerce,11-50,UK,22,No,0,,,,,,,0.9,1.08,0.3,,10.5,10.5,0,0,21.0,23,News,0.65,,Tier 3,SDR,23
+ACC-1146,Meridian Construction,Organic Growth,Construction,1-10,NZ,0,No,0,,,,,N/A,N/A,0.6,1.02,0.0,,0.0,15.0,N/A,N/A,15.0,15,News,0.5,,Tier 3,AM,15
+ACC-1147,Larkspur Goods Online,New Logo,E-commerce,1-10,UK,,,,None,,18,Yes,,,0.9,1.08,,0.4,12.3,14.0,0,0,26.3,28,Website,0.65,,Tier 3,SDR,28
+ACC-1148,Larkspur Property Group,Organic Growth,Real Estate,500+,,0,No,0,None,,,,N/A,N/A,0.4,0.98,0.0,0.0,0.0,0.0,N/A,N/A,0.0,0,,1.0,,Tier 3,AM,0
+ACC-1149,Foxglove Underwriting,New Logo,Insurance,500+,AU-QLD,,,,,,,,,,0.5,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1150,Redgate Legal,Organic Growth,Legal,201-500,NZ,19,Yes,0,None,,,,N/A,N/A,0.5,1.0,0.685,0.0,34.3,0.0,N/A,N/A,34.3,34,,1.0,Team Builder visit,Tier 3,AM,1034
+ACC-1151,Halcyon Hotels,New Logo,Hospitality,11-50,US,18,Yes,0,,,,,,,0.4,0.98,0.67,,23.5,10.5,0,0,34.0,33,News,0.65,,Tier 3,SDR,33
+ACC-1152,Bluegum Hotels,Organic Growth,Hospitality,51-200,AU-SA,,,,Leadership change,2026-05-20,,,N/A,N/A,0.4,0.98,,0.072,17.5,3.6,N/A,N/A,21.1,21,Website,0.5,,Tier 3,AM,21
+ACC-1153,Silverline Construction,New Logo,,500+,AU-WA,,,,,,,,,Yes,,1.0,,,12.3,10.5,0,15,37.8,38,"Website, News",0.3,,Tier 3,SDR,38
+ACC-1154,Bluegum Transport,Organic Growth,Logistics,1-10,UK,2,No,0,,,,,N/A,N/A,0.7,1.04,0.03,,1.5,15.0,N/A,N/A,16.5,17,News,0.5,,Tier 3,AM,17
+ACC-1155,Pinnacle Property Group,Organic Growth,Real Estate,11-50,,15,Yes,3,Funding round,2026-10-04,16,No,N/A,N/A,0.4,0.98,0.925,0.74,46.3,37.0,N/A,N/A,83.3,82,,1.0,Form fill,Tier 1,AM,1082
+ACC-1156,Coral Underwriting,New Logo,Insurance,1-10,UK,,,,Funding round,2026-08-18,,,,,0.5,1.0,,0.42,12.3,14.7,0,0,27.0,27,Website,0.65,,Tier 3,SDR,27
+ACC-1157,Driftwood Software,New Logo,SaaS / Tech,201-500,US,0,No,0,,,,,,,0.8,1.06,0.0,,0.0,10.5,0,0,10.5,11,News,0.65,,Tier 3,SDR,11
+ACC-1158,Redgate Software,New Logo,,11-50,AU-QLD,30,Yes,0,None,,16,No,,Yes,,1.0,0.7,0.32,24.5,11.2,0,15,50.7,51,,1.0,,Tier 2,SDR,51
+ACC-1159,Ember Cloud,New Logo,,,AU-SA,0,No,0,Restructuring,2026-06-12,9,No,,,,1.0,0.0,0.3,0.0,10.5,0,0,10.5,11,,1.0,,Tier 3,SDR,11
+ACC-1160,Fernhill Civil,New Logo,Construction,,AU-SA,,,,None,,7,No,,No,0.6,1.02,,0.14,12.3,4.9,0,0,17.2,18,Website,0.65,,Tier 3,SDR,18
+ACC-1161,Riverstone Hospitality,Organic Growth,Hospitality,201-500,NZ,9,No,0,PE buyout,2026-04-04,10,No,N/A,N/A,0.4,0.98,0.135,0.2,6.8,10.0,N/A,N/A,16.8,16,,1.0,,Tier 3,AM,16
+ACC-1162,Northwind Underwriting,Organic Growth,Insurance,1-10,AU-WA,18,No,0,Leadership change,2026-10-21,,,N/A,N/A,0.5,1.0,0.27,0.18,13.5,9.0,N/A,N/A,22.5,23,,1.0,,Tier 3,AM,23
+ACC-1163,Cobalt Labs,Organic Growth,SaaS / Tech,,AU-NSW,29,Yes,0,,,,,N/A,N/A,0.8,1.06,0.7,,35.0,15.0,N/A,N/A,50.0,53,News,0.5,Team Builder visit,Tier 2,AM,1053
+ACC-1164,Orchard Tax & Co,New Logo,Accounting & Finance,500+,NZ,,,,Restructuring,2026-08-31,17,No,No,,0.7,1.04,,0.55,12.3,19.3,0,0,31.6,33,Website,0.65,,Tier 3,SDR,33
+ACC-1165,Beacon Academy,New Logo,Education,500+,NZ,0,No,0,None,,,,No,No,0.3,0.96,0.0,0.0,0.0,0.0,0,0,0.0,0,,1.0,,Tier 3,SDR,0
+ACC-1166,Pinnacle Hospitality,Organic Growth,Hospitality,11-50,AU-QLD,12,No,0,Restructuring,2026-08-16,,,N/A,N/A,0.4,0.98,0.18,0.21,9.0,10.5,N/A,N/A,19.5,19,,1.0,,Tier 3,AM,19
+ACC-1167,Beacon Hospitality,Organic Growth,Hospitality,500+,AU-VIC,8,No,0,,,,,N/A,N/A,0.4,0.98,0.12,,6.0,15.0,N/A,N/A,21.0,21,News,0.5,,Tier 3,AM,21
+ACC-1168,Sterling Builders,Organic Growth,Construction,11-50,AU-NSW,,,,,,,,N/A,N/A,0.6,1.02,,,17.5,15.0,N/A,N/A,32.5,33,"Website, News",0.0,,Tier 3,AM,33
+ACC-1169,Silverline Law Partners,New Logo,Legal,201-500,US,,,,,,,,,,0.5,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1170,Pinnacle Creative,New Logo,Marketing Agency,11-50,AU-SA,,,,PE buyout,2026-09-01,28,Yes,,,0.6,1.02,,0.82,12.3,28.7,0,0,41.0,42,Website,0.65,,Tier 2,SDR,42
+ACC-1171,Halcyon Insurance,Organic Growth,,11-50,AU-NSW,0,No,0,,,,,N/A,N/A,,1.0,0.0,,0.0,15.0,N/A,N/A,15.0,15,News,0.5,,Tier 3,AM,15
+ACC-1172,Foxglove Accountants,New Logo,Accounting & Finance,,UK,,,,,,,,,Yes,0.7,1.04,,,12.3,10.5,0,15,37.8,39,"Website, News",0.3,,Tier 3,SDR,39
+ACC-1173,Harbor Learning,New Logo,Education,201-500,AU-VIC,,,,Leadership change,2026-08-01,18,No,,,0.3,0.96,,0.432,12.3,15.1,0,0,27.4,26,Website,0.65,,Tier 3,SDR,26
+ACC-1174,Kestrel Civil,Organic Growth,Construction,,AU-VIC,0,No,0,,,,,N/A,N/A,0.6,1.02,0.0,,0.0,15.0,N/A,N/A,15.0,15,News,0.5,,Tier 3,AM,15
+ACC-1175,Bluegum Digital,Organic Growth,Marketing Agency,51-200,AU-VIC,20,No,0,,,,,N/A,N/A,0.6,1.02,0.3,,15.0,15.0,N/A,N/A,30.0,31,News,0.5,,Tier 3,AM,31
+ACC-1176,Harbor Medical,New Logo,Healthcare,1-10,NZ,,,,,,,,,Yes,0.8,1.06,,,12.3,10.5,0,15,37.8,40,"Website, News",0.3,,Tier 2,SDR,40
+ACC-1177,Oakridge Cover,Organic Growth,Insurance,,UK,0,No,0,,,,,N/A,N/A,0.5,1.0,0.0,,0.0,15.0,N/A,N/A,15.0,15,News,0.5,,Tier 3,AM,15
+ACC-1178,Vantage Commerce,Organic Growth,,1-10,AU-WA,13,No,0,Restructuring,2026-08-21,14,No,N/A,N/A,,1.0,0.195,0.49,9.8,24.5,N/A,N/A,34.3,34,,1.0,,Tier 3,AM,34
+ACC-1179,Northwind Software,New Logo,SaaS / Tech,1-10,NZ,,,,PE buyout,2026-07-01,10,No,No,,0.8,1.06,,0.44,12.3,15.4,0,0,27.7,29,Website,0.65,,Tier 3,SDR,29
+ACC-1180,Summit Underwriting,New Logo,Insurance,,AU-NSW,19,No,0,None,,12,No,Yes,Yes,0.5,1.0,0.285,0.24,10.0,8.4,15,15,48.4,48,,1.0,Diamond referral,Tier 2,BDM,1048
+ACC-1181,Thornbury Digital,New Logo,Marketing Agency,51-200,AU-SA,,,,,,,,Yes,,0.6,1.02,,,12.3,10.5,15,0,37.8,39,"Website, News",0.3,Diamond referral,Tier 3,BDM,1039
+ACC-1182,Oakridge Hotels,New Logo,Hospitality,11-50,AU-VIC,15,Yes,0,None,,,,,,0.4,0.98,0.625,0.0,21.9,0.0,0,0,21.9,21,,1.0,,Tier 3,SDR,21
+ACC-1183,Thornbury Civil,Organic Growth,Construction,1-10,NZ,15,No,0,,,,,N/A,N/A,0.6,1.02,0.225,,11.3,15.0,N/A,N/A,26.3,27,News,0.5,,Tier 3,AM,27
+ACC-1184,Riverstone Advisory,New Logo,Accounting & Finance,500+,AU-WA,,,,None,,0,No,,,0.7,1.04,,0.0,12.3,0.0,0,0,12.3,13,Website,0.65,,Tier 3,SDR,13
+ACC-1185,Clearwater Venues,New Logo,Hospitality,201-500,AU-SA,0,No,0,,,,,No,No,0.4,0.98,0.0,,0.0,10.5,0,0,10.5,10,News,0.65,,Tier 3,SDR,10
+ACC-1186,Pinnacle Allied Health,Organic Growth,Healthcare,500+,,9,No,0,None,,0,No,N/A,N/A,0.8,1.06,0.135,0.0,6.8,0.0,N/A,N/A,6.8,7,,1.0,,Tier 3,AM,7
+ACC-1187,Northwind Hospitality,New Logo,Hospitality,1-10,AU-WA,,,,None,,10,No,,,0.4,0.98,,0.2,12.3,7.0,0,0,19.3,19,Website,0.65,,Tier 3,SDR,19
+ACC-1188,Pinnacle Labs,New Logo,SaaS / Tech,,US,,,,,,,,No,Yes,0.8,1.06,,,12.3,10.5,0,15,37.8,40,"Website, News",0.3,,Tier 2,SDR,40
+ACC-1189,Fernhill Clinics,New Logo,Healthcare,51-200,NZ,,,,Other / Unclassified,2026-09-07,16,No,Yes,,0.8,1.06,,0.446,12.3,15.6,15,0,42.9,45,Website,0.65,Diamond referral,Tier 2,BDM,1045
+ACC-1190,Driftwood Store,New Logo,E-commerce,201-500,AU-NSW,,,,,,,,No,,0.9,1.08,,,12.3,10.5,0,0,22.8,25,"Website, News",0.3,,Tier 3,SDR,25
+ACC-1191,Kestrel Estates,New Logo,Real Estate,500+,UK,,,,,,,,,Yes,0.4,0.98,,,12.3,10.5,0,15,37.8,37,"Website, News",0.3,,Tier 3,SDR,37
+ACC-1192,Silverline Freight,Organic Growth,Logistics,1-10,US,16,No,0,,,,,N/A,N/A,0.7,1.04,0.24,,12.0,15.0,N/A,N/A,27.0,28,News,0.5,,Tier 3,AM,28
+ACC-1193,Gullwing Accountants,Organic Growth,Accounting & Finance,201-500,US,19,No,0,Funding round,2026-07-30,,,N/A,N/A,0.7,1.04,0.285,0.24,14.3,12.0,N/A,N/A,26.3,27,,1.0,,Tier 3,AM,27
+ACC-1194,Summit Financial,New Logo,Accounting & Finance,,AU-SA,9,No,0,Leadership change,2026-10-09,,,,No,0.7,1.04,0.135,0.18,4.7,6.3,0,0,11.0,11,,1.0,,Tier 3,SDR,11
+ACC-1195,Beacon Logistics,New Logo,Logistics,500+,AU-QLD,,,,Funding round,2026-08-24,12,No,,,0.7,1.04,,0.66,12.3,23.1,0,0,35.4,37,Website,0.65,,Tier 3,SDR,37
+ACC-1196,Gullwing Insurance,New Logo,Insurance,,AU-VIC,,,,,,,,No,,0.5,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1197,Beacon College,Organic Growth,Education,1-10,AU-WA,19,No,0,PE buyout,2026-08-29,,,N/A,N/A,0.3,0.96,0.285,0.42,14.3,21.0,N/A,N/A,35.3,34,,1.0,,Tier 3,AM,34
+ACC-1198,Meridian Advisory,New Logo,,,AU-NSW,25,No,1,Other / Unclassified,2026-09-17,19,No,,Yes,,1.0,0.6,0.506,21.0,17.7,0,15,53.7,54,,1.0,Form fill,Tier 2,BDM,1054
+ACC-1199,Summit Media,New Logo,Marketing Agency,11-50,AU-QLD,,,,None,,,,,,0.6,1.02,,0.0,12.3,0.0,0,0,12.3,13,Website,0.65,,Tier 3,SDR,13
+ACC-1200,Driftwood Insurance,Organic Growth,Insurance,201-500,UK,8,No,0,Leadership change,2026-06-06,3,No,N/A,N/A,0.5,1.0,0.12,0.132,6.0,6.6,N/A,N/A,12.6,13,,1.0,,Tier 3,AM,13
+ACC-1201,Ember Transport,New Logo,Logistics,201-500,AU-NSW,,,,,,,,No,Yes,0.7,1.04,,,12.3,10.5,0,15,37.8,39,"Website, News",0.3,,Tier 3,SDR,39
+ACC-1202,Redgate Realty,New Logo,Real Estate,51-200,UK,,,,,,,,,,0.4,0.98,,,12.3,10.5,0,0,22.8,22,"Website, News",0.3,,Tier 3,SDR,22
+ACC-1203,Kestrel Realty,New Logo,,1-10,AU-QLD,,,,,,,,,,,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1204,Tasman Hotels,New Logo,Hospitality,201-500,AU-QLD,,,,,,,,No,,0.4,0.98,,,12.3,10.5,0,0,22.8,22,"Website, News",0.3,,Tier 3,SDR,22
+ACC-1205,Bluegum Labs,New Logo,SaaS / Tech,201-500,AU-VIC,,,,Leadership change,2026-10-03,28,Yes,,,0.8,1.06,,0.526,12.3,18.4,0,0,30.7,33,Website,0.65,,Tier 3,SDR,33
+ACC-1206,Quarry Clinics,New Logo,Healthcare,500+,AU-VIC,,,,,,,,,,0.8,1.06,,,12.3,10.5,0,0,22.8,24,"Website, News",0.3,,Tier 3,SDR,24
+ACC-1207,Foxglove Cloud,Organic Growth,SaaS / Tech,201-500,AU-QLD,18,No,0,Expansion / new office,2026-08-20,,,N/A,N/A,0.8,1.06,0.27,0.294,13.5,14.7,N/A,N/A,28.2,30,,1.0,,Tier 3,AM,30
+ACC-1208,Halcyon Cover,New Logo,,11-50,US,0,No,0,None,,,,No,,,1.0,0.0,0.0,0.0,0.0,0,0,0.0,0,,1.0,,Tier 3,SDR,0
+ACC-1209,Thornbury Lawyers,New Logo,,,US,,,,,,,,,,,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1210,Waratah Law Partners,New Logo,Legal,500+,AU-WA,,,,None,,6,No,,No,0.5,1.0,,0.12,12.3,4.2,0,0,16.5,17,Website,0.65,,Tier 3,SDR,17
+ACC-1211,Halcyon Civil,Organic Growth,Construction,,,15,No,0,M&A,2026-11-05,,,N/A,N/A,0.6,1.02,0.225,0.48,11.3,24.0,N/A,N/A,35.3,36,,1.0,,Tier 3,AM,36
+ACC-1212,Tasman Media,New Logo,Marketing Agency,201-500,AU-NSW,,,,,,,,No,,0.6,1.02,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1213,Driftwood Hospitality,Organic Growth,Hospitality,51-200,,10,Yes,0,,,,,N/A,N/A,0.4,0.98,0.55,,27.5,15.0,N/A,N/A,42.5,42,News,0.5,Team Builder visit,Tier 2,AM,1042
+ACC-1214,Orchard Labs,Organic Growth,SaaS / Tech,11-50,NZ,,,,,,,,N/A,N/A,0.8,1.06,,,17.5,15.0,N/A,N/A,32.5,34,"Website, News",0.0,,Tier 3,AM,34
+ACC-1215,Waratah College,New Logo,Education,51-200,AU-SA,,,,None,,,,No,,0.3,0.96,,0.0,12.3,0.0,0,0,12.3,12,Website,0.65,,Tier 3,SDR,12
+ACC-1216,Halcyon Construction,Organic Growth,Construction,,US,11,No,0,PE buyout,2026-08-20,11,No,N/A,N/A,0.6,1.02,0.165,0.64,8.3,32.0,N/A,N/A,40.3,41,,1.0,,Tier 2,AM,41
+ACC-1217,Marlow Goods Online,New Logo,E-commerce,51-200,US,6,No,2,,,,,,,0.9,1.08,0.39,,13.7,10.5,0,0,24.2,26,News,0.65,Form fill,Tier 3,BDM,1026
+ACC-1218,Clearwater Hospitality,New Logo,Hospitality,1-10,AU-SA,,,,None,,1,No,No,,0.4,0.98,,0.02,12.3,0.7,0,0,13.0,13,Website,0.65,,Tier 3,SDR,13
+ACC-1219,Halcyon Accountants,New Logo,Accounting & Finance,500+,AU-SA,,,,None,,14,No,No,,0.7,1.04,,0.28,12.3,9.8,0,0,22.1,23,Website,0.65,,Tier 3,SDR,23
+ACC-1220,Fernhill Law Partners,Organic Growth,,,NZ,10,No,0,None,,7,No,N/A,N/A,,1.0,0.15,0.14,7.5,7.0,N/A,N/A,14.5,15,,1.0,,Tier 3,AM,15
+ACC-1221,Meridian Medical,Organic Growth,,,AU-VIC,15,Yes,0,PE buyout,2026-10-11,19,Yes,N/A,N/A,,1.0,0.625,1.0,31.3,50.0,N/A,N/A,81.3,81,,1.0,Team Builder visit,Tier 1,AM,1081
+ACC-1222,Meridian Academy,Organic Growth,Education,201-500,AU-SA,22,No,0,Expansion / new office,2026-09-30,22,Yes,N/A,N/A,0.3,0.96,0.3,0.694,15.0,34.7,N/A,N/A,49.7,48,,1.0,,Tier 2,AM,48
+ACC-1223,Riverstone Transport,New Logo,,11-50,UK,,,,Restructuring,2026-09-19,13,No,,,,1.0,,0.47,12.3,16.5,0,0,28.8,29,Website,0.65,,Tier 3,SDR,29
+ACC-1224,Oakridge Digital,New Logo,Marketing Agency,11-50,US,,,,,,,,,,0.6,1.02,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1225,Tasman Financial,New Logo,Accounting & Finance,500+,UK,,,,,,,,Yes,,0.7,1.04,,,12.3,10.5,15,0,37.8,39,"Website, News",0.3,Diamond referral,Tier 3,BDM,1039
+ACC-1226,Tasman Transport,Organic Growth,,,US,29,No,0,,,,,N/A,N/A,,1.0,0.3,,15.0,15.0,N/A,N/A,30.0,30,News,0.5,,Tier 3,AM,30
+ACC-1227,Foxglove Supply Co,New Logo,Logistics,,AU-WA,,,,Other / Unclassified,2026-09-25,12,No,Yes,,0.7,1.04,,0.366,12.3,12.8,15,0,40.1,42,Website,0.65,Diamond referral,Tier 2,BDM,1042
+ACC-1228,Beacon Construction,Organic Growth,Construction,,AU-SA,,,,None,,,,N/A,N/A,0.6,1.02,,0.0,17.5,0.0,N/A,N/A,17.5,18,Website,0.5,,Tier 3,AM,18
+ACC-1229,Quarry Learning,Organic Growth,Education,1-10,UK,0,No,0,None,,0,No,N/A,N/A,0.3,0.96,0.0,0.0,0.0,0.0,N/A,N/A,0.0,0,,1.0,,Tier 3,AM,0
+ACC-1230,Northwind Academy,New Logo,,51-200,NZ,13,No,0,,,,,No,No,,1.0,0.195,,6.8,10.5,0,0,17.3,17,News,0.65,,Tier 3,SDR,17
+ACC-1231,Wattle Estates,New Logo,Real Estate,500+,AU-QLD,,,,M&A,2026-07-06,23,No,,,0.4,0.98,,0.592,12.3,20.7,0,0,33.0,32,Website,0.65,,Tier 3,SDR,32
+ACC-1232,Granite Systems,Organic Growth,SaaS / Tech,201-500,AU-QLD,18,No,1,,,,,N/A,N/A,0.8,1.06,0.57,,28.5,15.0,N/A,N/A,43.5,46,News,0.5,Form fill,Tier 2,AM,1046
+ACC-1233,Waratah Logistics,Organic Growth,Logistics,500+,NZ,,,,Other / Unclassified,2026-04-11,0,No,N/A,N/A,0.7,1.04,,0.0,17.5,0.0,N/A,N/A,17.5,18,Website,0.5,,Tier 3,AM,18
+ACC-1234,Gullwing Cover,New Logo,Insurance,,,,,,None,,,,,,0.5,1.0,,0.0,12.3,0.0,0,0,12.3,12,Website,0.65,,Tier 3,SDR,12
+ACC-1235,Granite Digital,Organic Growth,Marketing Agency,,NZ,12,No,0,,,,,N/A,N/A,0.6,1.02,0.18,,9.0,15.0,N/A,N/A,24.0,24,News,0.5,,Tier 3,AM,24
+ACC-1236,Riverstone Systems,Organic Growth,SaaS / Tech,500+,AU-SA,8,No,1,None,,12,No,N/A,N/A,0.8,1.06,0.42,0.24,21.0,12.0,N/A,N/A,33.0,35,,1.0,Form fill,Tier 3,AM,1035
+ACC-1237,Cobalt Property Group,Organic Growth,Real Estate,500+,AU-QLD,,,,Expansion / new office,2026-01-15,,,N/A,N/A,0.4,0.98,,0.0,17.5,0.0,N/A,N/A,17.5,17,Website,0.5,,Tier 3,AM,17
+ACC-1238,Summit Tax & Co,Organic Growth,Accounting & Finance,201-500,AU-VIC,24,No,0,None,,28,No,N/A,N/A,0.7,1.04,0.3,0.4,15.0,20.0,N/A,N/A,35.0,36,,1.0,,Tier 3,AM,36
+ACC-1239,Harbor Estates,Organic Growth,Real Estate,,US,13,No,2,,,,,N/A,N/A,0.4,0.98,0.495,,24.8,15.0,N/A,N/A,39.8,39,News,0.5,Form fill,Tier 3,AM,1039
+ACC-1240,Fernhill Legal,Organic Growth,Legal,201-500,AU-QLD,15,No,0,PE buyout,2026-08-18,18,Yes,N/A,N/A,0.5,1.0,0.225,0.82,11.3,41.0,N/A,N/A,52.3,52,,1.0,,Tier 2,AM,52
+ACC-1241,Quarry Construction,Organic Growth,,51-200,UK,12,No,0,Funding round,2026-04-04,8,No,N/A,N/A,,1.0,0.18,0.16,9.0,8.0,N/A,N/A,17.0,17,,1.0,,Tier 3,AM,17
+ACC-1242,Harbor Financial,New Logo,Accounting & Finance,500+,UK,,,,Expansion / new office,2026-09-23,16,No,Yes,Yes,0.7,1.04,,0.614,12.3,21.5,15,15,63.8,66,Website,0.65,Diamond referral,Tier 2,BDM,1066
+ACC-1243,Northwind Tax & Co,New Logo,Accounting & Finance,1-10,US,,,,,,,,,Yes,0.7,1.04,,,12.3,10.5,0,15,37.8,39,"Website, News",0.3,,Tier 3,SDR,39
+ACC-1244,Foxglove Software,Organic Growth,SaaS / Tech,,AU-SA,7,No,0,,,,,N/A,N/A,0.8,1.06,0.105,,5.3,15.0,N/A,N/A,20.3,22,News,0.5,,Tier 3,AM,22
+ACC-1245,Orchard Creative,Organic Growth,Marketing Agency,,AU-SA,,,,,,,,N/A,N/A,0.6,1.02,,,17.5,15.0,N/A,N/A,32.5,33,"Website, News",0.0,,Tier 3,AM,33
+ACC-1246,Summit Lawyers,Organic Growth,Legal,11-50,US,0,No,0,,,,,N/A,N/A,0.5,1.0,0.0,,0.0,15.0,N/A,N/A,15.0,15,News,0.5,,Tier 3,AM,15
+ACC-1247,Meridian Estates,New Logo,Real Estate,500+,US,0,No,0,,,,,,,0.4,0.98,0.0,,0.0,10.5,0,0,10.5,10,News,0.65,,Tier 3,SDR,10
+ACC-1248,Foxglove Digital,Organic Growth,Marketing Agency,201-500,AU-SA,0,No,0,None,,,,N/A,N/A,0.6,1.02,0.0,0.0,0.0,0.0,N/A,N/A,0.0,0,,1.0,,Tier 3,AM,0
+ACC-1249,Meridian Logistics,New Logo,Logistics,500+,AU-NSW,,,,None,,0,No,No,,0.7,1.04,,0.0,12.3,0.0,0,0,12.3,13,Website,0.65,,Tier 3,SDR,13
+ACC-1250,Silverline Legal,New Logo,Legal,11-50,AU-WA,0,No,0,None,,0,No,,No,0.5,1.0,0.0,0.0,0.0,0.0,0,0,0.0,0,,1.0,,Tier 3,SDR,0
+ACC-1251,Marlow Dental Group,New Logo,,500+,AU-NSW,,,,,,,,,Yes,,1.0,,,12.3,10.5,0,15,37.8,38,"Website, News",0.3,,Tier 3,SDR,38
+ACC-1252,Northwind Civil,Organic Growth,Construction,1-10,AU-QLD,10,Yes,0,None,,,,N/A,N/A,0.6,1.02,0.55,0.0,27.5,0.0,N/A,N/A,27.5,28,,1.0,Team Builder visit,Tier 3,AM,1028
+ACC-1253,Silverline College,Organic Growth,Education,500+,AU-QLD,26,No,0,,,,,N/A,N/A,0.3,0.96,0.3,,15.0,15.0,N/A,N/A,30.0,29,News,0.5,,Tier 3,AM,29
+ACC-1254,Wattle Hotels,Organic Growth,Hospitality,1-10,UK,,,,None,,0,No,N/A,N/A,0.4,0.98,,0.0,17.5,0.0,N/A,N/A,17.5,17,Website,0.5,,Tier 3,AM,17
+ACC-1255,Harbor Labs,Organic Growth,SaaS / Tech,,AU-QLD,24,No,2,PE buyout,2026-09-07,19,Yes,N/A,N/A,0.8,1.06,0.6,0.82,30.0,41.0,N/A,N/A,71.0,75,,1.0,Form fill,Tier 1,AM,1075
+ACC-1256,Juniper Insurance,New Logo,Insurance,,AU-VIC,,,,,,,,,No,0.5,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1257,Cobalt Digital,New Logo,,500+,AU-SA,,,,Expansion / new office,2026-07-31,12,No,,,,1.0,,0.408,12.3,14.3,0,0,26.6,27,Website,0.65,,Tier 3,SDR,27
+ACC-1258,Driftwood Systems,New Logo,SaaS / Tech,201-500,NZ,,,,Restructuring,2026-04-25,,,Yes,No,0.8,1.06,,0.0,12.3,0.0,15,0,27.3,29,Website,0.65,Diamond referral,Tier 3,BDM,1029
+ACC-1259,Coral Allied Health,New Logo,,,NZ,6,No,1,,,,,,,,1.0,0.39,,13.7,10.5,0,0,24.2,24,News,0.65,Form fill,Tier 3,BDM,1024
+ACC-1260,Sterling Goods Online,New Logo,E-commerce,,NZ,0,No,0,,,,,,Yes,0.9,1.08,0.0,,0.0,10.5,0,15,25.5,28,News,0.65,,Tier 3,SDR,28
+ACC-1261,Foxglove Builders,Organic Growth,Construction,51-200,AU-SA,16,No,0,,,,,N/A,N/A,0.6,1.02,0.24,,12.0,15.0,N/A,N/A,27.0,28,News,0.5,,Tier 3,AM,28
+ACC-1262,Pinnacle Dental Group,Organic Growth,Healthcare,201-500,AU-SA,18,No,0,Restructuring,2026-08-15,14,No,N/A,N/A,0.8,1.06,0.27,0.49,13.5,24.5,N/A,N/A,38.0,40,,1.0,,Tier 2,AM,40
+ACC-1263,Summit Learning,New Logo,Education,500+,AU-WA,,,,,,,,No,Yes,0.3,0.96,,,12.3,10.5,0,15,37.8,36,"Website, News",0.3,,Tier 3,SDR,36
+ACC-1264,Orchard Logistics,New Logo,Logistics,51-200,AU-QLD,,,,None,,3,No,No,,0.7,1.04,,0.06,12.3,2.1,0,0,14.4,15,Website,0.65,,Tier 3,SDR,15
+ACC-1265,Larkspur Freight,New Logo,Logistics,201-500,AU-SA,,,,,,,,,,0.7,1.04,,,12.3,10.5,0,0,22.8,24,"Website, News",0.3,,Tier 3,SDR,24
+ACC-1266,Meridian Insurance,Organic Growth,Insurance,201-500,AU-WA,,,,PE buyout,2026-10-19,17,No,N/A,N/A,0.5,1.0,,0.94,17.5,47.0,N/A,N/A,64.5,65,Website,0.5,PE buyout,Tier 2,AM,1065
+ACC-1267,Vantage Insurance,Organic Growth,Insurance,500+,AU-VIC,22,Yes,0,M&A,2026-08-28,2,No,N/A,N/A,0.5,1.0,0.7,0.376,35.0,18.8,N/A,N/A,53.8,54,,1.0,Team Builder visit,Tier 2,AM,1054
+ACC-1268,Cobalt Commerce,Organic Growth,E-commerce,11-50,AU-VIC,15,No,3,Leadership change,2026-10-13,20,No,N/A,N/A,0.9,1.08,0.525,0.58,26.3,29.0,N/A,N/A,55.3,60,,1.0,Form fill,Tier 2,AM,1060
+ACC-1269,Clearwater Construction,New Logo,Construction,201-500,US,,,,,,,,No,,0.6,1.02,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1270,Beacon Learning,Organic Growth,Education,500+,AU-QLD,10,No,0,None,,15,No,N/A,N/A,0.3,0.96,0.15,0.3,7.5,15.0,N/A,N/A,22.5,22,,1.0,,Tier 3,AM,22
+ACC-1271,Marlow Venues,Organic Growth,Hospitality,201-500,US,7,No,0,,,,,N/A,N/A,0.4,0.98,0.105,,5.3,15.0,N/A,N/A,20.3,20,News,0.5,,Tier 3,AM,20
+ACC-1272,Vantage Academy,Organic Growth,Education,,US,18,No,0,PE buyout,2026-10-17,10,No,N/A,N/A,0.3,0.96,0.27,0.8,13.5,40.0,N/A,N/A,53.5,51,,1.0,PE buyout,Tier 2,AM,1051
+ACC-1273,Granite Venues,New Logo,Hospitality,500+,NZ,,,,,,,,,Yes,0.4,0.98,,,12.3,10.5,0,15,37.8,37,"Website, News",0.3,,Tier 3,SDR,37
+ACC-1274,Sterling Accountants,New Logo,Accounting & Finance,1-10,AU-SA,,,,Funding round,2026-09-16,16,No,No,,0.7,1.04,,0.74,12.3,25.9,0,0,38.2,40,Website,0.65,,Tier 2,SDR,40
+ACC-1275,Kestrel Lawyers,Organic Growth,Legal,,,23,No,0,,,,,N/A,N/A,0.5,1.0,0.3,,15.0,15.0,N/A,N/A,30.0,30,News,0.5,,Tier 3,AM,30
+ACC-1276,Lumen Advisory,Organic Growth,Accounting & Finance,500+,UK,22,Yes,0,,,,,N/A,N/A,0.7,1.04,0.7,,35.0,15.0,N/A,N/A,50.0,52,News,0.5,Team Builder visit,Tier 2,AM,1052
+ACC-1277,Redgate Law Partners,Organic Growth,Legal,51-200,,,,,Expansion / new office,2026-07-13,5,No,N/A,N/A,0.5,1.0,,0.268,17.5,13.4,N/A,N/A,30.9,31,Website,0.5,,Tier 3,AM,31
+ACC-1278,Driftwood Media,New Logo,Marketing Agency,51-200,UK,,,,,,,,,,0.6,1.02,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1279,Halcyon Media,Organic Growth,Marketing Agency,51-200,US,22,No,0,M&A,2026-08-28,29,Yes,N/A,N/A,0.6,1.02,0.3,0.736,15.0,36.8,N/A,N/A,51.8,53,,1.0,,Tier 2,AM,53
+ACC-1280,Driftwood Transport,Organic Growth,Logistics,,AU-VIC,17,No,0,M&A,2026-08-08,13,No,N/A,N/A,0.7,1.04,0.255,0.452,12.8,22.6,N/A,N/A,35.4,37,,1.0,,Tier 3,AM,37
+ACC-1281,Quarry Financial,New Logo,,1-10,AU-SA,,,,,,,,,Yes,,1.0,,,12.3,10.5,0,15,37.8,38,"Website, News",0.3,,Tier 3,SDR,38
+ACC-1282,Waratah Academy,Organic Growth,Education,51-200,AU-VIC,,,,None,,,,N/A,N/A,0.3,0.96,,0.0,17.5,0.0,N/A,N/A,17.5,17,Website,0.5,,Tier 3,AM,17
+ACC-1283,Harbor Academy,New Logo,Education,500+,UK,,,,,,,,,,0.3,0.96,,,12.3,10.5,0,0,22.8,22,"Website, News",0.3,,Tier 3,SDR,22
+ACC-1284,Harbor Property Group,Organic Growth,Real Estate,201-500,,0,No,0,,,,,N/A,N/A,0.4,0.98,0.0,,0.0,15.0,N/A,N/A,15.0,15,News,0.5,,Tier 3,AM,15
+ACC-1285,Summit Goods Online,New Logo,E-commerce,201-500,NZ,,,,None,,,,Yes,Yes,0.9,1.08,,0.0,12.3,0.0,15,15,42.3,46,Website,0.65,Diamond referral,Tier 2,BDM,1046
+ACC-1286,Waratah Property Group,New Logo,Real Estate,201-500,AU-NSW,,,,,,,,,Yes,0.4,0.98,,,12.3,10.5,0,15,37.8,37,"Website, News",0.3,,Tier 3,SDR,37
+ACC-1287,Ember Learning,Organic Growth,,201-500,UK,21,Yes,0,Expansion / new office,2026-08-08,,,N/A,N/A,,1.0,0.7,0.168,35.0,8.4,N/A,N/A,43.4,43,,1.0,Team Builder visit,Tier 2,AM,1043
+ACC-1288,Bluegum Logistics,New Logo,Logistics,500+,NZ,0,No,0,None,,11,No,No,No,0.7,1.04,0.0,0.22,0.0,7.7,0,0,7.7,8,,1.0,,Tier 3,SDR,8
+ACC-1289,Juniper Venues,New Logo,,500+,AU-QLD,,,,,,,,Yes,No,,1.0,,,12.3,10.5,15,0,37.8,38,"Website, News",0.3,Diamond referral,Tier 3,BDM,1038
+ACC-1290,Tasman Learning,Organic Growth,,,UK,19,Yes,0,None,,19,Yes,N/A,N/A,,1.0,0.685,0.4,34.3,20.0,N/A,N/A,54.3,54,,1.0,Team Builder visit,Tier 2,AM,1054
+ACC-1291,Ember Freight,Organic Growth,Logistics,11-50,AU-WA,,,,,,,,N/A,N/A,0.7,1.04,,,17.5,15.0,N/A,N/A,32.5,34,"Website, News",0.0,,Tier 3,AM,34
+ACC-1292,Waratah Insurance,New Logo,Insurance,51-200,UK,,,,None,,,,,,0.5,1.0,,0.0,12.3,0.0,0,0,12.3,12,Website,0.65,,Tier 3,SDR,12
+ACC-1293,Riverstone Estates,Organic Growth,Real Estate,1-10,AU-VIC,,,,Leadership change,2026-10-22,18,Yes,N/A,N/A,0.4,0.98,,0.58,17.5,29.0,N/A,N/A,46.5,46,Website,0.5,,Tier 2,AM,46
+ACC-1294,Larkspur Law Partners,New Logo,Legal,11-50,,,,,,,,,No,,0.5,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1295,Driftwood Goods Online,New Logo,E-commerce,,AU-WA,,,,Other / Unclassified,2026-07-30,17,No,No,,0.9,1.08,,0.412,12.3,14.4,0,0,26.7,29,Website,0.65,,Tier 3,SDR,29
+ACC-1296,Granite Property Group,New Logo,Real Estate,1-10,AU-NSW,,,,,,,,,Yes,0.4,0.98,,,12.3,10.5,0,15,37.8,37,"Website, News",0.3,,Tier 3,SDR,37
+ACC-1297,Ironbark Underwriting,New Logo,Insurance,11-50,AU-SA,,,,Restructuring,2026-10-01,5,No,,,0.5,1.0,,0.31,12.3,10.9,0,0,23.2,23,Website,0.65,,Tier 3,SDR,23
+ACC-1298,Marlow Hotels,Organic Growth,,51-200,AU-SA,5,No,0,Leadership change,2026-05-07,,,N/A,N/A,,1.0,0.075,0.0,3.8,0.0,N/A,N/A,3.8,4,,1.0,,Tier 3,AM,4
+ACC-1299,Juniper Academy,New Logo,Education,,AU-VIC,,,,Expansion / new office,2026-05-27,2,No,,,0.3,0.96,,0.208,12.3,7.3,0,0,19.6,19,Website,0.65,,Tier 3,SDR,19
+ACC-1300,Orchard Estates,New Logo,Real Estate,500+,UK,18,No,0,,,,,,,0.4,0.98,0.27,,9.5,10.5,0,0,20.0,20,News,0.65,,Tier 3,SDR,20
+ACC-1301,Pinnacle Supply Co,New Logo,Logistics,,AU-VIC,12,No,0,,,,,No,No,0.7,1.04,0.18,,6.3,10.5,0,0,16.8,17,News,0.65,,Tier 3,SDR,17
+ACC-1302,Vantage Learning,New Logo,Education,51-200,UK,,,,None,,17,No,,Yes,0.3,0.96,,0.34,12.3,11.9,0,15,39.2,38,Website,0.65,,Tier 3,SDR,38
+ACC-1303,Northwind Advisory,Organic Growth,Accounting & Finance,51-200,AU-QLD,18,Yes,2,PE buyout,2026-10-11,17,No,N/A,N/A,0.7,1.04,0.97,0.94,48.5,47.0,N/A,N/A,95.5,99,,1.0,Form fill,Tier 1,AM,1099
+ACC-1304,Redgate Goods Online,New Logo,,,AU-QLD,0,No,0,,,,,,,,1.0,0.0,,0.0,10.5,0,0,10.5,11,News,0.65,,Tier 3,SDR,11
+ACC-1305,Tasman College,New Logo,Education,1-10,AU-NSW,,,,M&A,2026-06-19,17,No,,,0.3,0.96,,0.532,12.3,18.6,0,0,30.9,30,Website,0.65,,Tier 3,SDR,30
+ACC-1306,Pinnacle Accountants,Organic Growth,Accounting & Finance,201-500,NZ,0,No,0,,,,,N/A,N/A,0.7,1.04,0.0,,0.0,15.0,N/A,N/A,15.0,16,News,0.5,,Tier 3,AM,16
+ACC-1307,Redgate Civil,New Logo,Construction,1-10,UK,16,No,3,Leadership change,2026-10-13,18,Yes,,,0.6,1.02,0.54,0.58,18.9,20.3,0,0,39.2,40,,1.0,Form fill,Tier 2,BDM,1040
+ACC-1308,Larkspur Software,Organic Growth,SaaS / Tech,500+,AU-QLD,,,,None,,2,No,N/A,N/A,0.8,1.06,,0.04,17.5,2.0,N/A,N/A,19.5,21,Website,0.5,,Tier 3,AM,21
+ACC-1309,Beacon Tax & Co,New Logo,,201-500,AU-SA,,,,,,,,,Yes,,1.0,,,12.3,10.5,0,15,37.8,38,"Website, News",0.3,,Tier 3,SDR,38
+ACC-1310,Waratah Accountants,Organic Growth,Accounting & Finance,201-500,AU-VIC,21,No,2,Funding round,2026-09-28,18,No,N/A,N/A,0.7,1.04,0.6,0.78,30.0,39.0,N/A,N/A,69.0,72,,1.0,Form fill,Tier 1,AM,1072
+ACC-1311,Tasman Accountants,Organic Growth,,500+,NZ,20,No,3,,,,,N/A,N/A,,1.0,0.6,,30.0,15.0,N/A,N/A,45.0,45,News,0.5,Form fill,Tier 2,AM,1045
+ACC-1312,Ember Law Partners,Organic Growth,Legal,,AU-WA,21,No,0,None,,17,No,N/A,N/A,0.5,1.0,0.3,0.34,15.0,17.0,N/A,N/A,32.0,32,,1.0,,Tier 3,AM,32
+ACC-1313,Meridian Freight,New Logo,Logistics,500+,NZ,,,,,,,,,Yes,0.7,1.04,,,12.3,10.5,0,15,37.8,39,"Website, News",0.3,,Tier 3,SDR,39
+ACC-1314,Redgate Venues,Organic Growth,Hospitality,1-10,AU-NSW,21,Yes,2,,,,,N/A,N/A,0.4,0.98,1.0,,50.0,15.0,N/A,N/A,65.0,64,News,0.5,Form fill,Tier 2,AM,1064
+ACC-1315,Ironbark Dental Group,Organic Growth,Healthcare,51-200,AU-WA,9,No,0,,,,,N/A,N/A,0.8,1.06,0.135,,6.8,15.0,N/A,N/A,21.8,23,News,0.5,,Tier 3,AM,23
+ACC-1316,Ironbark Medical,New Logo,Healthcare,,US,,,,,,,,No,,0.8,1.06,,,12.3,10.5,0,0,22.8,24,"Website, News",0.3,,Tier 3,SDR,24
+ACC-1317,Coral Cover,Organic Growth,Insurance,,AU-VIC,0,No,0,None,,4,No,N/A,N/A,0.5,1.0,0.0,0.08,0.0,4.0,N/A,N/A,4.0,4,,1.0,,Tier 3,AM,4
+ACC-1318,Pinnacle Builders,New Logo,Construction,1-10,US,,,,Other / Unclassified,2025-12-15,,,,No,0.6,1.02,,0.0,12.3,0.0,0,0,12.3,13,Website,0.65,,Tier 3,SDR,13
+ACC-1319,Quarry Civil,New Logo,Construction,201-500,US,14,Yes,0,,,,,,,0.6,1.02,0.61,,21.4,10.5,0,0,31.9,33,News,0.65,,Tier 3,SDR,33
+ACC-1320,Northwind Freight,Organic Growth,Logistics,51-200,AU-VIC,17,No,0,PE buyout,2026-08-10,21,No,N/A,N/A,0.7,1.04,0.255,0.82,12.8,41.0,N/A,N/A,53.8,56,,1.0,,Tier 2,AM,56
+ACC-1321,Coral Construction,Organic Growth,,,AU-SA,12,No,0,None,,17,No,N/A,N/A,,1.0,0.18,0.34,9.0,17.0,N/A,N/A,26.0,26,,1.0,,Tier 3,AM,26
+ACC-1322,Yarra Insurance,New Logo,Insurance,51-200,AU-NSW,,,,,,,,No,,0.5,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1323,Fernhill Learning,New Logo,Education,11-50,AU-SA,,,,Expansion / new office,2026-08-05,,,No,,0.3,0.96,,0.168,12.3,5.9,0,0,18.2,17,Website,0.65,,Tier 3,SDR,17
+ACC-1324,Yarra Cloud,New Logo,SaaS / Tech,201-500,AU-VIC,6,No,0,,,,,No,,0.8,1.06,0.09,,3.2,10.5,0,0,13.7,15,News,0.65,,Tier 3,SDR,15
+ACC-1325,Bluegum College,Organic Growth,Education,500+,AU-VIC,8,No,0,PE buyout,2026-05-24,9,No,N/A,N/A,0.3,0.96,0.12,0.42,6.0,21.0,N/A,N/A,27.0,26,,1.0,,Tier 3,AM,26
+ACC-1326,Clearwater Creative,New Logo,Marketing Agency,1-10,AU-QLD,,,,,,,,,,0.6,1.02,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1327,Foxglove College,New Logo,Education,,UK,,,,,,,,,Yes,0.3,0.96,,,12.3,10.5,0,15,37.8,36,"Website, News",0.3,,Tier 3,SDR,36
+ACC-1328,Bluegum Commerce,New Logo,E-commerce,500+,AU-WA,,,,,,,,No,,0.9,1.08,,,12.3,10.5,0,0,22.8,25,"Website, News",0.3,,Tier 3,SDR,25
+ACC-1329,Quarry Media,New Logo,Marketing Agency,201-500,AU-NSW,13,No,0,None,,0,No,,No,0.6,1.02,0.195,0.0,6.8,0.0,0,0,6.8,7,,1.0,,Tier 3,SDR,7
+ACC-1330,Coral Digital,New Logo,Marketing Agency,1-10,AU-VIC,19,No,0,None,,,,Yes,Yes,0.6,1.02,0.285,0.0,10.0,0.0,15,15,40.0,41,,1.0,Diamond referral,Tier 2,BDM,1041
+ACC-1331,Lumen Civil,Organic Growth,,201-500,AU-SA,0,No,0,,,,,N/A,N/A,,1.0,0.0,,0.0,15.0,N/A,N/A,15.0,15,News,0.5,,Tier 3,AM,15
+ACC-1332,Vantage Accountants,New Logo,Accounting & Finance,1-10,AU-WA,10,No,0,None,,,,,Yes,0.7,1.04,0.15,0.0,5.3,0.0,0,15,20.3,21,,1.0,,Tier 3,SDR,21
+ACC-1333,Oakridge Store,New Logo,E-commerce,1-10,AU-SA,,,,,,,,,,0.9,1.08,,,12.3,10.5,0,0,22.8,25,"Website, News",0.3,,Tier 3,SDR,25
+ACC-1334,Wattle Cover,New Logo,Insurance,500+,,,,,,,,,,,0.5,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1335,Oakridge Systems,New Logo,SaaS / Tech,51-200,AU-WA,,,,,,,,No,Yes,0.8,1.06,,,12.3,10.5,0,15,37.8,40,"Website, News",0.3,,Tier 2,SDR,40
+ACC-1336,Vantage Labs,New Logo,SaaS / Tech,51-200,NZ,,,,Expansion / new office,2026-06-28,12,No,,,0.8,1.06,,0.408,12.3,14.3,0,0,26.6,28,Website,0.65,,Tier 3,SDR,28
+ACC-1337,Tasman Estates,Organic Growth,Real Estate,51-200,AU-WA,11,No,0,,,,,N/A,N/A,0.4,0.98,0.165,,8.3,15.0,N/A,N/A,23.3,23,News,0.5,,Tier 3,AM,23
+ACC-1338,Summit Insurance,New Logo,Insurance,201-500,AU-SA,,,,Other / Unclassified,2026-06-27,8,No,,,0.5,1.0,,0.232,12.3,8.1,0,0,20.4,20,Website,0.65,,Tier 3,SDR,20
+ACC-1339,Kestrel Hotels,New Logo,Hospitality,500+,,,,,,,,,,No,0.4,0.98,,,12.3,10.5,0,0,22.8,22,"Website, News",0.3,,Tier 3,SDR,22
+ACC-1340,Clearwater Supply Co,New Logo,Logistics,51-200,US,30,Yes,0,Funding round,2026-11-01,,,,Yes,0.7,1.04,0.7,0.6,24.5,21.0,0,15,60.5,63,,1.0,Funding round,Tier 2,BDM,1063
+ACC-1341,Waratah Freight,New Logo,Logistics,,AU-QLD,,,,,,,,,Yes,0.7,1.04,,,12.3,10.5,0,15,37.8,39,"Website, News",0.3,,Tier 3,SDR,39
+ACC-1342,Orchard Digital,Organic Growth,Marketing Agency,1-10,UK,16,Yes,0,,,,,N/A,N/A,0.6,1.02,0.64,,32.0,15.0,N/A,N/A,47.0,48,News,0.5,Team Builder visit,Tier 2,AM,1048
+ACC-1343,Clearwater Logistics,Organic Growth,Logistics,51-200,AU-NSW,0,No,0,None,,0,No,N/A,N/A,0.7,1.04,0.0,0.0,0.0,0.0,N/A,N/A,0.0,0,,1.0,,Tier 3,AM,0
+ACC-1344,Cobalt Legal,New Logo,Legal,,AU-WA,28,Yes,0,None,,,,No,,0.5,1.0,0.7,0.0,24.5,0.0,0,0,24.5,25,,1.0,,Tier 3,SDR,25
+ACC-1345,Meridian Financial,New Logo,Accounting & Finance,201-500,US,,,,,,,,No,Yes,0.7,1.04,,,12.3,10.5,0,15,37.8,39,"Website, News",0.3,,Tier 3,SDR,39
+ACC-1346,Kestrel Transport,New Logo,Logistics,1-10,US,,,,Other / Unclassified,2026-06-07,15,No,No,,0.7,1.04,,0.372,12.3,13.0,0,0,25.3,26,Website,0.65,,Tier 3,SDR,26
+ACC-1347,Bluegum Creative,New Logo,Marketing Agency,51-200,AU-VIC,17,No,0,,,,,,Yes,0.6,1.02,0.255,,8.9,10.5,0,15,34.4,35,News,0.65,,Tier 3,SDR,35
+ACC-1348,Riverstone Cover,New Logo,Insurance,,UK,21,No,0,,,,,,,0.5,1.0,0.3,,10.5,10.5,0,0,21.0,21,News,0.65,,Tier 3,SDR,21
+ACC-1349,Marlow Hospitality,New Logo,Hospitality,,AU-QLD,,,,,,,,,,0.4,0.98,,,12.3,10.5,0,0,22.8,22,"Website, News",0.3,,Tier 3,SDR,22
+ACC-1350,Sterling Advisory,Organic Growth,,201-500,UK,14,Yes,3,M&A,2026-09-16,17,No,N/A,N/A,,1.0,0.91,0.676,45.5,33.8,N/A,N/A,79.3,79,,1.0,Form fill,Tier 1,AM,1079
+ACC-1351,Kestrel Tax & Co,New Logo,Accounting & Finance,201-500,AU-NSW,,,,,,,,No,Yes,0.7,1.04,,,12.3,10.5,0,15,37.8,39,"Website, News",0.3,,Tier 3,SDR,39
+ACC-1352,Thornbury Builders,New Logo,Construction,,AU-WA,,,,,,,,,,0.6,1.02,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1353,Sterling Labs,New Logo,SaaS / Tech,201-500,AU-QLD,,,,,,,,,,0.8,1.06,,,12.3,10.5,0,0,22.8,24,"Website, News",0.3,,Tier 3,SDR,24
+ACC-1354,Silverline Estates,Organic Growth,Real Estate,500+,,,,,PE buyout,2026-04-01,8,No,N/A,N/A,0.4,0.98,,0.16,17.5,8.0,N/A,N/A,25.5,25,Website,0.5,,Tier 3,AM,25
+ACC-1355,Gullwing Labs,New Logo,SaaS / Tech,500+,AU-QLD,0,No,0,Funding round,2026-04-05,10,No,,,0.8,1.06,0.0,0.2,0.0,7.0,0,0,7.0,7,,1.0,,Tier 3,SDR,7
+ACC-1356,Yarra Software,New Logo,SaaS / Tech,201-500,AU-VIC,,,,,,,,,Yes,0.8,1.06,,,12.3,10.5,0,15,37.8,40,"Website, News",0.3,,Tier 2,SDR,40
+ACC-1357,Harbor Builders,Organic Growth,Construction,11-50,US,7,No,0,Funding round,2026-10-11,,,N/A,N/A,0.6,1.02,0.105,0.6,5.3,30.0,N/A,N/A,35.3,36,,1.0,Funding round,Tier 3,AM,1036
+ACC-1358,Summit Transport,New Logo,,11-50,AU-NSW,23,No,0,,,,,,,,1.0,0.3,,10.5,10.5,0,0,21.0,21,News,0.65,,Tier 3,SDR,21
+ACC-1359,Harbor Hospitality,New Logo,Hospitality,500+,NZ,0,No,0,,,,,No,No,0.4,0.98,0.0,,0.0,10.5,0,0,10.5,10,News,0.65,,Tier 3,SDR,10
+ACC-1360,Larkspur Commerce,Organic Growth,E-commerce,500+,NZ,27,No,0,None,,,,N/A,N/A,0.9,1.08,0.3,0.0,15.0,0.0,N/A,N/A,15.0,16,,1.0,,Tier 3,AM,16
+ACC-1361,Lumen Commerce,Organic Growth,E-commerce,500+,UK,12,No,0,None,,7,No,N/A,N/A,0.9,1.08,0.18,0.14,9.0,7.0,N/A,N/A,16.0,17,,1.0,,Tier 3,AM,17
+ACC-1362,Meridian Venues,Organic Growth,Hospitality,51-200,AU-QLD,20,Yes,1,PE buyout,2026-09-15,17,No,N/A,N/A,0.4,0.98,1.0,0.76,50.0,38.0,N/A,N/A,88.0,86,,1.0,Form fill,Tier 1,AM,1086
+ACC-1363,Quarry Underwriting,Organic Growth,Insurance,,UK,15,No,0,Funding round,2026-10-11,18,No,N/A,N/A,0.5,1.0,0.225,0.96,11.3,48.0,N/A,N/A,59.3,59,,1.0,Funding round,Tier 2,AM,1059
+ACC-1364,Tasman Store,Organic Growth,E-commerce,1-10,AU-QLD,18,No,0,,,,,N/A,N/A,0.9,1.08,0.27,,13.5,15.0,N/A,N/A,28.5,31,News,0.5,,Tier 3,AM,31
+ACC-1365,Harbor Insurance,New Logo,Insurance,201-500,US,,,,Restructuring,2026-10-03,19,No,No,,0.5,1.0,,0.59,12.3,20.7,0,0,33.0,33,Website,0.65,,Tier 3,SDR,33
+ACC-1366,Larkspur Builders,New Logo,Construction,,AU-NSW,,,,None,,4,No,No,,0.6,1.02,,0.08,12.3,2.8,0,0,15.1,15,Website,0.65,,Tier 3,SDR,15
+ACC-1367,Ember Labs,Organic Growth,SaaS / Tech,1-10,AU-WA,,,,M&A,2026-09-19,24,No,N/A,N/A,0.8,1.06,,0.736,17.5,36.8,N/A,N/A,54.3,58,Website,0.5,,Tier 2,AM,58
+ACC-1368,Wattle Construction,Organic Growth,,500+,AU-QLD,,,,Other / Unclassified,2026-04-02,,,N/A,N/A,,1.0,,0.0,17.5,0.0,N/A,N/A,17.5,18,Website,0.5,,Tier 3,AM,18
+ACC-1369,Vantage Lawyers,New Logo,Legal,201-500,AU-VIC,,,,,,,,,No,0.5,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1370,Larkspur Creative,New Logo,,,AU-NSW,,,,None,,,,,,,1.0,,0.0,12.3,0.0,0,0,12.3,12,Website,0.65,,Tier 3,SDR,12
+ACC-1371,Riverstone Builders,Organic Growth,Construction,500+,AU-NSW,21,No,0,,,,,N/A,N/A,0.6,1.02,0.3,,15.0,15.0,N/A,N/A,30.0,31,News,0.5,,Tier 3,AM,31
+ACC-1372,Orchard Cover,New Logo,Insurance,500+,AU-QLD,0,No,0,,,,,No,No,0.5,1.0,0.0,,0.0,10.5,0,0,10.5,11,News,0.65,,Tier 3,SDR,11
+ACC-1373,Orchard Media,Organic Growth,Marketing Agency,51-200,UK,,,,None,,,,N/A,N/A,0.6,1.02,,0.0,17.5,0.0,N/A,N/A,17.5,18,Website,0.5,,Tier 3,AM,18
+ACC-1374,Meridian Commerce,New Logo,E-commerce,1-10,AU-VIC,,,,None,,13,No,No,,0.9,1.08,,0.26,12.3,9.1,0,0,21.4,23,Website,0.65,,Tier 3,SDR,23
+ACC-1375,Harbor Hotels,Organic Growth,Hospitality,,NZ,,,,Leadership change,2026-09-30,25,No,N/A,N/A,0.4,0.98,,0.526,17.5,26.3,N/A,N/A,43.8,43,Website,0.5,,Tier 2,AM,43
+ACC-1376,Cobalt Insurance,Organic Growth,Insurance,201-500,AU-WA,7,Yes,0,,,,,N/A,N/A,0.5,1.0,0.505,,25.3,15.0,N/A,N/A,40.3,40,News,0.5,Team Builder visit,Tier 2,AM,1040
+ACC-1377,Ember Estates,New Logo,Real Estate,500+,AU-NSW,12,No,2,,,,,,Yes,0.4,0.98,0.48,,16.8,10.5,0,15,42.3,41,News,0.65,Form fill,Tier 2,BDM,1041
+ACC-1378,Waratah Underwriting,New Logo,,500+,AU-NSW,,,,,,,,,,,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1379,Quarry Realty,New Logo,Real Estate,11-50,AU-WA,0,No,0,None,,,,Yes,,0.4,0.98,0.0,0.0,0.0,0.0,15,0,15.0,15,,1.0,Diamond referral,Tier 3,BDM,1015
+ACC-1380,Riverstone Freight,New Logo,,,UK,,,,None,,,,No,Yes,,1.0,,0.0,12.3,0.0,0,15,27.3,27,Website,0.65,,Tier 3,SDR,27
+ACC-1381,Ironbark Civil,New Logo,Construction,500+,NZ,,,,M&A,2026-10-02,,,Yes,,0.6,1.02,,0.336,12.3,11.8,15,0,39.1,40,Website,0.65,Diamond referral,Tier 2,BDM,1040
+ACC-1382,Yarra Property Group,New Logo,Real Estate,,,,,,None,,5,No,,Yes,0.4,0.98,,0.1,12.3,3.5,0,15,30.8,30,Website,0.65,,Tier 3,SDR,30
+ACC-1383,Fernhill Systems,New Logo,SaaS / Tech,1-10,AU-WA,29,Yes,1,Other / Unclassified,2026-09-26,13,No,,Yes,0.8,1.06,1.0,0.386,35.0,13.5,0,15,63.5,67,,1.0,Form fill,Tier 2,BDM,1067
+ACC-1384,Kestrel Underwriting,Organic Growth,Insurance,51-200,US,,,,,,,,N/A,N/A,0.5,1.0,,,17.5,15.0,N/A,N/A,32.5,33,"Website, News",0.0,,Tier 3,AM,33
+ACC-1385,Halcyon Store,New Logo,E-commerce,51-200,,,,,,,,,Yes,,0.9,1.08,,,12.3,10.5,15,0,37.8,41,"Website, News",0.3,Diamond referral,Tier 2,BDM,1041
+ACC-1386,Wattle Store,New Logo,,201-500,AU-VIC,,,,,,,,,No,,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1387,Bluegum Legal,Organic Growth,Legal,51-200,US,0,No,0,,,,,N/A,N/A,0.5,1.0,0.0,,0.0,15.0,N/A,N/A,15.0,15,News,0.5,,Tier 3,AM,15
+ACC-1388,Foxglove Property Group,New Logo,Real Estate,201-500,AU-VIC,0,No,0,Restructuring,2026-01-20,0,No,No,,0.4,0.98,0.0,0.0,0.0,0.0,0,0,0.0,0,,1.0,,Tier 3,SDR,0
+ACC-1389,Marlow Cover,New Logo,Insurance,500+,NZ,,,,,,,,,No,0.5,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1390,Kestrel Property Group,New Logo,Real Estate,201-500,US,,,,,,,,No,Yes,0.4,0.98,,,12.3,10.5,0,15,37.8,37,"Website, News",0.3,,Tier 3,SDR,37
+ACC-1391,Orchard Advisory,New Logo,Accounting & Finance,51-200,AU-QLD,14,No,0,M&A,2026-04-04,14,No,Yes,,0.7,1.04,0.21,0.28,7.4,9.8,15,0,32.2,33,,1.0,Diamond referral,Tier 3,BDM,1033
+ACC-1392,Marlow Legal,New Logo,Legal,201-500,UK,,,,,,,,,,0.5,1.0,,,12.3,10.5,0,0,22.8,23,"Website, News",0.3,,Tier 3,SDR,23
+ACC-1393,Cobalt Construction,New Logo,Construction,,AU-NSW,,,,PE buyout,2026-08-31,9,No,,,0.6,1.02,,0.6,12.3,21.0,0,0,33.3,34,Website,0.65,,Tier 3,SDR,34
+ACC-1394,Meridian Labs,Organic Growth,SaaS / Tech,201-500,US,,,,None,,16,No,N/A,N/A,0.8,1.06,,0.32,17.5,16.0,N/A,N/A,33.5,36,Website,0.5,,Tier 3,AM,36
+ACC-1395,Ironbark Lawyers,Organic Growth,Legal,1-10,US,12,No,1,,,,,N/A,N/A,0.5,1.0,0.48,,24.0,15.0,N/A,N/A,39.0,39,News,0.5,Form fill,Tier 3,AM,1039
+ACC-1396,Oakridge Goods Online,Organic Growth,E-commerce,11-50,AU-SA,19,No,0,Funding round,2026-08-26,25,No,N/A,N/A,0.9,1.08,0.285,0.82,14.3,41.0,N/A,N/A,55.3,60,,1.0,,Tier 2,AM,60
+ACC-1397,Ember Property Group,New Logo,Real Estate,201-500,AU-SA,,,,None,,13,No,No,No,0.4,0.98,,0.26,12.3,9.1,0,0,21.4,21,Website,0.65,,Tier 3,SDR,21
+ACC-1398,Ironbark Hospitality,New Logo,Hospitality,1-10,AU-VIC,18,No,0,,,,,,,0.4,0.98,0.27,,9.5,10.5,0,0,20.0,20,News,0.65,,Tier 3,SDR,20
+ACC-1399,Sterling Hospitality,Organic Growth,,11-50,UK,15,No,2,Funding round,2026-10-23,,,N/A,N/A,,1.0,0.525,0.6,26.3,30.0,N/A,N/A,56.3,56,,1.0,Form fill,Tier 2,AM,1056
+ACC-1400,Silverline Builders,New Logo,Construction,500+,AU-NSW,16,No,0,,,,,No,Yes,0.6,1.02,0.24,,8.4,10.5,0,15,33.9,35,News,0.65,,Tier 3,SDR,35

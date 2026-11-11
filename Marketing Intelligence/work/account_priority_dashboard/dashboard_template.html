@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<!-- Fonts, icons and Chart.js load from CDNs. No data is sent anywhere: the data is embedded below. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=Chivo+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ---- Cloudstaff Design System tokens (assets/tokens.css, inlined at build time) ---- */
+/*__TOKENS__*/
+
+/* ---- Dashboard layout (uses design-system tokens only) ---- */
+*{box-sizing:border-box}
+body{margin:0;background:var(--color-surface-page);color:var(--color-text-base-primary);font-family:var(--font-family-body);font-size:var(--font-size-sm)}
+h1,h2,h3{font-family:var(--font-family-heading);margin:0}
+.mono,.num{font-family:var(--font-family-mono)}
+.shell{display:grid;grid-template-columns:16rem minmax(0,1fr);min-height:100vh}
+/* sidebar */
+.side{background:var(--color-surface-primary);border-right:1px solid var(--border-color-default);padding:var(--component-card-padding);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:var(--component-tile-padding)}
+.brand{display:flex;flex-direction:column;gap:4px;padding-bottom:var(--component-tile-padding)}
+.brand svg{width:150px;height:auto}
+.brand small{color:var(--color-text-base-muted)}
+.nav-label{font-family:var(--font-family-mono);font-size:var(--font-size-xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-base-muted);margin:8px 0 4px}
+.nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-lg);color:var(--color-text-base-primary);text-decoration:none;font-weight:var(--font-weight-medium);cursor:pointer}
+.nav a i{width:18px;text-align:center;color:var(--color-text-base-secondary)}
+.nav a:hover{background:var(--color-surface-secondary)}
+.nav a.active{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.nav a.active i{color:var(--color-brand-primary-strong)}
+.side-box{border:1px solid var(--border-color-default);border-radius:var(--radius-xl);padding:var(--component-tile-padding);display:flex;flex-direction:column;gap:8px}
+.btn{display:flex;align-items:center;gap:8px;border:0;border-radius:var(--radius-lg);padding:10px 12px;font:inherit;font-weight:var(--font-weight-semibold);cursor:pointer}
+.btn-teal{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong)}
+.btn-blue{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.side-foot{margin-top:auto;color:var(--color-text-base-muted);font-size:var(--font-size-xs)}
+/* main */
+.main{padding:var(--component-pane-padding);min-width:0}
+.topbar{display:flex;align-items:center;gap:16px;padding-bottom:var(--component-card-padding);border-bottom:1px solid var(--border-color-default);margin-bottom:var(--component-card-padding)}
+.crumbs{color:var(--color-text-base-muted);font-size:var(--font-size-md)}
+.crumbs b{color:var(--color-text-base-primary)}
+.topbar .grow{flex:1}
+.chip{display:flex;align-items:center;gap:8px;font-weight:var(--font-weight-semibold)}
+.chip i{color:var(--color-brand-primary)}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--border-color-default);border-radius:var(--radius-lg);padding:8px 12px;background:var(--color-surface-primary);min-width:240px}
+.search input{border:0;outline:0;font:inherit;width:100%;background:transparent}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:var(--component-tile-padding);flex-wrap:wrap}
+.page-head h1{font-size:var(--font-size-3xl)}
+.page-head p{margin:6px 0 0;color:var(--color-text-base-secondary);font-size:var(--font-size-md)}
+/* filters: one panel, one or more labelled rows */
+.filters{display:flex;flex-direction:column;gap:10px;background:var(--color-surface-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-xl);padding:var(--component-tile-padding);margin-bottom:var(--component-card-padding);box-shadow:var(--shadow-sm)}
+.filters label{display:flex;flex-direction:column;gap:4px;font-size:var(--font-size-xs);color:var(--color-text-base-muted);font-weight:var(--font-weight-semibold)}
+.filters select{font:inherit;color:var(--color-text-base-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:7px 10px;background:var(--color-surface-primary);min-width:120px;max-width:220px}
+.filters .reset{align-self:flex-end}
+.frow{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.frow + .frow{border-top:1px solid var(--border-color-default);padding-top:10px}
+.frow-label{width:100%;font-family:var(--font-family-mono);font-size:var(--font-size-2xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-brand-primary-strong);font-weight:var(--font-weight-semibold)}
+.frow-note{font-size:var(--font-size-xs);color:var(--color-text-base-muted)}
+.frow-note:empty{display:none}
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--component-tile-padding);margin-bottom:var(--component-card-padding)}
+.kpi{border-radius:var(--radius-xl);padding:var(--component-tile-padding);display:flex;flex-direction:column;gap:10px}
+.kpi-top{display:flex;align-items:center;gap:10px;font-weight:var(--font-weight-semibold);font-size:var(--font-size-sm);line-height:1.3}
+.kpi-icon{width:40px;height:40px;border-radius:var(--radius-lg);display:grid;place-items:center;color:var(--color-surface-primary);flex:none}
+.kpi-value{font-family:var(--font-family-heading);font-size:var(--font-size-3xl);font-weight:var(--font-weight-bold)}
+.kpi-sub{color:var(--color-text-base-secondary)}
+.k-blue{background:var(--color-brand-primary-soft)} .k-blue .kpi-icon{background:var(--color-brand-primary)}
+.k-teal{background:var(--color-feature-01-soft)} .k-teal .kpi-icon{background:var(--color-feature-01)}
+.k-yellow{background:var(--color-feature-02-soft)} .k-yellow .kpi-icon{background:var(--color-feature-02)}
+.k-pink{background:var(--color-feature-03-soft)} .k-pink .kpi-icon{background:var(--color-feature-03)}
+.k-purple{background:var(--color-feature-05-soft)} .k-purple .kpi-icon{background:var(--color-feature-05)}
+.k-indigo{background:var(--color-feature-04-soft)} .k-indigo .kpi-icon{background:var(--color-feature-04)}
+/* cards with a solid blue header bar */
+.grid{display:grid;gap:var(--component-card-padding);margin-bottom:var(--component-card-padding)}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:3fr 2fr}
+.card{background:var(--color-surface-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm);overflow:hidden;min-width:0}
+.page > .card{margin-bottom:var(--component-card-padding)}
+.card-head{background:var(--color-brand-primary-strong);color:var(--color-surface-primary);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px var(--component-card-padding)}
+.card-head h3{font-size:var(--font-size-md);font-weight:var(--font-weight-bold);line-height:1.3}
+.card-head span{opacity:.9;font-size:var(--font-size-xs);text-align:right;flex:0 1 auto;max-width:45%}
+.card-body{padding:var(--component-card-padding)}
+.chart{position:relative;height:300px}
+.chart.tall{height:380px}
+.note{color:var(--color-text-base-muted);font-size:var(--font-size-xs);margin-top:10px;line-height:1.5}
+.warn{background:var(--color-feature-02-soft);border-radius:var(--radius-lg);padding:10px 14px;margin:0 0 var(--component-tile-padding);font-size:var(--font-size-xs)}
+.warn i{color:var(--color-feature-07)}
+.info{background:var(--color-brand-primary-soft);border-radius:var(--radius-lg);padding:10px 14px;margin:0 0 var(--component-tile-padding)}
+/* tables */
+.tbl-wrap{overflow:auto;max-height:560px}
+table{border-collapse:collapse;width:100%;font-size:var(--font-size-xs)}
+th{position:sticky;top:0;background:var(--color-surface-primary);color:var(--color-brand-primary-strong);text-align:left;font-weight:var(--font-weight-bold);padding:10px;border-bottom:2px solid var(--border-color-default);white-space:nowrap;cursor:default}
+th.sort{cursor:pointer} th.sort:hover{text-decoration:underline}
+td{padding:8px 10px;border-bottom:1px solid var(--border-color-default);vertical-align:top}
+td.n,th.n{text-align:right}
+td.n{font-family:var(--font-family-mono)}
+tr.small td{color:var(--color-text-base-muted)}
+.nowrap td{white-space:nowrap}
+.sticky1 td:first-child,.sticky1 th:first-child{position:sticky;left:0;background:var(--color-surface-primary);min-width:200px;z-index:1;box-shadow:inset -1px 0 0 var(--border-color-default)}
+.sticky1 th:first-child{z-index:2}
+.badge{display:inline-block;padding:2px 8px;border-radius:var(--radius-pill);font-size:var(--font-size-2xs);font-weight:var(--font-weight-semibold)}
+.b-ok{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong)}
+.b-warn{background:var(--color-feature-02-soft);color:var(--color-text-base-primary)}
+.b-no{background:var(--color-surface-secondary);color:var(--color-text-base-secondary)}
+.b-blue{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.heat td.h{text-align:center;font-family:var(--font-family-mono)}
+.tools{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.tools input{font:inherit;border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:7px 10px;min-width:260px}
+.tools select{font:inherit;border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:6px 8px}
+/* statistics blocks (Stats & method page) */
+.stat{border:1px solid var(--border-color-default);border-radius:var(--radius-lg);padding:var(--component-tile-padding);margin-bottom:12px}
+.stat h4{margin:0 0 6px;font-family:var(--font-family-heading)}
+.stat .reading{font-size:var(--font-size-md);font-weight:var(--font-weight-semibold);margin:6px 0}
+.page{display:none}
+.page.show{display:block}
+ul.rules{margin:0;padding-left:18px;line-height:1.7}
+/* "Numbers behind this chart" panels (added automatically by draw()) */
+details.chart-data{margin-top:12px;border-top:1px solid var(--border-color-default);padding-top:8px}
+details.chart-data summary{cursor:pointer;font-weight:var(--font-weight-semibold);color:var(--color-brand-primary-strong);display:flex;align-items:center;gap:10px;font-size:var(--font-size-xs)}
+details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
+.btn-mini{border:0;border-radius:var(--radius-md);padding:3px 8px;font:inherit;font-size:var(--font-size-2xs);background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong);cursor:pointer}
+/* insight cards */
+.ins .card-body{display:flex;flex-direction:column;gap:8px}
+.ins h4{margin:0;font-family:var(--font-family-heading);font-size:var(--font-size-lg)}
+.ins p{margin:0;line-height:1.6}
+.ins-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ins-link{cursor:pointer;color:var(--color-brand-primary-strong);font-size:var(--font-size-xs);font-weight:var(--font-weight-semibold)}
+@media (max-width:1100px){.g2,.g3{grid-template-columns:1fr}.shell{grid-template-columns:1fr}.side{position:static;height:auto}}
+</style>
+<style>
+/* ---- Account priority additions (design-system tokens only) ---- */
+.sec{font-family:var(--font-family-heading);font-size:var(--font-size-lg);margin:var(--component-tile-padding) 0 12px}
+.takeaway{font-size:var(--font-size-md)}
+/* score pill coloured by tier */
+.score{display:inline-flex;align-items:center;justify-content:center;min-width:2.6rem;height:2.2rem;border-radius:var(--radius-lg);font-family:var(--font-family-heading);font-weight:var(--font-weight-bold);font-size:var(--font-size-md)}
+.score.t1{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong)}
+.score.t2{background:var(--color-feature-02-soft);color:var(--color-text-base-primary)}
+.score.t3{background:var(--color-surface-secondary);color:var(--color-text-base-secondary)}
+.co{font-weight:var(--font-weight-bold);font-size:var(--font-size-sm)}
+.prof{color:var(--color-text-base-muted)}
+.b-hot{background:var(--color-feature-03-soft);color:var(--color-feature-03-bold);white-space:nowrap}
+/* reason chips in the Why column */
+.tag{display:inline-block;padding:2px 8px;margin:2px 4px 2px 0;border-radius:var(--radius-pill);font-size:var(--font-size-2xs);font-weight:var(--font-weight-semibold);white-space:nowrap;background:var(--color-surface-secondary);color:var(--color-text-base-primary)}
+.tag-flag{background:var(--color-feature-05-soft);color:var(--color-feature-05-bold)}
+.tag-est{background:var(--color-feature-02-soft);color:var(--color-text-base-primary)}
+#tGlance td.n{white-space:nowrap}
+#tGlance th{position:static;vertical-align:bottom}
+#tGlance th.lst{text-align:center;border-bottom:1px solid var(--border-color-default)}
+#tGlance th .sub{font-size:var(--font-size-2xs);font-weight:var(--font-weight-regular, 400)}
+#tGlance td.feat{white-space:nowrap}
+#tGlance td.what{min-width:10rem;line-height:1.5}
+#tGlance td.data{font-size:var(--font-size-2xs)}
+#tGlance td.sig{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong);vertical-align:middle;width:7.5rem;min-width:7rem;border-right:2px solid var(--color-surface-primary)}
+#tGlance td.sig b{display:block;font-family:var(--font-family-heading);font-size:var(--font-size-md)}
+#tGlance td.miss{vertical-align:middle;font-size:var(--font-size-xs);min-width:11rem;background:var(--color-feature-02-soft)}
+#tGlance td.miss b{display:block}
+#tGlance td.miss small{display:block;margin-top:4px;color:var(--color-text-base-secondary);font-size:var(--font-size-2xs);line-height:1.5}
+#tGlance td.sig small{display:block;margin-top:4px;color:var(--color-text-base-secondary);font-size:var(--font-size-2xs);line-height:1.5}
+#tGlance tr.grp-start td{border-top:2px solid var(--color-brand-primary-accent)}
+#tGlance tr.tot td{background:var(--color-surface-secondary);font-weight:var(--font-weight-bold)}
+#tList td{vertical-align:middle}
+#tList td:nth-child(5){white-space:normal;min-width:280px}
+/* glossary facts */
+.ins p.lead{margin:0 0 10px;line-height:1.6}
+dl.facts{display:grid;grid-template-columns:8rem 1fr;gap:6px 12px;margin:0;font-size:var(--font-size-xs)}
+dl.facts dt{color:var(--color-text-base-muted);font-weight:var(--font-weight-semibold)}
+dl.facts dd{margin:0;line-height:1.5}
+/* method: formula and steps */
+.formula{font-family:var(--font-family-heading);font-size:var(--font-size-lg);background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong);border-radius:var(--radius-lg);padding:var(--component-tile-padding);margin-bottom:var(--component-card-padding);line-height:1.5}
+.steps{display:grid;gap:var(--component-tile-padding)}
+.step{display:grid;grid-template-columns:2.4rem 1fr;gap:14px;align-items:start}
+.step-num{width:2.4rem;height:2.4rem;border-radius:50%;display:grid;place-items:center;background:var(--color-brand-primary);color:var(--color-surface-primary);font-family:var(--font-family-heading);font-weight:var(--font-weight-bold)}
+.step h4{margin:4px 0 4px;font-family:var(--font-family-heading);font-size:var(--font-size-md)}
+.step p{margin:0 0 4px;line-height:1.6;max-width:52rem}
+.step p.muted{color:var(--color-text-base-secondary)}
+/* worked example */
+#tEx td.lbl{color:var(--color-text-base-secondary);width:12rem}
+#tEx tr.tot td{font-weight:var(--font-weight-bold);background:var(--color-surface-secondary)}
+#tEx .big{font-family:var(--font-family-heading);font-size:var(--font-size-2xl)}
+@media (max-width:700px){dl.facts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- ================= sidebar ================= -->
+  <aside class="side">
+    <div class="brand"><!--__LOGO__--><small id="brandSub"></small></div>
+    <div class="nav-label">Workspace</div>
+    <nav class="nav">
+      <a data-page="priorities" class="active"><i class="fa-solid fa-ranking-star"></i>Priorities</a>
+      <a data-page="glossary"><i class="fa-solid fa-book"></i>Data glossary</a>
+    </nav>
+    <div class="nav-label">Method</div>
+    <nav class="nav">
+      <a data-page="method"><i class="fa-solid fa-square-root-variable"></i>How the score works</a>
+      <a data-page="qa"><i class="fa-solid fa-clipboard-check"></i>QA &amp; data checks</a>
+    </nav>
+    <div class="side-box">
+      <div class="nav-label" style="margin:0"><i class="fa-solid fa-file-export"></i> Data</div>
+      <button class="btn btn-teal" id="btnCsv"><i class="fa-solid fa-file-csv"></i>Export list (CSV)</button>
+    </div>
+    <div class="side-foot"><i class="fa-solid fa-database"></i> <span id="sourceTxt"></span>, scores as of <span id="extractTxt"></span><br>Built <span id="builtTxt"></span></div>
+  </aside>
+
+  <!-- ================= main ================= -->
+  <main class="main">
+    <div class="topbar">
+      <div class="crumbs"><span id="crumbRoot"></span> &nbsp;<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>&nbsp; <b id="crumbPage">Priorities</b></div>
+      <div class="grow"></div>
+      <div class="chip"><i class="fa-regular fa-calendar"></i><span id="dateChip"></span></div>
+      <div class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="topSearch" placeholder="Search company"></div>
+    </div>
+    <div class="page-head">
+      <div><h1 id="pageTitle">Priorities</h1><p id="pageSub"></p></div>
+    </div>
+    <div class="warn"><i class="fa-solid fa-triangle-exclamation"></i> Mock data for illustration. All companies are fictional. Scores come from the Priority Score model in the mock Excel workbook, with three changes made in this dashboard: round point values, seat growth for Organic Growth, and an Act now bonus.</div>
+
+    <!-- shared filter bar (Priorities page only) -->
+    <div class="filters" id="filters">
+      <div class="frow"><span class="frow-label">Which accounts</span>
+        <label>Role<select id="fRole"></select></label>
+        <label>List<select id="fList"></select></label>
+        <label>Industry<select id="fInd"></select></label>
+        <label>Employee band<select id="fBand"></select></label>
+        <button class="btn btn-blue reset" id="btnReset"><i class="fa-solid fa-rotate-left"></i>Reset</button>
+      </div>
+      <div class="frow-note">Changing the role or list resets industry and employee band. SDR has a New Logo list only. Each account has one owner, so it is on one list only.</div>
+    </div>
+
+    <!-- ================= Priorities ================= -->
+    <section class="page show" id="p-priorities">
+      <div class="info takeaway" id="takeaway"></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="tools"><button class="btn btn-blue" id="btnCharts"><i class="fa-solid fa-chart-column"></i><span>Show charts</span></button>
+        <span class="muted" id="chartsHint">Score spread and Act now reasons are hidden to keep the focus on the list.</span></div>
+      <div class="grid g2" id="chartsRow" style="display:none">
+        <div class="card"><div class="card-head"><h3>How scores are spread</h3><span>accounts by priority score, by tier</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cHist"></canvas></div><div class="note" id="histNote"></div></div></div>
+        <div class="card"><div class="card-head"><h3>Why accounts need action now</h3><span>accounts by Act now trigger</span></div>
+          <div class="card-body"><div class="chart" id="reasonsBox"><canvas id="cReasons"></canvas></div>
+            <div class="note" id="reasonsNone" hidden>No accounts on this list need action now with these filters.</div>
+            <div class="note">The trigger that put each account at the top of the list. An account with more than one trigger is counted once, under the trigger the workbook recorded.</div></div></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>Priority list</h3><span id="listSub"></span></div><div class="card-body">
+        <div class="tools"><input id="listSearch" placeholder="Search company">
+          <button class="btn btn-teal" id="btnCsv2"><i class="fa-solid fa-file-csv"></i>Export to CSV</button></div>
+        <div class="tbl-wrap" id="tList"></div>
+        <div class="note" id="listNone" hidden>No accounts match these filters. Try widening the industry, employee band or search.</div>
+        <div class="note">Act now accounts first, then by score. Act now accounts include the <span class="sHot"></span>-point Act now bonus (<span class="sHotD"></span> when the trigger is a Diamond referral). The score is coloured by tier. Dots show signal strength: ●●● strong, ●●○ moderate, ●○○ weak. Signals with nothing found are not shown.
+          <span class="tag tag-flag">Purple</span> = flag, <span class="tag tag-est">Yellow</span> = part of the score is estimated because the data is missing.</div>
+      </div></div>
+    </section>
+
+    <!-- ================= Data glossary ================= -->
+    <section class="page" id="p-glossary">
+      <div class="info">Each indicator below is something we track about an account. Together they make up the Priority Score. "Unknown today" shows how often we do not yet have that data, which is why some scores rely on estimates.</div>
+      <div class="card"><div class="card-head"><h3>Signals at a glance</h3><span>most points each signal can add, out of 100</span></div><div class="card-body">
+        <div class="tbl-wrap" id="tGlance" style="max-height:none"></div>
+        <div class="note">Points = the most a signal can add; partial activity earns part of them. Each list adds up to 100, so the points are also the signal's share of the score (20 points = 20%). The industry trend then multiplies the total, and the Act now bonus is added on top, with the score capped at 100. The yellow column shows the value used when data is missing; those accounts get a yellow chip on the list.</div></div></div>
+      <h2 class="sec">Indicators</h2>
+      <div class="grid g2" id="glossInd"></div>
+      <h2 class="sec">What you will see on the list</h2>
+      <div class="grid g2" id="glossTerms"></div>
+    </section>
+
+    <!-- ================= How the score works ================= -->
+    <section class="page" id="p-method">
+      <div class="info">The Priority Score answers one question: how worth pursuing is this account right now? Every account goes through the same six steps. Every weight and threshold below is read from the scoring settings.</div>
+      <div class="card"><div class="card-head"><h3>The Priority Score in six steps</h3><span>one number from 0 to 100</span></div><div class="card-body">
+        <div class="formula">Priority score = (Website points + News and jobs points + Seat growth points + Referral points + Competitor client points) × Industry nudge + Act now bonus</div>
+        <div class="steps" id="steps"></div></div></div>
+      <div class="card"><div class="card-head"><h3>Most points each signal can add</h3><span>by list</span></div><div class="card-body">
+        <div class="tbl-wrap" id="tSig"></div>
+        <div class="note">Partial activity earns part of the points, for example fewer visits than it takes to get full credit. The two lists weigh things differently, because the flags only apply to prospects.</div></div></div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>How much each type of news counts</h3><span>strength from 0 to 1</span></div><div class="card-body"><div class="tbl-wrap" id="tNews"></div>
+          <div class="note">0 = no effect, 1 = full credit. Only the strongest news item counts.</div></div></div>
+        <div class="card"><div class="card-head"><h3>How recency fades news</h3><span>multiplies the news strength</span></div><div class="card-body"><div class="tbl-wrap" id="tRec"></div>
+          <div class="note">Age of the news item on the as-of date.</div></div></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>How seat growth counts</h3><span>Organic Growth only · share of the seat growth points</span></div><div class="card-body"><div class="tbl-wrap" id="tSeat"></div>
+        <div class="note">Seats the client added in the last 6 months. More seats added means a higher signal, so a client that keeps expanding ranks higher. Unknown seat history is scored with the typical value (see step 3).</div></div></div>
+      <div class="card"><div class="card-head"><h3>Worked example</h3><span>pick any account on the two lists</span></div><div class="card-body">
+        <div class="tools"><select id="exPick"></select></div>
+        <div class="tbl-wrap" id="tEx"></div></div></div>
+    </section>
+
+    <!-- ================= QA ================= -->
+    <section class="page" id="p-qa">
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Where the accounts go</h3><span>source files to the five lists</span></div><div class="card-body"><div class="tbl-wrap" id="tQa"></div>
+          <div class="note">Each account has one owner role (Marketing, SDR or BDM) and sits on that role's New Logo or Organic Growth list. SDR owns New Logo accounts only. The 400 reference accounts come from accounts.csv; the other 400 are extra mock accounts made with the same rules (accounts_extra.csv). The owner roles are mock values too.</div></div></div>
+        <div class="card"><div class="card-head"><h3>Unknown data by indicator</h3><span>share of accounts with no data</span></div><div class="card-body"><div class="chart"><canvas id="cGaps"></canvas></div>
+          <div class="note">All <span class="sN"></span> accounts. Referral and competitor client flags apply to New Logo only, and seat growth to Organic Growth only. Unknown website and news data are scored with a typical value (see How the score works).</div></div></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>Accounts by tier and list</h3><span>all accounts by owner role and list, with the Act now bonus</span></div><div class="card-body"><div class="tbl-wrap" id="tTier"></div></div></div>
+      <div class="card"><div class="card-head"><h3>What the rounded points and seat growth change</h3><span>tier counts, accounts.csv score vs. the points in this dashboard</span></div><div class="card-body"><div class="tbl-wrap" id="tSeatQa"></div>
+        <div class="note">Both scores are before the Act now bonus. This dashboard uses round point values (multiples of 5), a typical value of <span class="sBase"></span> for unknown signals, and adds seat growth for Organic Growth. "csv" = the workbook's original points, as in accounts.csv and accounts_extra.csv.</div></div></div>
+      <div class="card"><div class="card-head"><h3>What the Act now bonus changes</h3><span>tier counts, before the bonus vs. with the bonus</span></div><div class="card-body"><div class="tbl-wrap" id="tBonus"></div>
+        <div class="note">Only Act now accounts get the bonus. Lists follow the owner role, so the bonus changes tiers and order within a list, never the list itself.</div></div></div>
+    </section>
+  </main>
+</div>
+
+<!-- embedded data (built by work/account_priority_dashboard/build.py from data/account_priority_dashboard.json) -->
+<script id="data" type="application/json">/*__DATA__*/</script>
+
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = id => document.getElementById(id);
+
+// ---- palette: brand order. Same category = same colour on every chart.
+const PALETTE = ['#007AFF', '#00AB9C', '#FFC426', '#E34678', '#4121A9', '#AA67FD', '#F46600', '#36D6E7', '#87DD7D', '#50505C'];
+const GREY = '#C9D2E1';
+const TIERS = ['Tier 1', 'Tier 2', 'Tier 3'];
+const TIER_COLOUR = {'Tier 1': '#00AB9C', 'Tier 2': '#FFC426', 'Tier 3': GREY};
+const TIER_CLS = {'Tier 1': 't1', 'Tier 2': 't2', 'Tier 3': 't3'};
+const HOT_COLOUR = '#E34678';
+const teamLabel = t => t.replace('|', ' · ');      // list key 'BDM|New Logo' -> 'BDM · New Logo'
+const GOAL_COLOUR = {'New Logo': '#007AFF', 'Organic Growth': '#00AB9C'};
+
+// ---- maths and formatting
+const sum = a => a.reduce((s, x) => s + x, 0);
+function groupBy(a, fn) { const m = new Map(); for (const x of a) { const k = fn(x); if (!m.has(k)) m.set(k, []); m.get(k).push(x); } return m; }
+const uniq = a => [...new Set(a)].sort((x, y) => String(x).localeCompare(String(y)));
+const fmt = (v, d = 0) => v === null || v === undefined || Number.isNaN(v) ? '–' : Number(v).toLocaleString('en-AU', {minimumFractionDigits: d, maximumFractionDigits: d});
+const pct = (v, d = 1) => v === null || v === undefined || Number.isNaN(v) ? '–' : (100 * v).toFixed(d) + '%';
+const esc = s => String(s ?? '').replace(/[&<>"]/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[ch]));
+const blank = v => v === null || v === undefined || v === '';
+
+// ---- Chart.js house style
+Chart.defaults.font.family = 'Manrope, Segoe UI, Arial, sans-serif';
+Chart.defaults.color = '#737C90';
+Chart.defaults.borderColor = '#DCE3EE';
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.maintainAspectRatio = false;
+const pctAxis = {ticks: {callback: v => pct(v, 0)}, beginAtZero: true};
+
+const charts = {};
+function draw(id, cfg) {
+  const scales = (cfg.options && cfg.options.scales) || {};
+  const isPct = Object.values(scales).some(sc => sc.ticks && sc.ticks.callback);
+  if (charts[id]) charts[id].destroy(); charts[id] = new Chart($(id), cfg); chartData(id, cfg, isPct);
+}
+const dataClosed = {};
+function chartData(id, cfg, isPct) {
+  const body = $(id).closest('.card-body');
+  let box = body.querySelector('details.chart-data');
+  if (!box) {
+    box = document.createElement('details'); box.className = 'chart-data'; box.open = true;
+    box.innerHTML = '<summary>Numbers behind this chart <button class="btn-mini" type="button">CSV</button></summary><div class="tbl-wrap"></div>';
+    box.ontoggle = () => { dataClosed[id] = !box.open; };
+    body.appendChild(box);
+  }
+  if (dataClosed[id]) box.open = false;
+  const show = v => v === null || v === undefined || Number.isNaN(v) ? '–' : isPct ? pct(v) : Number.isInteger(v) ? fmt(v) : fmt(v, 2);
+  const sets = cfg.data.datasets, labels = cfg.data.labels;
+  const cols = [{k: 'label', label: ''}, ...sets.map((d, j) => ({k: 'd' + j, label: esc(d.label) + (isPct ? ' (%)' : ''), n: 1, f: show}))];
+  const rows = labels.map((l, i) => Object.assign({label: l}, ...sets.map((d, j) => ({['d' + j]: d.data[i]}))));
+  table(box.querySelector('.tbl-wrap'), cols, rows);
+  box.querySelector('button').onclick = e => { e.preventDefault(); e.stopPropagation();
+    download(id + '_numbers.csv', rows.map(r => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, isPct && k !== 'label' && typeof v === 'number' ? +(100 * v).toFixed(2) : v]))),
+      cols.map(c => ({k: c.k, label: c.label.replace(/&amp;/g, '&') || 'group'}))); };
+}
+function table(el, cols, rows, opts = {}) {
+  const sortable = !!opts.sortable;
+  let h = '<table><thead><tr>' + cols.map((c, i) => `<th class="${c.n ? 'n' : ''} ${sortable ? 'sort' : ''}" data-i="${i}">${c.label}</th>`).join('') + '</tr></thead><tbody>';
+  h += rows.map(r => `<tr class="${r._small ? 'small' : ''}">` + cols.map(c => `<td class="${c.n ? 'n' : ''}">${c.f ? c.f(r[c.k], r) : esc(r[c.k])}</td>`).join('') + '</tr>').join('');
+  el.innerHTML = h + '</tbody></table>';
+  if (sortable) el.querySelectorAll('th').forEach(th => th.onclick = () => opts.onSort(cols[+th.dataset.i].k));
+}
+function download(name, rows, cols) {
+  const q = v => { const s = v === null || v === undefined ? '' : String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const csv = [cols.map(c => q(c.label)).join(','), ...rows.map(r => cols.map(c => q(r[c.k])).join(','))].join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], {type: 'text/csv'})); a.download = name; a.click();
+}
+const kpiTiles = items => items.map(([cls, ic, l, v, s]) => `<div class="kpi ${cls}"><div class="kpi-top"><span class="kpi-icon"><i class="fa-solid ${ic}"></i></span>${esc(l)}</div><div class="kpi-value">${v}</div><div class="kpi-sub">${s}</div></div>`).join('');
+
+// ---- scoring settings: every weight and threshold shown comes from here, never typed into the page
+const SET = Object.fromEntries(D.settings.map(r => [r.key, r]));
+const S = k => Number(SET[k].value);
+function fmtSet(k) {
+  const r = SET[k], v = Number(r.value);
+  if (r.kind === 'share') return pct(v, 0);
+  if (r.kind === 'factor') return k.startsWith('mod') ? v.toFixed(2) : v.toFixed(1);
+  if (r.kind === 'news' || r.kind === 'recency') return v.toFixed(1);
+  return fmt(v, Number.isInteger(v) ? 0 : 1);
+}
+const b = k => `<b>${fmtSet(k)}</b>`;
+const P = v => fmt(v, Number.isInteger(v) ? 0 : 1);      // points: whole numbers, or one decimal (the 7.5 bonus)
+const hotBonus = trigger => trigger === 'Diamond referral' ? S('hot_bonus_diamond') : S('hot_bonus');
+const SEAT_BANDS = [['0', 'seat_0'], ['1–5', 'seat_1_5'], ['6–10', 'seat_6_10'], ['11 or more', 'seat_11']];
+const seatBandText = () => SEAT_BANDS.map(([l, k]) => `${l} seats = ${fmtSet(k)}`).join(', ');
+
+// ---- header text: every date comes from the data
+const M = D.meta;
+document.title = M.title;
+$('brandSub').textContent = M.subtitle; $('crumbRoot').textContent = M.title; $('sourceTxt').textContent = M.source;
+const ASOF = new Date(M.extract).toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric'});
+$('extractTxt').textContent = ASOF;
+$('builtTxt').textContent = M.generated.slice(0, 10);
+$('dateChip').textContent = 'Scores as of ' + ASOF;
+document.querySelectorAll('.sBdm').forEach(e => e.textContent = fmtSet('bdm_min'));
+document.querySelectorAll('.sN').forEach(e => e.textContent = fmt(D.rows.length));
+document.querySelectorAll('.sBase').forEach(e => e.textContent = fmtSet('base_web'));
+document.querySelectorAll('.sSeat').forEach(e => e.textContent = fmtSet('seat_max_og') + ' points');
+document.querySelectorAll('.sHot').forEach(e => e.textContent = '+' + fmtSet('hot_bonus'));
+document.querySelectorAll('.sHotD').forEach(e => e.textContent = '+' + fmtSet('hot_bonus_diamond'));
+
+// ---- accounts on the lists shown (the workbook's order: Act now first, then score)
+const LISTED = D.rows.filter(r => M.shown_teams.includes(r.team));
+const BAND_ORDER = [...M.band_order, 'Unknown'];
+
+// ---- filters
+function fillSelect(id, values, labels) { $(id).innerHTML = values.map((v, i) => `<option value="${esc(v)}">${esc(labels ? labels[i] : v)}</option>`).join(''); }
+fillSelect('fRole', M.roles);
+function fillLists() {          // the lists this role has: SDR has New Logo only
+  const goals = M.shown_teams.filter(t => t.startsWith($('fRole').value + '|')).map(t => t.split('|')[1]);
+  const keep = $('fList').value;
+  fillSelect('fList', goals);
+  if (goals.includes(keep)) $('fList').value = keep;
+}
+fillLists();
+const curTeam = () => `${$('fRole').value}|${$('fList').value}`;
+function fillTeamFilters() {     // industry and band options depend on the list
+  const t = LISTED.filter(r => r.team === curTeam());
+  const inds = uniq(t.map(r => r.industry_lbl)).sort((a, b) => (a === 'Unknown') - (b === 'Unknown'));
+  const bands = BAND_ORDER.filter(x => t.some(r => r.band_lbl === x));
+  fillSelect('fInd', ['All', ...inds], ['All industries', ...inds]);
+  fillSelect('fBand', ['All', ...bands], ['All employee bands', ...bands.map(x => x === 'Unknown' ? x : x + ' staff')]);
+}
+fillTeamFilters();
+const filt = () => ({team: curTeam(), industry: $('fInd').value, band: $('fBand').value, q: $('listSearch').value.trim().toLowerCase()});
+const applyFilt = f => LISTED.filter(r => r.team === f.team && (f.industry === 'All' || r.industry_lbl === f.industry) && (f.band === 'All' || r.band_lbl === f.band));
+const filtText = f => [f.industry === 'All' ? 'all industries' : f.industry, f.band === 'All' ? 'all employee bands' : (f.band === 'Unknown' ? 'band unknown' : f.band + ' staff')].join(' · ');
+
+// ---- page switching
+const TITLES = {priorities: 'Priorities', glossary: 'Data glossary', method: 'How the score works', qa: 'QA and data checks'};
+const SUBS = {glossary: 'What each indicator means, where it comes from and how often it is unknown',
+  method: 'How the Priority Score is built, step by step, with a worked example',
+  qa: `Where the ${fmt(D.rows.length)} accounts go and how much data is unknown`};
+let page = 'priorities', current = [];
+document.querySelectorAll('.nav a').forEach(a => a.onclick = () => go(a.dataset.page));
+function go(p) {
+  page = p;
+  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('active', a.dataset.page === p));
+  document.querySelectorAll('.page').forEach(s => s.classList.toggle('show', s.id === 'p-' + p));
+  $('pageTitle').textContent = TITLES[p]; $('crumbPage').textContent = TITLES[p];
+  try { history.replaceState(null, '', '#' + p); } catch (e) {}
+  render();
+}
+function render() {
+  const f = filt();
+  $('filters').style.display = page === 'priorities' ? '' : 'none';
+  current = applyFilt(f);
+  $('pageSub').textContent = page === 'priorities' ? `${fmt(current.length)} accounts on the ${teamLabel(f.team)} list · ${filtText(f)}` : SUBS[page];
+  ({priorities: rPriorities, glossary: rGlossary, method: rMethod, qa: rQa})[page](f, current);
+}
+
+// ---------------- Priorities
+let showCharts = false;      // the two charts are hidden by default so the list is the focus
+function setChartsUi() {
+  $('chartsRow').style.display = showCharts ? '' : 'none';
+  $('btnCharts').querySelector('span').textContent = showCharts ? 'Hide charts' : 'Show charts';
+  $('chartsHint').style.display = showCharts ? 'none' : '';
+}
+$('btnCharts').onclick = () => { showCharts = !showCharts; render(); };
+function rPriorities(f, rows) {
+  setChartsUi();
+  const hot = rows.filter(r => !blank(r.hot_trigger)).length, t1 = rows.filter(r => r.tier === 'Tier 1').length;
+  const est = rows.length ? rows.filter(r => r.estimated).length / rows.length : NaN;
+  $('takeaway').innerHTML = `<i class="fa-solid fa-circle-info"></i> Of <b>${fmt(rows.length)}</b> accounts on the ${esc(teamLabel(f.team))} list, <b>${fmt(hot)}</b> need action now and <b>${fmt(t1)}</b> ${t1 === 1 ? 'is' : 'are'} Tier 1.`;
+  $('kpis').innerHTML = kpiTiles([
+    ['k-blue', 'fa-list-check', 'Accounts on this list', fmt(rows.length), 'with the filters above'],
+    ['k-pink', 'fa-bolt', 'Act now', fmt(hot), 'have a time-sensitive trigger'],
+    ['k-teal', 'fa-star', 'Tier 1', fmt(t1), `highest band: score ${fmtSet('tier1')} or more`],
+    ['k-yellow', 'fa-circle-half-stroke', 'Scored with estimated data', pct(est, 0), 'missing website, news or seat data'],
+  ]);
+  if (showCharts) rCharts(f, rows);
+  rList(f, rows);
+}
+function rCharts(f, rows) {
+  // score spread: 10-point bands, stacked by tier
+  const bins = Array.from({length: 10}, (_, i) => [i * 10, i === 9 ? 100 : i * 10 + 9]);
+  draw('cHist', {type: 'bar', data: {labels: bins.map(([lo, hi]) => `${lo}–${hi}`),
+    datasets: TIERS.map(t => ({label: t, backgroundColor: TIER_COLOUR[t], data: bins.map(([lo, hi]) => rows.filter(r => r.tier === t && r.priority_score >= lo && r.priority_score <= hi).length)}))},
+    options: {scales: {x: {stacked: true, title: {display: true, text: 'Priority score'}}, y: {stacked: true, beginAtZero: true, ticks: {precision: 0}, title: {display: true, text: 'Accounts'}}}}});
+  $('histNote').textContent = `Tier 1 = score ${fmtSet('tier1')} or more, Tier 2 = ${fmtSet('tier2')} or more, Tier 3 = below ${fmtSet('tier2')}.`;
+  // Act now reasons
+  const g = [...groupBy(rows.filter(r => !blank(r.hot_trigger)), r => r.hot_trigger)].map(([k, a]) => [k, a.length]).sort((a, b) => b[1] - a[1]);
+  $('reasonsNone').hidden = g.length > 0; $('reasonsBox').style.display = g.length ? '' : 'none';
+  draw('cReasons', {type: 'bar', data: {labels: g.map(x => x[0]), datasets: [{label: 'Accounts', backgroundColor: HOT_COLOUR, data: g.map(x => x[1])}]},
+    options: {indexAxis: 'y', plugins: {legend: {display: false}}, scales: {x: {beginAtZero: true, ticks: {precision: 0}, title: {display: true, text: 'Accounts'}}}}});
+}
+const LIST_COLS = [
+  {k: 'priority_score', label: 'Score', f: (v, r) => `<span class="score ${TIER_CLS[r.tier]}" title="${esc(r.tier)}">${fmt(v)}</span>`},
+  {k: 'company_name', label: 'Company', f: v => `<span class="co">${esc(v)}</span>`},
+  {k: 'profile', label: 'Profile', f: v => `<span class="prof">${esc(v)}</span>`},
+  {k: 'hot_trigger', label: 'Act now', f: v => blank(v) ? '' : `<span class="badge b-hot"><i class="fa-solid fa-bolt"></i> ${esc(v)}</span>`},
+  {k: 'chips', label: 'Why', f: v => v.map(([t, kind]) => `<span class="tag ${kind === 'flag' ? 'tag-flag' : kind === 'est' ? 'tag-est' : ''}">${esc(t)}</span>`).join('')},
+];
+const CSV_COLS = [{k: 'account_id', label: 'Account ID'}, {k: 'company_name', label: 'Company'}, {k: 'list', label: 'List'}, {k: 'priority_score', label: 'Priority score'}, {k: 'tier', label: 'Tier'}, {k: 'workbook_score', label: 'Score before Act now bonus'}, {k: 'workbook_tier', label: 'Tier before Act now bonus'},
+  {k: 'hot_trigger', label: 'Act now'}, {k: 'why', label: 'Why'}, {k: 'industry', label: 'Industry'}, {k: 'employee_band', label: 'Employee band'}, {k: 'region', label: 'Region'}, {k: 'seats_added_6m', label: 'Seats added (6 months)'}, {k: 'estimated_fields', label: 'Estimated'}];
+const listRows = (f, rows) => rows.filter(r => !f.q || r.company_name.toLowerCase().includes(f.q));
+function rList(f, rows) {
+  const out = listRows(f, rows);
+  $('listSub').textContent = `${fmt(out.length)} accounts · Act now first, then by score`;
+  $('listNone').hidden = out.length > 0;
+  table($('tList'), LIST_COLS, out);
+}
+$('listSearch').oninput = () => { $('topSearch').value = $('listSearch').value; render(); };
+$('topSearch').oninput = () => { $('listSearch').value = $('topSearch').value; if (page !== 'priorities') go('priorities'); else render(); };
+$('btnCsv').onclick = $('btnCsv2').onclick = () => { const f = filt();
+  download(`priority_list_${f.team.replace('|', '_').replace(/ /g, '_')}.csv`, listRows(f, current).map(r => ({...r, list: teamLabel(r.team), why: r.chips.map(c => c[0]).join(' · ')})), CSV_COLS); };
+
+// ---------------- Data glossary
+const GAP_FIELDS = {industry: r => blank(r.industry), employee_band: r => blank(r.employee_band), website: r => blank(r.web_visits_30d),
+  news_jobs: r => blank(r.news_signal) && blank(r.job_postings_30d), seats: r => blank(r.seats_added_6m), diamond: r => blank(r.diamond_referral), competitor: r => blank(r.competitor_client)};
+const GAP_LABEL = {industry: 'Industry', employee_band: 'Employee band', website: 'Website activity', news_jobs: 'News and jobs', seats: 'Seat growth', diamond: 'Diamond referral', competitor: 'Competitor client'};
+const byGoal = g => D.rows.filter(r => r.goal === g);
+const gap = (field, goal) => { const a = byGoal(goal); return a.filter(GAP_FIELDS[field]).length / a.length; };
+const G = (field, goal) => `<b>${pct(gap(field, goal), 0)}</b>`;
+function glossCard(title, tag, lead, facts) {
+  return `<div class="card ins"><div class="card-head"><h3>${esc(title)}</h3>${tag ? `<span>${esc(tag)}</span>` : ''}</div><div class="card-body"><p class="lead">${lead}</p>`
+    + (facts ? `<dl class="facts">${facts.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>` : '') + '</div></div>';
+}
+function rGlance() {
+  const nl = c => S(c + '_max_nl'), og = c => S(c + '_max_og');
+  const baseNl = nl('web') + nl('news') + S('dia_max') + S('competitor_max'), baseOg = og('web') + og('news') + S('seat_max_og');
+  const lo = 1 - S('mod_min'), hi = S('mod_max') - 1;
+  const nudge = `×${fmtSet('mod_min')}–×${fmtSet('mod_max')}`, nudgePct = Math.abs(lo - hi) < 1e-9 ? `±${pct(hi, 0)}` : `−${pct(lo, 0)} to +${pct(hi, 0)}`;
+  const groupMax = {Website: [nl('web'), og('web')], 'News and jobs': [nl('news'), og('news')], 'Seat growth': [null, S('seat_max_og')], Flags: [S('dia_max') + S('competitor_max'), null]};
+  const rows = [
+    ['Team Builder visit', 'Website', 'Visited the Team Builder page in the last 30 days', 'team_builder_visit', nl('web') * S('tb_share'), og('web') * S('tb_share')],
+    ['Form fill', 'Website', 'Filled in any form on our website in the last 30 days', 'form_fill_30d', nl('web') * S('ff_share'), og('web') * S('ff_share')],
+    ['Visit volume', 'Website', `Website visits in the last 30 days; full points at ${fmtSet('vol_cap')} visits`, 'web_visits_30d', nl('web') * S('vol_share'), og('web') * S('vol_share')],
+    ['News', 'News and jobs', 'Strongest recent news item (funding, PE buyout, M&A, expansion…), weighted by type and age', 'news_signal, news_signal_date', nl('news') * S('news_share'), og('news') * S('news_share')],
+    ['Hiring', 'News and jobs', `Job postings in the last 30 days; full points for a hiring spike or ${fmtSet('jobs_cap')} postings`, 'job_postings_30d, hiring_spike', nl('news') * S('jobs_share'), og('news') * S('jobs_share')],
+    ['Seats added', 'Seat growth', `Seats the client added in the last 6 months, in bands (share of the points: ${seatBandText()})`, 'seats_added_6m', null, S('seat_max_og')],
+    ['Diamond referral', 'Flags', 'Referred to us through the Diamond referral program', 'diamond_referral', S('dia_max'), null],
+    ['Competitor client', 'Flags', 'Has been a client of a competing outsourcing provider (named in Cloudstaffer resumes)', 'competitor_client', S('competitor_max'), null],
+  ].map(([signal, part, what, data, a, b]) => ({signal, part, what, data, nlP: a === null ? null : r1(a), nlS: a === null ? null : a / baseNl, ogP: b === null ? null : r1(b), ogS: b === null ? null : b / baseOg}));
+  rows.push({signal: 'Total', part: 'Total', what: 'All signals together, before the adjustments below', data: '', nlP: baseNl, nlS: 1, ogP: baseOg, ogS: 1, _tot: 1});
+  rows.push({signal: 'Industry trend', part: 'Adjustments', what: 'How fast the company\'s industry is growing; multiplies the total', data: 'industry_trend', nlP: nudge, nlS: nudgePct, ogP: nudge, ogS: nudgePct});
+  rows.push({signal: 'Act now bonus', part: 'Adjustments', what: 'Form fill, a client\'s Team Builder visit, or a recent funding round or PE buyout', data: 'hot_trigger',
+    nlP: '+' + fmtSet('hot_bonus'), nlS: '+' + pct(S('hot_bonus') / baseNl, 0), ogP: '+' + fmtSet('hot_bonus'), ogS: '+' + pct(S('hot_bonus') / baseOg, 0)});
+  rows.push({signal: 'Act now: Diamond referral', part: 'Adjustments', what: 'A Diamond referral is an Act now trigger too, but it already adds flag points, so its bonus is smaller', data: 'diamond_referral',
+    nlP: '+' + fmtSet('hot_bonus_diamond'), nlS: '+' + pct(S('hot_bonus_diamond') / baseNl, 1).replace('.0%', '%'), ogP: null, ogS: null});
+  const pts = v => v === null ? '<span class="prof">Not used</span>' : typeof v === 'number' ? fmt(v, Number.isInteger(v) ? 0 : 1) : esc(v);
+  const nums = r => `<td class="n">${pts(r.nlP)}</td><td class="n">${pts(r.ogP)}</td>`;   // both lists total 100, so points are also the % of the score
+  // the main signal is one merged cell (rowspan) over its features, like a merged cell in Excel
+  let h = '<table><thead><tr><th>Signal</th><th>Feature</th><th>What it is</th><th>Data used</th><th class="n">New Logo<br><span class="sub">points</span></th><th class="n">Organic Growth<br><span class="sub">points</span></th><th>If the data is missing</th></tr></thead><tbody>';
+  rows.forEach((r, i) => {
+    const first = i === 0 || rows[i - 1].part !== r.part;
+    if (r._tot) { h += `<tr class="tot grp-start"><td colspan="4">Total: all signals together, before the adjustments below</td>${nums(r)}<td></td></tr>`; return; }
+    let sig = '';
+    if (first) {
+      const span = rows.filter(x => x.part === r.part).length, mx = groupMax[r.part];
+      const sub = !mx ? 'Change the total after the points are added' : mx[0] === null ? `Organic Growth only: up to ${fmt(mx[1], Number.isInteger(mx[1]) ? 0 : 1)} points`
+        : `Up to ${fmt(mx[0])} points on New Logo` + (mx[1] === null ? ', not used on Organic Growth' : `, ${fmt(mx[1], Number.isInteger(mx[1]) ? 0 : 1)} on Organic Growth`);
+      sig = `<td class="sig" rowspan="${span}"><b>${esc(r.part)}</b><small>${sub}</small></td>`;
+    }
+    let miss = '';
+    if (r.part === 'Website' || r.part === 'News and jobs' || r.part === 'Seat growth') {            // the baseline fills the whole signal, so one merged cell
+      if (first) {
+        const w = r.part === 'Website', sg = r.part === 'Seat growth', base = S(w ? 'base_web' : sg ? 'base_seats' : 'base_news'), mx = groupMax[r.part];
+        const where = mx[0] === null ? `${P(base * mx[1])} points on Organic Growth` : `${P(base * mx[0])} points on New Logo, ${P(base * mx[1])} on Organic Growth`;
+        miss = `<td class="miss" rowspan="${rows.filter(x => x.part === r.part).length}"><b>Typical value: ${pct(base, 0)} of the signal's maximum</b>`
+          + `<small>${where}. ${w ? 'Used when we have no website visit data.' : sg ? 'Used when we have no seat history for the client.' : 'Used when we have neither a news item nor job-posting data.'}</small></td>`;
+      }
+    } else miss = `<td class="miss">${r.part === 'Flags' ? 'Counts as "No": 0 points' : r.signal === 'Industry trend' ? 'Industry unknown: ×1.0, no effect' : 'No trigger: no bonus'}</td>`;
+    h += `<tr class="${first ? 'grp-start' : ''}">${sig}<td class="feat"><b>${esc(r.signal)}</b></td><td class="what">${esc(r.what)}</td>`
+      + `<td class="data"><span class="mono prof">${r.data.split(', ').map(x => esc(x).replace(/_/g, '_<wbr>')).join('<br>')}</span></td>${nums(r)}${miss}</tr>`;
+  });
+  $('tGlance').innerHTML = h + '</tbody></table>';
+}
+function rGlossary() {
+  rGlance();
+  const NL = 'New Logo', OG = 'Organic Growth';
+  $('glossInd').innerHTML = [
+    glossCard('Company profile', 'Context', 'Who the company is: what industry it is in, how many people it employs and where it is based.', [
+      ['Tracks', 'Industry, employee band and region'], ['Comes from', 'HubSpot, MyStaff'], ['Applies to', 'Both lists'],
+      ['In the score', 'Adds no points on its own. Used for filtering and context, and industry feeds the industry trend below.'],
+      ['Unknown today', `Industry: ${G('industry', NL)} of prospects, ${G('industry', OG)} of clients. Employee band: ${G('employee_band', NL)} of prospects, ${G('employee_band', OG)} of clients.`]]),
+    glossCard('Website activity', 'Buying signal', 'How engaged the company has been with our website in the last 30 days. A visit to the Team Builder page is the strongest sign of intent.', [
+      ['Tracks', 'Team Builder page visits, form fills and number of visits'], ['Comes from', 'HubSpot'], ['Applies to', 'Both lists'],
+      ['In the score', `Up to ${b('web_max_nl')} points on New Logo and ${b('web_max_og')} on Organic Growth.`],
+      ['If unknown', 'We assume a typical level and show a "No website data" chip.'], ['Act now', 'A form fill, or a Team Builder visit by an existing client'],
+      ['Unknown today', `${G('website', NL)} of prospects, ${G('website', OG)} of clients`]]),
+    glossCard('News, jobs and social', 'Buying signal', 'Public signs that a company is growing or changing, which often means it will need more staff soon.', [
+      ['Tracks', 'Funding rounds, PE buyouts, M&amp;A, expansion, restructuring and leadership changes, plus job postings and hiring spikes'],
+      ['Comes from', 'Yoga (news), TheHunt (jobs)'], ['Applies to', 'Both lists'],
+      ['In the score', `Up to ${b('news_max_nl')} points on New Logo and ${b('news_max_og')} on Organic Growth. Stronger and more recent news counts for more.`],
+      ['If unknown', 'We assume a typical level and show a "No news data" chip.'], ['Act now', `A funding round or PE buyout in the last ${b('hot_days')} days`],
+      ['Unknown today', `${G('news_jobs', NL)} of prospects, ${G('news_jobs', OG)} of clients`]]),
+    glossCard('Seat growth', 'Growth signal', 'How many seats an existing client has added in the last 6 months. A client that keeps adding seats is expanding with us and is the most likely to add more.', [
+      ['Tracks', 'Seats added over the last 6 months, in bands: 0, 1–5, 6–10 and 11 or more'], ['Comes from', 'Seat history (mock values for now)'], ['Applies to', 'Organic Growth only'],
+      ['In the score', `Up to ${b('seat_max_og')} points. ${seatBandText()} of the points.`],
+      ['If unknown', 'We assume a typical level and show a "No … seat growth data" chip.'],
+      ['Unknown today', `${G('seats', OG)} of clients`]]),
+    glossCard('Industry trend', 'Buying signal', 'Whether the company\'s whole industry is growing, for example through sector growth, new regulation or labour shortages that raise demand for outsourced staff.', [
+      ['Tracks', 'A trend score for each industry, from weak to strong'], ['Comes from', 'Positive Industry News (still to be built; mock values for now)'], ['Applies to', 'Both lists'],
+      ['In the score', `Nudges the score up or down, from ×${b('mod_min')} to ×${b('mod_max')}. It cannot create a high score on its own, because it says nothing about the company itself.`],
+      ['Shown as', 'A "Growing industry" chip for the strongest sectors']]),
+    glossCard('Diamond referral', 'Flag', 'The company was referred to us through the Diamond referral program. Referred leads tend to convert faster.', [
+      ['Comes from', 'TheHunt'], ['Applies to', 'New Logo only'], ['In the score', `Adds ${b('dia_max')} points`],
+      ['Act now', 'Always'], ['If unknown', 'Treated as not referred'], ['Unknown today', `${G('diamond', NL)} of prospects`]]),
+    glossCard('Competitor client', 'Flag', 'The company has been a client of a competing outsourcing provider, because Cloudstaffer resumes name it as a past client. It shows the company is open to outsourcing.', [
+      ['Comes from', 'CS Jobs'], ['Applies to', 'New Logo only'], ['In the score', `Adds ${b('competitor_max')} points`],
+      ['If unknown', 'Treated as not a competitor client'], ['Unknown today', `${G('competitor', NL)} of prospects`]]),
+  ].join('');
+  $('glossTerms').innerHTML = [
+    glossCard('Priority score', '', `One number from 0 to 100 for how worth pursuing an account is right now. Tier 1 is ${b('tier1')} or more, Tier 2 is ${b('tier2')} or more, and everything below is Tier 3.`),
+    glossCard('Act now', '', `Accounts with a time-sensitive trigger, such as a form fill or a Diamond referral. They get ${b('hot_bonus')} extra points (${b('hot_bonus_diamond')} for a Diamond referral, which already adds flag points) and are pinned to the top of the list whatever their score, because timing matters more than overall fit.`),
+    glossCard('Estimated data', '', 'When we do not have website, news or seat growth data for an account, its score uses a typical level instead. A yellow "No … data" chip shows which part was estimated, so you know the score is based on a partial picture.'),
+    glossCard('Roles and lists', '', `Each account has one owner role: Marketing, SDR or BDM. Marketing and BDM each have a New Logo list (prospects) and an Organic Growth list (existing clients); SDR works New Logo only. Choose the role and list in the filter bar. In this mock the owner roles are made up.`),
+  ].join('');
+}
+
+// ---------------- How the score works
+const r1 = x => Math.round(x * 10) / 10;
+function signalPoints() {
+  const nl = c => S(c + '_max_nl'), og = c => S(c + '_max_og');
+  const rows = [
+    {component: 'Website activity', signal: 'Team Builder page visit', nl: r1(nl('web') * S('tb_share')), og: r1(og('web') * S('tb_share')), how: 'Visited the Team Builder page in the last 30 days'},
+    {component: 'Website activity', signal: 'Form fill', nl: r1(nl('web') * S('ff_share')), og: r1(og('web') * S('ff_share')), how: 'Filled in any form in the last 30 days'},
+    {component: 'Website activity', signal: 'Visit volume', nl: r1(nl('web') * S('vol_share')), og: r1(og('web') * S('vol_share')), how: `${fmtSet('vol_cap')} or more website visits in 30 days`},
+    {component: 'News and jobs', signal: 'Strongest news item', nl: r1(nl('news') * S('news_share')), og: r1(og('news') * S('news_share')), how: `A funding round or PE buyout from the last ${SET.rec_1.label.replace('0–', '')}; other or older news earns less`},
+    {component: 'News and jobs', signal: 'Hiring activity', nl: r1(nl('news') * S('jobs_share')), og: r1(og('news') * S('jobs_share')), how: `A hiring spike, or ${fmtSet('jobs_cap')} or more job postings`},
+    {component: 'Seat growth', signal: 'Seats added in 6 months', nl: 'Not used', og: S('seat_max_og'), how: `Full credit at 11 or more seats added; fewer seats earn less (table below)`},
+    {component: 'Flags', signal: 'Diamond referral', nl: S('dia_max'), og: 'Not used', how: 'Referred through the Diamond referral program'},
+    {component: 'Flags', signal: 'Competitor client', nl: S('competitor_max'), og: 'Not used', how: 'Named as a competitor\'s past client in Cloudstaffer resumes'},
+  ];
+  const tot = k => r1(sum(rows.map(r => typeof r[k] === 'number' ? r[k] : 0)));
+  rows.push({component: 'All signals', signal: 'Total', nl: tot('nl'), og: tot('og'), how: 'The most an account can score before the industry nudge', _tot: 1});
+  const nudge = `×${fmtSet('mod_min')} to ×${fmtSet('mod_max')}`;
+  rows.push({component: 'Multiplier', signal: 'Industry nudge', nl: nudge, og: nudge, how: 'Applied to the total'});
+  rows.push({component: 'Bonus', signal: 'Act now bonus', nl: S('hot_bonus'), og: S('hot_bonus'), how: 'Form fill, a client\'s Team Builder visit, or a recent funding round or PE buyout; added after the nudge, and the final score is capped at 100'});
+  rows.push({component: 'Bonus', signal: 'Act now: Diamond referral', nl: S('hot_bonus_diamond'), og: 'Not used', how: 'A smaller bonus, because a Diamond referral already adds flag points'});
+  rows.forEach((r, i) => { r._first = i === 0 || rows[i - 1].component !== r.component; });
+  return rows;
+}
+function rMethod() {
+  $('steps').innerHTML = [
+    ['Measure each signal', 'Website activity and News and jobs are each rated from 0% (nothing) to 100% (as strong as it gets).',
+      `Website (<b>${P(S('web_max_nl'))}</b> points): a Team Builder visit is worth <b>${P(S('web_max_nl') * S('tb_share'))}</b>, a form fill <b>${P(S('web_max_nl') * S('ff_share'))}</b>, and visit volume <b>${P(S('web_max_nl') * S('vol_share'))}</b> (full credit at ${b('vol_cap')} visits in 30 days).`,
+      `Seat growth (Organic Growth only): seats the client added in the last 6 months, in bands (${seatBandText()}).`,
+      `News and jobs (<b>${P(S('news_max_nl'))}</b> points): the strongest news item is worth <b>${P(S('news_max_nl') * S('news_share'))}</b>, weighted by its type and how recent it is (tables below), and hiring <b>${P(S('news_max_nl') * S('jobs_share'))}</b> (full credit for a hiring spike or ${b('jobs_cap')} job postings).`],
+    ['Turn signals into points', `Each signal can add up to a set number of points (table below). On Organic Growth, Website and News and jobs have ${b('web_max_og')} points each and Seat growth has ${b('seat_max_og')}. Partial activity earns part of the points.`],
+    ['Fill gaps with a typical value', `If we have no website data, we assume ${b('base_web')} of the maximum; if we have no news or jobs data, ${b('base_news')}; if we have no seat history for a client, ${b('base_seats')}. An account we know little about lands in the middle rather than at the top or bottom, and only real evidence can push it into Tier 1. A missing referral or competitor client record counts as "no".`],
+    ['Add the flags (New Logo only)', `A Diamond referral adds ${b('dia_max')} points and being a competitor client adds ${b('competitor_max')}.`],
+    ['Apply the industry nudge', `The total is multiplied by between ${b('mod_min')} (weakest industry) and ${b('mod_max')} (strongest).`],
+    ['Add the Act now bonus and set the tier', `An account with any Act now trigger (Diamond referral, form fill, a client's Team Builder visit, or a funding round or PE buyout in the last ${b('hot_days')} days) gets ${b('hot_bonus')} extra points (${b('hot_bonus_diamond')} when the trigger is a Diamond referral, which already adds flag points), with the score capped at 100. Tier 1 is ${b('tier1')} or more, Tier 2 is ${b('tier2')} or more.`,
+      'Act now accounts are also pinned to the top of their list. A Diamond referral is both a flag and an Act now trigger, so it counts twice, which is why its bonus is smaller.'],
+  ].map(([h, p, ...muted], i) => `<div class="step"><div class="step-num">${i + 1}</div><div><h4>${h}</h4><p>${p}</p>${muted.map(m => `<p class="muted">${m}</p>`).join('')}</div></div>`).join('');
+  const bold = (v, r) => r._tot ? `<b>${v}</b>` : v;
+  const num = v => typeof v === 'number' ? fmt(v, Number.isInteger(v) ? 0 : 1) : esc(v);
+  table($('tSig'), [
+    {k: 'component', label: 'Part of', f: (v, r) => r._first ? `<span class="prof">${esc(v)}</span>` : ''},
+    {k: 'signal', label: 'Signal', f: (v, r) => bold(esc(v), r)},
+    {k: 'nl', label: 'New Logo', n: 1, f: (v, r) => bold(num(v), r)},
+    {k: 'og', label: 'Organic Growth', n: 1, f: (v, r) => bold(num(v), r)},
+    {k: 'how', label: 'How to earn the full points', f: (v, r) => bold(esc(v), r)}], signalPoints());
+  const mini = kind => D.settings.filter(r => r.kind === kind).map(r => ({label: r.label, v: fmtSet(r.key)}));
+  table($('tNews'), [{k: 'label', label: 'Type of news'}, {k: 'v', label: 'Strength', n: 1}], mini('news'));
+  table($('tRec'), [{k: 'label', label: 'Age of news'}, {k: 'v', label: 'Factor', n: 1}], mini('recency'));
+  table($('tSeat'), [{k: 'band', label: 'Seats added in the last 6 months'}, {k: 'share', label: 'Share of points', n: 1}, {k: 'pts', label: 'Points', n: 1}],
+    SEAT_BANDS.map(([l, k]) => ({band: l, share: fmtSet(k), pts: fmt(S(k) * S('seat_max_og'), Number.isInteger(S(k) * S('seat_max_og')) ? 0 : 1)})));
+  rExample();
+}
+const exOpts = [...LISTED].sort((a, b) => a.company_name.localeCompare(b.company_name));
+fillSelect('exPick', exOpts.map(r => r.account_id), exOpts.map(r => `${r.company_name} · ${teamLabel(r.team)}`));
+$('exPick').value = M.default_example;
+$('exPick').onchange = () => rExample();
+function rExample() {
+  const a = D.rows.find(r => r.account_id === $('exPick').value);
+  if (!a) { $('tEx').innerHTML = ''; return; }
+  const og = a.goal === 'Organic Growth', sfx = og ? 'og' : 'nl';
+  const p1 = v => blank(v) ? '–' : fmt(v, 1);
+  const rows = [
+    ['List', `<b>${esc(teamLabel(a.team))}</b>`, ''],
+    ['Website activity', blank(a.web_signal) ? `No website data, so the typical ${b('base_web')} is used` : `Signal of <b>${pct(a.web_signal, 0)}</b>`, `<b>${p1(a.web_pts)}</b> <span class="prof">of ${fmtSet('web_max_' + sfx)}</span>`],
+    ['News and jobs', blank(a.news_jobs_signal) ? `No news or jobs data, so the typical ${b('base_news')} is used` : `<b>${esc(blank(a.news_signal) ? 'No news' : a.news_signal)}</b>, signal of <b>${pct(a.news_jobs_signal, 0)}</b>`, `<b>${p1(a.news_jobs_pts)}</b> <span class="prof">of ${fmtSet('news_max_' + sfx)}</span>`],
+    ...(og ? [['Seat growth', blank(a.seats_added_6m) ? `No seat data, so the typical ${b('base_seats')} is used` : `<b>${fmt(a.seats_added_6m)}</b> seats added in 6 months (band <b>${esc(a.seat_band)}</b>), signal of <b>${pct(a.seat_signal, 0)}</b>`, `<b>${p1(a.seat_pts)}</b> <span class="prof">of ${fmtSet('seat_max_og')}</span>`]] : []),
+    ['Diamond referral', og ? '<span class="prof">Not used on Organic Growth</span>' : `<b>${esc(a.diamond_referral ?? 'Unknown (counts as No)')}</b>`, og ? '' : `<b>${p1(a.diamond_pts)}</b>`],
+    ['Competitor client', og ? '<span class="prof">Not used on Organic Growth</span>' : `<b>${esc(a.competitor_client ?? 'Unknown (counts as No)')}</b>`, og ? '' : `<b>${p1(a.competitor_pts)}</b>`],
+    ['Points before nudge', '', `<b>${p1(a.base_points)}</b>`, 'tot'],
+    ['Industry nudge', blank(a.industry) ? 'Industry unknown, so no nudge' : `<b>${esc(a.industry)}</b>, trend <b>${fmt(a.industry_trend, 1)}</b>`, `× <b>${fmt(a.industry_modifier, 2)}</b>`],
+    ['Act now bonus', blank(a.hot_trigger) ? 'No Act now trigger, so no bonus' : `<b>${esc(a.hot_trigger)}</b>`, `+ <b>${blank(a.hot_trigger) ? 0 : fmt(hotBonus(a.hot_trigger), Number.isInteger(hotBonus(a.hot_trigger)) ? 0 : 1)}</b>`],
+    ['Priority score', `<span class="score ${TIER_CLS[a.tier]}">${esc(a.tier)}</span>` + (a.workbook_score !== a.priority_score ? ` <span class="prof">(without the bonus: ${fmt(a.workbook_score)}, ${esc(a.workbook_tier)}${a.priority_score === 100 ? '; capped at 100' : ''})</span>` : ''), `<span class="big">${fmt(a.priority_score)}</span>`, 'tot'],
+    ['Act now', blank(a.hot_trigger) ? 'No trigger, so it is placed by score' : `<b>${esc(a.hot_trigger)}</b>, so it is pinned to the top of its list`, ''],
+  ];
+  $('tEx').innerHTML = '<table><tbody>' + rows.map(([l, d, v, cls]) => `<tr class="${cls || ''}"><td class="lbl">${l}</td><td>${d}</td><td class="n">${v}</td></tr>`).join('') + '</tbody></table>';
+}
+
+// ---------------- QA
+function rQa() {
+  table($('tQa'), [{k: 'step', label: 'Step'}, {k: 'rows', label: 'Accounts', n: 1, f: v => fmt(v)}], D.qa);
+  const fields = Object.keys(GAP_FIELDS);
+  draw('cGaps', {type: 'bar', data: {labels: fields.map(k => GAP_LABEL[k]),
+    datasets: ['New Logo', 'Organic Growth'].map(g => ({label: g, backgroundColor: GOAL_COLOUR[g], data: fields.map(k => ((k === 'diamond' || k === 'competitor') && g === 'Organic Growth') || (k === 'seats' && g === 'New Logo') ? null : gap(k, g))}))},
+    options: {indexAxis: 'y', scales: {x: {...pctAxis, max: 1}}}});
+  const teams = M.shown_teams;
+  const rows = teams.map(t => { const a = D.rows.filter(r => r.team === t); return {list: teamLabel(t), n: a.length, ...Object.fromEntries(TIERS.map(x => [x, a.filter(r => r.tier === x).length])), hot: a.filter(r => !blank(r.hot_trigger)).length}; });
+  rows.push({list: 'Total', n: D.rows.length, ...Object.fromEntries(TIERS.map(x => [x, D.rows.filter(r => r.tier === x).length])), hot: D.rows.filter(r => !blank(r.hot_trigger)).length});
+  table($('tTier'), [{k: 'list', label: 'List'}, {k: 'n', label: 'Accounts', n: 1, f: v => fmt(v)}, ...TIERS.map(t => ({k: t, label: t, n: 1, f: v => fmt(v)})), {k: 'hot', label: 'Act now', n: 1, f: v => fmt(v)}], rows);
+  const goalRows = ['New Logo', 'Organic Growth'].map(g => ({what: g, a: D.rows.filter(r => r.goal === g)}));
+  table($('tSeatQa'), [{k: 'what', label: 'Goal'}, ...TIERS.flatMap(t => [{k: 'w' + t, label: `${t} (csv)`, n: 1, f: v => fmt(v)}, {k: 'n' + t, label: `${t} (now)`, n: 1, f: v => `<b>${fmt(v)}</b>`}]),
+    {k: 'wavg', label: "Avg score (csv)", n: 1}, {k: 'navg', label: "Avg score (now)", n: 1, f: v => `<b>${v}</b>`}],
+    goalRows.map(({what, a}) => ({what, ...Object.fromEntries(TIERS.flatMap(x => [['w' + x, a.filter(r => r.csv_tier === x).length], ['n' + x, a.filter(r => r.workbook_tier === x).length]])),
+      wavg: fmt(sum(a.map(r => r.csv_score)) / a.length, 1), navg: fmt(sum(a.map(r => r.workbook_score)) / a.length, 1)})));
+  const bonusRows = [...teams.map(t => [teamLabel(t), D.rows.filter(r => r.team === t)]), ['Total', D.rows]].map(([list, a]) => ({list,
+    ...Object.fromEntries(TIERS.flatMap(x => [['w' + x, a.filter(r => r.workbook_tier === x).length], ['n' + x, a.filter(r => r.tier === x).length]])),
+    moved: a.filter(r => r.tier !== r.workbook_tier).length}));
+  table($('tBonus'), [{k: 'list', label: 'List'}, ...TIERS.flatMap(t => [{k: 'w' + t, label: `${t} (before bonus)`, n: 1, f: v => fmt(v)}, {k: 'n' + t, label: `${t} (with bonus)`, n: 1, f: v => `<b>${fmt(v)}</b>`}]),
+    {k: 'moved', label: 'Accounts moving up a tier', n: 1, f: v => fmt(v)}], bonusRows);
+}
+
+// ---- wire up
+$('fRole').onchange = () => { fillLists(); fillTeamFilters(); render(); };
+$('fList').onchange = () => { fillTeamFilters(); render(); };
+$('fInd').onchange = $('fBand').onchange = () => render();
+$('btnReset').onclick = () => { $('fRole').value = M.roles[0]; fillLists(); fillTeamFilters(); $('listSearch').value = $('topSearch').value = ''; render(); };
+const startPage = location.hash.slice(1);
+if (TITLES[startPage]) go(startPage); else render();
+</script>
+</body>
+</html>

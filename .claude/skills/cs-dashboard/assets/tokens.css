@@ -1,0 +1,805 @@
+/*! Cloudstaff Design System — Tokens
+ *  All design tokens (colours, spacing, typography, radii, shadows, motion, z-index,
+ *  and component-level token mappings).
+ *  To rebrand: load this file, then a theme-X.css that re-declares :root tokens.
+ *  https://cloudstaff.com/design-system
+ */
+
+@layer foundation {
+
+      :root {
+        --color-static-black: #000000;
+        --color-static-white: #ffffff;
+
+        --color-base-primary: var(--color-static-black);
+        --color-base-primary-contrast: var(--color-static-white);
+        --color-base-secondary: #50505c;
+        --color-base-secondary-contrast: var(--color-static-white);
+
+        --color-brand-primary: #007aff;
+        --color-brand-primary-contrast: var(--color-static-white);
+        --color-brand-secondary: #00ab9c;
+        --color-brand-secondary-contrast: var(--color-static-white);
+        --color-brand-primary-soft: color-mix(in oklch, var(--color-brand-primary), white 85%);
+        --color-brand-primary-accent: color-mix(in oklch, var(--color-brand-primary), white 70%);
+        --color-brand-primary-bold: color-mix(in oklch, var(--color-brand-primary), black 18%);
+        --color-brand-secondary-soft: color-mix(in oklch, var(--color-brand-secondary), white 85%);
+        --color-brand-secondary-accent: color-mix(in oklch, var(--color-brand-secondary), white 70%);
+        --color-brand-secondary-bold: color-mix(in oklch, var(--color-brand-secondary), black 18%);
+
+        /* WCAG AA-compliant brand variants — for use as backgrounds when
+           the foreground is white text below large-text threshold (under
+           18pt regular / 14pt bold). The base brand color (#007aff) is
+           4.02:1 against white, which fails WCAG AA's 4.5:1 requirement
+           for normal-size text. The AA variants are darkened just enough
+           to clear 4.5:1 while remaining visually nearly identical to
+           the brand color. Use these for buttons, brand-color cards, and
+           any solid-brand-background context.
+
+             --color-brand-primary-strong:   ~4.66:1 against white (8% black mix)
+             --color-brand-secondary-strong: ~4.83:1 against white (25% black mix —
+                                         needed because #00ab9c teal is much
+                                         lighter perceptually than the blue) */
+        --color-brand-primary-strong:   color-mix(in oklch, var(--color-brand-primary), black 8%);
+        --color-brand-secondary-strong: color-mix(in oklch, var(--color-brand-secondary), black 25%);
+
+        /* Interaction-state tints for brand-primary.
+           Use these instead of inline color-mix(white N%) so the whole
+           system tweaks together when these values change.
+
+           Hierarchy: hover (lightest) < selected (medium) < active (darkest).
+           Applied to backgrounds for menu items, options, list rows, etc. */
+        --color-brand-primary-hover:    color-mix(in oklch, var(--color-brand-primary), white 94%);
+        --color-brand-primary-selected: color-mix(in oklch, var(--color-brand-primary), white 88%);
+        --color-brand-primary-active:   color-mix(in oklch, var(--color-brand-primary), white 82%);
+
+        --color-feature-01: #00ab9c;
+        --color-feature-01-contrast: var(--color-static-white);
+        --color-feature-01-soft: color-mix(in oklch, var(--color-feature-01), white 85%);
+        --color-feature-01-accent: color-mix(in oklch, var(--color-feature-01), white 70%);
+        --color-feature-01-bold: color-mix(in oklch, var(--color-feature-01), black 18%);
+        --color-feature-02: #ffc426;
+        --color-feature-02-contrast: var(--color-static-black);
+        --color-feature-02-soft: color-mix(in oklch, var(--color-feature-02), white 85%);
+        --color-feature-02-accent: color-mix(in oklch, var(--color-feature-02), white 70%);
+        --color-feature-02-bold: color-mix(in oklch, var(--color-feature-02), black 18%);
+        --color-feature-03: #e34678;
+        --color-feature-03-contrast: var(--color-static-white);
+        --color-feature-03-soft: color-mix(in oklch, var(--color-feature-03), white 85%);
+        --color-feature-03-accent: color-mix(in oklch, var(--color-feature-03), white 70%);
+        --color-feature-03-bold: color-mix(in oklch, var(--color-feature-03), black 18%);
+        --color-feature-04: #4121a9;
+        --color-feature-04-contrast: var(--color-static-white);
+        --color-feature-04-soft: color-mix(in oklch, var(--color-feature-04), white 85%);
+        --color-feature-04-accent: color-mix(in oklch, var(--color-feature-04), white 70%);
+        --color-feature-04-bold: color-mix(in oklch, var(--color-feature-04), black 18%);
+        --color-feature-05: #aa67fd;
+        --color-feature-05-contrast: var(--color-static-white);
+        --color-feature-05-soft: color-mix(in oklch, var(--color-feature-05), white 85%);
+        --color-feature-05-accent: color-mix(in oklch, var(--color-feature-05), white 70%);
+        --color-feature-05-bold: color-mix(in oklch, var(--color-feature-05), black 18%);
+        --color-feature-06: #f22c46;
+        --color-feature-06-contrast: var(--color-static-white);
+        --color-feature-06-soft: color-mix(in oklch, var(--color-feature-06), white 85%);
+        --color-feature-06-accent: color-mix(in oklch, var(--color-feature-06), white 70%);
+        --color-feature-06-bold: color-mix(in oklch, var(--color-feature-06), black 18%);
+        --color-feature-07: #f46600;
+        --color-feature-07-contrast: var(--color-static-white);
+        --color-feature-07-soft: color-mix(in oklch, var(--color-feature-07), white 85%);
+        --color-feature-07-accent: color-mix(in oklch, var(--color-feature-07), white 70%);
+        --color-feature-07-bold: color-mix(in oklch, var(--color-feature-07), black 18%);
+        --color-feature-08: #36d6e7;
+        --color-feature-08-contrast: var(--color-static-black);
+        --color-feature-08-soft: color-mix(in oklch, var(--color-feature-08), white 85%);
+        --color-feature-08-accent: color-mix(in oklch, var(--color-feature-08), white 70%);
+        --color-feature-08-bold: color-mix(in oklch, var(--color-feature-08), black 18%);
+        --color-feature-09: #87dd7d;
+        --color-feature-09-contrast: var(--color-static-black);
+        --color-feature-09-soft: color-mix(in oklch, var(--color-feature-09), white 85%);
+        --color-feature-09-accent: color-mix(in oklch, var(--color-feature-09), white 70%);
+        --color-feature-09-bold: color-mix(in oklch, var(--color-feature-09), black 18%);
+        --color-feature-10: #50505c;
+        --color-feature-10-contrast: var(--color-static-white);
+        --color-feature-10-soft: color-mix(in oklch, var(--color-feature-10), white 85%);
+        --color-feature-10-accent: color-mix(in oklch, var(--color-feature-10), white 70%);
+        --color-feature-10-bold: color-mix(in oklch, var(--color-feature-10), black 18%);
+
+        --color-utility-success: #00ab9c;
+        --color-utility-success-contrast: var(--color-static-white);
+        --color-utility-success-soft: color-mix(in oklch, var(--color-utility-success), white 85%);
+        --color-utility-success-accent: color-mix(in oklch, var(--color-utility-success), white 70%);
+        --color-utility-success-bold: color-mix(in oklch, var(--color-utility-success), black 18%);
+        --color-utility-warning: #ffc426;
+        --color-utility-warning-contrast: var(--color-static-black);
+        --color-utility-warning-soft: color-mix(in oklch, var(--color-utility-warning), white 85%);
+        --color-utility-warning-accent: color-mix(in oklch, var(--color-utility-warning), white 70%);
+        --color-utility-warning-bold: color-mix(in oklch, var(--color-utility-warning), black 18%);
+        --color-utility-danger: #f22c46;
+        --color-utility-danger-contrast: var(--color-static-white);
+        --color-utility-danger-soft: color-mix(in oklch, var(--color-utility-danger), white 85%);
+        --color-utility-danger-accent: color-mix(in oklch, var(--color-utility-danger), white 70%);
+        --color-utility-danger-bold: color-mix(in oklch, var(--color-utility-danger), black 18%);
+        --color-utility-info: var(--color-brand-primary);
+        --color-utility-info-contrast: var(--color-static-white);
+        --color-utility-info-soft: color-mix(in oklch, var(--color-utility-info), white 85%);
+        --color-utility-info-accent: color-mix(in oklch, var(--color-utility-info), white 70%);
+        --color-utility-info-bold: color-mix(in oklch, var(--color-utility-info), black 18%);
+        --color-utility-muted: #99a1b3;
+        --color-utility-muted-contrast: var(--color-static-white);
+        --color-utility-muted-soft: color-mix(in oklch, var(--color-utility-muted), white 85%);
+        --color-utility-muted-accent: color-mix(in oklch, var(--color-utility-muted), white 70%);
+        --color-utility-muted-bold: color-mix(in oklch, var(--color-utility-muted), black 18%);
+
+        --color-surface-page: #f3f5f8;
+        --color-surface-page-contrast: #171a21;
+        --color-surface-canvas: #ffffff;
+        --color-surface-canvas-contrast: #171a21;
+        --color-surface-primary: #ffffff;
+        --color-surface-primary-contrast: #1f2430;
+        --color-surface-secondary: #eef2f7;
+        --color-surface-secondary-contrast: #1f2430;
+        --color-surface-tertiary: #e3e8f0;
+        --color-surface-tertiary-contrast: #1f2430;
+        --color-surface-inverse: #1f2430;
+        --color-surface-inverse-contrast: #ffffff;
+        --color-surface-overlay: rgba(12, 16, 24, 0.56);
+        --color-surface-scrim: rgba(9, 13, 22, 0.72);
+        --color-surface-page-soft: color-mix(in oklch, var(--color-surface-page), white 25%);
+        --color-surface-page-accent: color-mix(in oklch, var(--color-surface-page), var(--color-brand-primary) 6%);
+        --color-surface-page-bold: color-mix(in oklch, var(--color-surface-page), black 7%);
+        --color-surface-primary-soft: color-mix(in oklch, var(--color-surface-primary), white 20%);
+        --color-surface-primary-accent: color-mix(in oklch, var(--color-surface-primary), var(--color-brand-primary) 8%);
+        --color-surface-primary-bold: color-mix(in oklch, var(--color-surface-primary), black 8%);
+        --color-surface-secondary-soft: color-mix(in oklch, var(--color-surface-secondary), white 18%);
+        --color-surface-secondary-accent: color-mix(in oklch, var(--color-surface-secondary), var(--color-brand-primary) 8%);
+        --color-surface-secondary-bold: color-mix(in oklch, var(--color-surface-secondary), black 10%);
+        --color-surface-tertiary-soft: color-mix(in oklch, var(--color-surface-tertiary), white 16%);
+        --color-surface-tertiary-accent: color-mix(in oklch, var(--color-surface-tertiary), var(--color-brand-primary) 8%);
+        --color-surface-tertiary-bold: color-mix(in oklch, var(--color-surface-tertiary), black 12%);
+
+        --color-text-base-primary: #252938;
+        --color-text-base-primary-contrast: var(--color-static-white);
+        --color-text-base-secondary: #4e5667;
+        --color-text-base-secondary-contrast: var(--color-static-white);
+        --color-text-base-muted: #737c90;
+        --color-text-base-muted-contrast: var(--color-static-white);
+        --color-text-base-disabled: #9aa3b7;
+        --color-text-base-disabled-contrast: var(--color-static-white);
+        --color-text-base-link: var(--color-brand-primary);
+        --color-text-base-link-contrast: var(--color-brand-primary-contrast);
+
+        --border-color-subtle: color-mix(in oklch, var(--color-surface-tertiary), white 15%);
+        --border-color-default: #dce3ee;
+        --border-color-strong: #c9d2e1;
+        --border-color-inverse: rgba(255, 255, 255, 0.16);
+
+        --radius-none: 0;
+        --radius-2xs: 0.125rem;
+        --radius-xs: 0.25rem;
+        --radius-sm: 0.5rem;
+        --radius-md: 0.625rem;
+        --radius-lg: 0.75rem;
+        --radius-xl: 0.875rem;
+        --radius-2xl: 1rem;
+        --radius-3xl: 1.25rem;
+        --radius-pill: 9999px;
+        --radius-round: 50%;
+
+        --border-width-none: 0; /* @kind spacing */
+        --border-width-xs: 1px;
+        --border-width-sm: 2px;
+        --border-width-md: 3px;
+        --border-width-lg: 4px;
+
+        --space-0: 0;
+        --space-2xs: 0.125rem;
+        --space-xs: 0.25rem;
+        --space-sm: 0.5rem;
+        --space-md: 0.75rem;
+        --space-lg: 1rem;
+        --space-xl: 1.5rem;
+        --space-2xl: 2rem;
+        --space-3xl: 2.5rem;
+        --space-4xl: 3rem;
+        --space-5xl: 4rem;
+        --space-6xl: 5rem;
+
+        /* Floating-drawer inset — authored as a customisable token (see the
+           drawer component). Overridden to 0 at narrow widths below. */
+        --drawer-floating-margin: var(--space-sm);
+
+        /* Brand-logo wordmark fill — theme-aware default consumed by
+           .brand-logo; flips to pure white in dark mode (see dark scope). */
+        --logo-text-fill-default: var(--color-foreground-primary);
+
+        --margin-0: var(--space-0);
+        --margin-2xs: var(--space-2xs);
+        --margin-xs: var(--space-xs);
+        --margin-sm: var(--space-sm);
+        --margin-md: var(--space-md);
+        --margin-lg: var(--space-lg);
+        --margin-xl: var(--space-xl);
+        --margin-2xl: var(--space-2xl);
+        --margin-3xl: var(--space-3xl);
+        --margin-4xl: var(--space-4xl);
+        --margin-5xl: var(--space-5xl);
+        --margin-6xl: var(--space-6xl);
+
+        --padding-0: var(--space-0);
+        --padding-2xs: var(--space-2xs);
+        --padding-xs: var(--space-xs);
+        --padding-sm: var(--space-sm);
+        --padding-md: var(--space-md);
+        --padding-lg: var(--space-lg);
+        --padding-xl: var(--space-xl);
+        --padding-2xl: var(--space-2xl);
+        --padding-3xl: var(--space-3xl);
+        --padding-4xl: var(--space-4xl);
+        --padding-5xl: var(--space-5xl);
+        --padding-6xl: var(--space-6xl);
+
+        --size-2xs: 1rem;
+        --size-xs: 1.5rem;
+        --size-sm: 2rem;
+        --size-md: 2.5rem;
+        --size-lg: 3rem;
+        --size-xl: 3.5rem;
+        --size-2xl: 4rem;
+        --size-3xl: 5rem;
+        --size-4xl: 6rem;
+
+        --container-xs: 420px;
+        --container-sm: 640px;
+        --container-md: 768px;
+        --container-lg: 1024px;
+        --container-xl: 1280px;
+        --container-2xl: 1440px;
+        --container-3xl: 1680px;
+        --container-fluid: 100%;
+
+        --breakpoint-xs: 420px;
+        --breakpoint-sm: 640px;
+        --breakpoint-md: 768px;
+        --breakpoint-lg: 1024px;
+        --breakpoint-xl: 1280px;
+        --breakpoint-2xl: 1440px;
+
+        --font-family-heading: "Poppins", "Segoe UI", Roboto, Arial, sans-serif;
+        --font-family-body: "Manrope", "Segoe UI", Roboto, Arial, sans-serif;
+        /* Alias: --font-family-base is what most components reference for
+           "the default UI font" — points at body. Keeping both names is
+           harmless and matches conventions other design systems use. */
+        --font-family-base: var(--font-family-body);
+        --font-family-accent: "Google Sans Flex", "Poppins", "Segoe UI", sans-serif;
+        --font-family-serif: Georgia, "Times New Roman", serif;
+        --font-family-script: "Pacifico", cursive;
+        --font-family-code: "Courier New", Courier, ui-monospace, monospace;
+        --font-family-mono: "Chivo Mono", ui-monospace, monospace;
+
+        --font-size-2xs: 0.6875rem;
+        --font-size-xs: 0.75rem;
+        --font-size-sm: 0.875rem;
+        --font-size-md: 1rem;
+        --font-size-lg: 1.125rem;
+        --font-size-xl: 1.25rem;
+        --font-size-2xl: 1.5rem;
+        --font-size-3xl: 1.875rem;
+        --font-size-4xl: 2.25rem;
+        --font-size-5xl: 3rem;
+        --font-size-6xl: 3.75rem;
+
+        --font-weight-light: 300; /* @kind font */
+        --font-weight-regular: 400; /* @kind font */
+        --font-weight-medium: 500; /* @kind font */
+        --font-weight-semibold: 600; /* @kind font */
+        --font-weight-bold: 700; /* @kind font */
+        --font-weight-extrabold: 800; /* @kind font */
+
+        --line-height-tight: 1.15; /* @kind font */
+        --line-height-snug: 1.25; /* @kind font */
+        --line-height-normal: 1.5; /* @kind font */
+        --line-height-relaxed: 1.7; /* @kind font */
+
+        --tracking-tight: -0.02em; /* @kind font */
+        --tracking-normal: 0; /* @kind font */
+        --tracking-wide: 0.02em; /* @kind font */
+
+        --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+        --shadow-sm: 0 2px 8px rgba(16, 24, 40, 0.06);
+        --shadow-md: 0 8px 18px rgba(16, 24, 40, 0.08);
+        --shadow-lg: 0 16px 32px rgba(16, 24, 40, 0.12);
+        --shadow-xl: 0 24px 48px rgba(16, 24, 40, 0.16);
+        --shadow-overlay: 0 24px 64px rgba(0, 0, 0, 0.28);
+        --shadow-focus: 0 0 0 4px color-mix(in oklch, var(--color-brand-primary), white 75%);
+        --shadow-inset: inset 0 1px 2px rgba(16, 24, 40, 0.08);
+
+        --blur-sm: blur(4px); /* @kind other */
+        --blur-md: blur(10px); /* @kind other */
+        --blur-lg: blur(16px); /* @kind other */
+
+        --duration-instant: 80ms; /* @kind other */
+        --duration-fast: 140ms; /* @kind other */
+        --duration-standard: 220ms; /* @kind other */
+        --duration-slow: 320ms; /* @kind other */
+        --duration-slower: 480ms; /* @kind other */
+        --ease-standard: cubic-bezier(0.2, 0, 0.2, 1); /* @kind other */
+        --ease-enter: cubic-bezier(0.16, 1, 0.3, 1); /* @kind other */
+        --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* @kind other */
+        --ease-emphasis: cubic-bezier(0.2, 0, 0, 1); /* @kind other */
+
+        --z-index-base: 1; /* @kind other */
+        --z-index-sticky: 100; /* @kind other */
+        --z-index-topbar: 200; /* @kind other */
+        --z-index-dropdown: 500; /* @kind other */
+        --z-index-drawer: 800; /* @kind other */
+        --z-index-overlay: 900; /* @kind other */
+        --z-index-modal: 1000; /* @kind other */
+        --z-index-toast: 1100; /* @kind other */
+        --z-index-tooltip: 1200; /* @kind other */
+        --z-index-max: 2147483647; /* @kind other */
+
+        --icon-size-xs: 0.75rem;
+        --icon-size-sm: 0.875rem;
+        --icon-size-md: 1rem;
+        --icon-size-lg: 1.25rem;
+        --icon-size-xl: 1.5rem;
+        --icon-size-2xl: 2rem;
+
+        /* ============================================================
+         * Breakpoints
+         * Note: CSS variables can't be used inside @media queries directly,
+         * so the values below are mirrored as numbers in @media rules
+         * throughout the system. These tokens are for:
+         *   - Container queries (`container: inline-size` + @container)
+         *   - JS access via getComputedStyle()
+         *   - Documentation
+         * ============================================================ */
+        --breakpoint-sm: 640px;    /* Large phone / small tablet portrait */
+        --breakpoint-md: 768px;    /* Tablet portrait */
+        --breakpoint-lg: 1024px;   /* Tablet landscape / small laptop */
+        --breakpoint-xl: 1280px;   /* Laptop */
+        --breakpoint-2xl: 1536px;  /* Desktop / widescreen */
+
+        /* ============================================================
+         * Touch targets — minimum sizes for tappable elements.
+         * Apple HIG: 44pt minimum. Material: 48dp minimum.
+         * We use 44px for compact contexts and 48px for primary actions.
+         * ============================================================ */
+        --touch-target-min: 44px;
+        --touch-target-comfortable: 48px;
+
+        /* ============================================================
+         * Safe area insets — iOS notch / home indicator / Android nav bar.
+         * Components that anchor to viewport edges (top bar, bottom tab,
+         * floating launcher) should add these to their padding.
+         * ============================================================ */
+        --safe-area-inset-top: env(safe-area-inset-top, 0px);
+        --safe-area-inset-right: env(safe-area-inset-right, 0px);
+        --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+        --safe-area-inset-left: env(safe-area-inset-left, 0px);
+
+        /* ============================================================
+         * Responsive content widths — for long-form prose, dialogs, etc.
+         * ============================================================ */
+        --content-width-prose: 65ch;        /* ideal reading width */
+        --content-width-narrow: 32rem;      /* dialog body, single-column form */
+        --content-width-medium: 48rem;      /* article, blog post */
+        --content-width-wide: 72rem;        /* dashboard inner */
+        --content-width-full: 90rem;        /* page max */
+      }
+}
+
+@layer foundation {
+
+      :root {
+        /* ----- Extended surface tokens (Phase 1) ----- */
+        /* Elevation: layered surfaces from sunken to overlay */
+        --color-surface-sunken: color-mix(in oklch, var(--color-background-page), black 4%);
+        --color-surface-base: var(--color-background-canvas);
+        --color-surface-raised: var(--color-background-primary);
+        --color-surface-overlay: color-mix(in oklch, var(--color-background-canvas), white 8%);
+        --color-surface-floating: var(--color-background-canvas);
+
+        /* Tonal tints — subtle warm/cool/brand backgrounds */
+        --color-surface-warm: color-mix(in oklch, var(--color-background-canvas), #fff5e8 65%);
+        --color-surface-cool: color-mix(in oklch, var(--color-background-canvas), #e8f1ff 65%);
+        --color-surface-brand: color-mix(in oklch, var(--color-brand-primary), white 92%);
+        --color-surface-secondary-brand: color-mix(in oklch, var(--color-brand-secondary), white 92%);
+
+        /* Semantic tints — for cards/sections that carry meaning */
+        --color-surface-success: color-mix(in oklch, var(--color-utility-success), white 88%);
+        --color-surface-warning: color-mix(in oklch, var(--color-utility-warning), white 86%);
+        --color-surface-danger: color-mix(in oklch, var(--color-utility-danger), white 90%);
+        --color-surface-info: color-mix(in oklch, var(--color-utility-info), white 90%);
+
+        /* Borders matching the tints (subtle, theme-aware) */
+        --color-border-warm: color-mix(in oklch, #e8a052, white 65%);
+        --color-border-cool: color-mix(in oklch, #4a90e2, white 65%);
+        --color-border-success: color-mix(in oklch, var(--color-utility-success), white 60%);
+        --color-border-warning: color-mix(in oklch, var(--color-utility-warning), white 50%);
+        --color-border-danger: color-mix(in oklch, var(--color-utility-danger), white 60%);
+        --color-border-info: color-mix(in oklch, var(--color-utility-info), white 60%);
+      }
+      html[data-theme="dark"] {
+        --color-surface-sunken: color-mix(in oklch, var(--color-background-page), black 30%);
+        --color-surface-base: var(--color-background-canvas);
+        --color-surface-raised: color-mix(in oklch, var(--color-background-canvas), white 4%);
+        --color-surface-overlay: color-mix(in oklch, var(--color-background-canvas), white 8%);
+        --color-surface-floating: color-mix(in oklch, var(--color-background-canvas), white 6%);
+
+        --color-surface-warm: color-mix(in oklch, var(--color-background-canvas), #5a3920 30%);
+        --color-surface-cool: color-mix(in oklch, var(--color-background-canvas), #1a3050 30%);
+        --color-surface-brand: color-mix(in oklch, var(--color-brand-primary), black 60%);
+        --color-surface-secondary-brand: color-mix(in oklch, var(--color-brand-secondary), black 60%);
+
+        --color-surface-success: color-mix(in oklch, var(--color-utility-success), black 60%);
+        --color-surface-warning: color-mix(in oklch, var(--color-utility-warning), black 60%);
+        --color-surface-danger: color-mix(in oklch, var(--color-utility-danger), black 60%);
+        --color-surface-info: color-mix(in oklch, var(--color-utility-info), black 60%);
+      }
+}
+
+@layer theme {
+
+      :root { color-scheme: light; }
+      html[data-theme="dark"] {
+        color-scheme: dark;
+        --logo-text-fill-default: #ffffff;
+        --color-surface-page: #0f1218;
+        --color-surface-page-contrast: #f3f5f9;
+        --color-surface-canvas: #121721;
+        --color-surface-canvas-contrast: #f3f5f9;
+        --color-surface-primary: #161c26;
+        --color-surface-primary-contrast: #f3f5f9;
+        --color-surface-secondary: #1b2431;
+        --color-surface-secondary-contrast: #f3f5f9;
+        --color-surface-tertiary: #253040;
+        --color-surface-tertiary-contrast: #f3f5f9;
+        --color-surface-inverse: #f3f5f9;
+        --color-surface-inverse-contrast: #141924;
+        --color-text-base-primary: #f3f5f9;
+        --color-text-base-secondary: #d3d9e5;
+        --color-text-base-muted: #aab3c4;
+        --color-text-base-disabled: #778096;
+        --border-color-subtle: rgba(255,255,255,0.045);
+        --border-color-default: rgba(255,255,255,0.075);
+        --border-color-strong: rgba(255,255,255,0.12);
+        --shadow-xs: 0 1px 2px rgba(0,0,0,0.18);
+        --shadow-sm: 0 6px 16px rgba(0,0,0,0.18);
+        --shadow-md: 0 14px 28px rgba(0,0,0,0.22);
+        --shadow-lg: 0 24px 48px rgba(0,0,0,0.28);
+        --shadow-xl: 0 32px 72px rgba(0,0,0,0.34);
+        --shadow-focus: 0 0 0 4px color-mix(in oklch, var(--color-brand-primary), transparent 70%);
+        --color-overlay-scrim: rgba(0, 0, 0, 0.6);
+
+        /* Interaction-state tints (hover/selected/active).
+           In light mode these mix with WHITE to lighten the brand colour.
+           In dark mode we mix with BLACK so the hover surface is darker,
+           not lighter — otherwise menu/button hover backgrounds become
+           a near-white pastel that's illegible against light foreground text.
+
+           The active state is the strongest tint (closest to pure brand);
+           hover is the most subtle. */
+        --color-brand-primary-hover:    color-mix(in oklch, var(--color-brand-primary), black 70%);
+        --color-brand-primary-selected: color-mix(in oklch, var(--color-brand-primary), black 55%);
+        --color-brand-primary-active:   color-mix(in oklch, var(--color-brand-primary), black 40%);
+
+        /* In dark mode, "bold" should be LIGHTER than the base brand —
+           otherwise hovered/active foregrounds become darker than the
+           surrounding text. Flip the mix from black to white. */
+        --color-brand-primary-bold: color-mix(in oklch, var(--color-brand-primary), white 30%);
+        --color-brand-primary-soft: color-mix(in oklch, var(--color-brand-primary), black 65%);
+
+        /* In dark mode, hovered foregrounds need to STAY light, not shift to
+           the bold variant (which is darker than base brand). Override the
+           foreground hint that menu/nav hover rules pick up. */
+        --color-brand-primary-hover-foreground:    var(--color-foreground-primary);
+
+        /* In dark mode, --gradient-subtle's white-mix endpoints become
+           pale-grey washes that read poorly on dark surfaces. Override
+           with a dark-mixed version that sits naturally as a card or
+           pane background. The other gradients (brand, vibrant, warm,
+           cool) use saturated brand colours that read fine in both
+           modes, so they don't need a dark override. */
+        --gradient-subtle:
+          linear-gradient(135deg,
+            color-mix(in oklch, var(--color-brand-primary), black 78%) 0%,
+            color-mix(in oklch, var(--color-feature-05), black 78%) 100%);
+      }
+    }
+
+@layer semantic {
+
+      :root {
+        --color-background-page: var(--color-surface-page);
+        --color-background-page-contrast: var(--color-surface-page-contrast);
+        --color-background-canvas: var(--color-surface-canvas);
+        --color-background-canvas-contrast: var(--color-surface-canvas-contrast);
+        --color-background-primary: var(--color-surface-primary);
+        --color-background-primary-contrast: var(--color-surface-primary-contrast);
+        --color-background-secondary: var(--color-surface-secondary);
+        --color-background-secondary-contrast: var(--color-surface-secondary-contrast);
+        --color-background-tertiary: var(--color-surface-tertiary);
+        --color-background-tertiary-contrast: var(--color-surface-tertiary-contrast);
+        --color-background-inverse: var(--color-surface-inverse);
+        --color-background-inverse-contrast: var(--color-surface-inverse-contrast);
+        --color-background-brand-primary: var(--color-brand-primary-strong);
+        --color-background-brand-primary-contrast: var(--color-brand-primary-contrast);
+        --color-background-brand-secondary: var(--color-brand-secondary-strong);
+        --color-background-brand-secondary-contrast: var(--color-brand-secondary-contrast);
+        --color-background-accent: var(--color-brand-primary-soft);
+        --color-background-accent-contrast: var(--color-text-base-primary);
+        --color-background-overlay: var(--color-surface-overlay);
+        --color-background-scrim: var(--color-surface-scrim);
+
+        --color-foreground-primary: var(--color-text-base-primary);
+        --color-foreground-secondary: var(--color-text-base-secondary);
+        --color-foreground-muted: var(--color-text-base-muted);
+        --color-foreground-disabled: var(--color-text-base-disabled);
+        --color-foreground-link: var(--color-text-base-link);
+        --color-foreground-link-hover: var(--color-brand-primary-bold);
+        --color-foreground-inverse: var(--color-background-inverse-contrast);
+        --color-foreground-brand-primary: var(--color-brand-primary);
+        --color-foreground-brand-secondary: var(--color-brand-secondary);
+
+        --color-border-subtle: var(--border-color-subtle);
+        --color-border-primary: var(--border-color-default);
+        --color-border-strong: var(--border-color-strong);
+        --color-border-inverse: var(--border-color-inverse);
+        --color-divider: var(--border-color-default);
+
+        /* Overlay scrim — backdrop behind modals/drawers. Dark tint for light themes,
+         * deeper tint for dark themes (overridden in @layer theme). */
+        --color-overlay-scrim: rgba(15, 23, 42, 0.55);
+        --color-overlay-blur: 4px;
+
+        --color-action-primary: var(--color-brand-primary-strong);
+        --color-action-primary-contrast: var(--color-brand-primary-contrast);
+        --color-action-primary-hover: var(--color-brand-primary-bold);
+        --color-action-primary-active: color-mix(in oklch, var(--color-brand-primary), black 28%);
+        --color-action-primary-soft: var(--color-brand-primary-soft);
+        --color-action-secondary: var(--color-surface-primary);
+        --color-action-secondary-contrast: var(--color-foreground-primary);
+        /* Hover uses the global brand-light tint for consistency across
+           all interactive components — buttons, tabs, nav, menu items. */
+        --color-action-secondary-hover: var(--color-brand-primary-hover);
+        --color-action-secondary-active: var(--color-brand-primary-selected);
+        --color-action-secondary-soft: var(--color-surface-primary-soft);
+        --color-action-tertiary: transparent;
+        --color-action-tertiary-contrast: var(--color-foreground-primary);
+        --color-action-tertiary-hover: var(--color-brand-primary-hover);
+        --color-action-tertiary-active: var(--color-brand-primary-selected);
+        --color-action-disabled: var(--color-surface-secondary);
+        --color-action-disabled-contrast: var(--color-foreground-disabled);
+
+        --color-feedback-success: var(--color-utility-success);
+        --color-feedback-success-contrast: var(--color-utility-success-contrast);
+        --color-feedback-success-soft: var(--color-utility-success-soft);
+        --color-feedback-warning: var(--color-utility-warning);
+        --color-feedback-warning-contrast: var(--color-utility-warning-contrast);
+        --color-feedback-warning-soft: var(--color-utility-warning-soft);
+        --color-feedback-danger: var(--color-utility-danger);
+        --color-feedback-danger-contrast: var(--color-utility-danger-contrast);
+        --color-feedback-danger-soft: var(--color-utility-danger-soft);
+        --color-feedback-info: var(--color-utility-info);
+        --color-feedback-info-contrast: var(--color-utility-info-contrast);
+        --color-feedback-info-soft: var(--color-utility-info-soft);
+        --color-feedback-muted: var(--color-utility-muted);
+        --color-feedback-muted-contrast: var(--color-utility-muted-contrast);
+        --color-feedback-muted-soft: var(--color-utility-muted-soft);
+
+        --color-focus-ring: var(--color-brand-primary-accent);
+        --color-focus-ring-strong: var(--color-brand-primary);
+        --color-selection-background: var(--color-brand-primary-soft);
+        --color-selection-foreground: var(--color-foreground-primary);
+
+        /* ============================================================
+           BRAND GRADIENTS
+           ============================================================
+           Five canonical gradients for hero headers, feature text,
+           accent surfaces, and CTA backgrounds. Each is built from
+           existing brand and feature colour tokens via color-mix, so
+           partner rebrands cascade automatically — change
+           --color-brand-primary and --gradient-brand follows.
+
+           Use cases by gradient:
+
+           • --gradient-brand     The system's canonical brand gradient.
+                                  Blue → purple. Use for hero headers,
+                                  landing-page title text, primary CTAs.
+                                  This is the one a partner overrides
+                                  to make the system "feel" like theirs.
+
+           • --gradient-vibrant   High-energy pink → purple. Use for
+                                  marketing surfaces, app store hero
+                                  cards, attention-getting accents.
+                                  Saturated; pairs with white text.
+
+           • --gradient-warm      Orange → pink → purple sunset. Use for
+                                  feature callouts, "new this month"
+                                  banners, anything wanting warmth.
+
+           • --gradient-cool      Deep purple → cyan → green aurora.
+                                  Use for tech-forward sections, dark-
+                                  mode-friendly hero panels, AI/ML
+                                  themed surfaces.
+
+           • --gradient-subtle    Low-contrast tinted version of the
+                                  brand gradient. Use as a card or pane
+                                  background where content sits on top.
+                                  Quiet, not eye-grabbing.
+
+           All gradients are linear at 135° (top-left → bottom-right)
+           by default. The angle reads as forward motion and works for
+           both wide and tall containers. Override per-component if a
+           specific element needs a different direction. */
+        --gradient-brand:
+          linear-gradient(135deg,
+            var(--color-brand-primary) 0%,
+            var(--color-feature-05) 100%);
+
+        --gradient-vibrant:
+          linear-gradient(135deg,
+            var(--color-feature-03) 0%,
+            var(--color-feature-05) 100%);
+
+        --gradient-warm:
+          linear-gradient(135deg,
+            var(--color-feature-07) 0%,
+            var(--color-feature-03) 50%,
+            var(--color-feature-05) 100%);
+
+        --gradient-cool:
+          linear-gradient(135deg,
+            var(--color-feature-04) 0%,
+            var(--color-feature-08) 50%,
+            var(--color-feature-09) 100%);
+
+        --gradient-subtle:
+          linear-gradient(135deg,
+            color-mix(in oklch, var(--color-brand-primary), white 88%) 0%,
+            color-mix(in oklch, var(--color-feature-05), white 88%) 100%);
+      }
+}
+
+@layer component-tokens {
+
+      :root {
+        --control-height-sm: 1.75rem;
+        --control-height-md: 2.25rem;
+        --control-height-lg: 2.75rem;
+        --control-padding-inline-sm: 0.75rem;
+        --control-padding-inline-md: 1rem;
+        --control-padding-inline-lg: 1.25rem;
+
+        --component-topbar-background: var(--color-surface-base);
+        --component-topbar-foreground: var(--color-foreground-primary);
+        --component-topbar-border: var(--color-border-subtle);
+
+        --component-menu-item-background: transparent;
+        --component-menu-item-foreground: var(--color-foreground-secondary);
+        --component-menu-item-hover-background: var(--color-background-secondary);
+        --component-menu-item-hover-foreground: var(--color-foreground-primary);
+        --component-menu-item-active-background: var(--color-brand-primary-soft);
+        --component-menu-item-active-foreground: var(--color-brand-primary-bold);
+        --component-menu-item-active-border: color-mix(in oklch, var(--color-brand-primary), white 60%);
+        --component-menu-item-disabled-opacity: 0.5; /* @kind other */
+
+        --component-card-background: var(--color-background-primary);
+        --component-card-foreground: var(--color-foreground-primary);
+        --component-card-border: var(--color-border-subtle);
+        --component-card-radius: var(--radius-xl);
+        --component-card-shadow: var(--shadow-sm);
+        --component-card-padding: var(--space-xl);
+
+        /* ============================================================
+           PANE & TILE container tokens
+           ============================================================
+           Every container-like component in the system reads from one of
+           three padding tokens. This is the source-of-truth surface for
+           how dense or breathable container content feels. Changing one
+           token here cascades to every consumer — never hardcode padding
+           on a container component, always read from these.
+
+           • --component-pane-padding  — labelled sub-section containers
+                                          (.pane, documentation sections,
+                                          settings groups). Generous (32px)
+                                          because these wrap rich content
+                                          with their own internal layout.
+           • --component-card-padding  — standard card tile (.card, .panel,
+                                          .stat-card, .feature-tile,
+                                          .surface-tile, .testimonial,
+                                          .tier, .selectable-card).
+                                          Comfortable (24px).
+           • --component-tile-padding  — dense grid cells (.kanban-card,
+                                          .person-card, .dnd-card,
+                                          list-item style containers).
+                                          Compact (16px).
+
+           The matching --component-{pane,card,tile}-gap tokens govern
+           the gap between cards inside an .auto-grid or .grid-* when
+           wrapped in a pane. */
+        --component-pane-padding: var(--space-2xl);
+        --component-pane-padding-block-end: var(--space-2xl);
+        --component-pane-gap: var(--space-2xl);
+        --component-pane-rule-color: var(--color-divider);
+        --component-pane-rule-width: 1px;
+
+        --component-tile-padding: var(--space-lg);
+        --component-tile-radius: var(--radius-xl);
+        --component-tile-shadow: var(--shadow-sm);
+        --component-tile-gap: var(--space-lg);
+
+        /* Per-family radius tokens — these are what components reference for
+           shape, and what the theme switcher overrides per family.
+
+           • button  — buttons, FABs, segmented controls (pill by default)
+           • pill    — badges, status pills, tags (pill by default)
+           • input   — text inputs, selects, textareas (lg by default)
+           • card    — cards, raised surfaces (xl by default)
+           • modal   — modals, drawers, sheets (2xl by default)
+           • container — generic sections, panels, alerts (lg by default) */
+        --component-button-radius: var(--radius-pill);
+        --component-pill-radius: var(--radius-pill);
+        --component-container-radius: var(--radius-lg);
+
+        --component-button-primary-background: var(--color-action-primary);
+        --component-button-primary-foreground: var(--color-action-primary-contrast);
+        --component-button-primary-hover-background: var(--color-action-primary-hover);
+        --component-button-primary-active-background: var(--color-action-primary-active);
+        --component-button-primary-border: transparent;
+
+        --component-button-secondary-background: var(--color-action-secondary);
+        --component-button-secondary-foreground: var(--color-action-secondary-contrast);
+        --component-button-secondary-hover-background: var(--color-action-secondary-hover);
+        --component-button-secondary-active-background: var(--color-action-secondary-active);
+        --component-button-secondary-border: var(--color-border-primary);
+
+        --component-button-tertiary-background: transparent;
+        --component-button-tertiary-foreground: var(--color-action-tertiary-contrast);
+        --component-button-tertiary-hover-background: var(--color-action-tertiary-hover);
+        --component-button-tertiary-active-background: var(--color-action-tertiary-active);
+        --component-button-tertiary-border: transparent;
+
+        --component-input-background: var(--color-background-primary);
+        --component-input-foreground: var(--color-foreground-primary);
+        --component-input-border: var(--color-border-primary);
+        --component-input-hover-border: var(--color-border-strong);
+        --component-input-focus-border: var(--color-focus-ring-strong);
+        --component-input-radius: var(--radius-lg);
+        --component-input-placeholder: var(--color-foreground-muted);
+
+        --component-badge-neutral-background: var(--color-background-secondary);
+        --component-badge-neutral-foreground: var(--color-foreground-secondary);
+        --component-badge-neutral-border: var(--color-border-subtle);
+        --component-badge-brand-background: var(--color-brand-primary-soft);
+        --component-badge-brand-foreground: var(--color-brand-primary-bold);
+        --component-badge-brand-border: color-mix(in oklch, var(--color-brand-primary), white 58%);
+
+        --component-modal-background: var(--color-background-canvas);
+        --component-modal-foreground: var(--color-foreground-primary);
+        --component-modal-border: var(--color-border-subtle);
+        --component-modal-shadow: var(--shadow-overlay);
+        --component-modal-radius: var(--radius-2xl);
+
+        --component-drawer-background: var(--color-background-canvas);
+        --component-drawer-border: var(--color-border-subtle);
+        --component-drawer-shadow: var(--shadow-overlay);
+
+        --component-tab-foreground: var(--color-foreground-secondary);
+        --component-tab-hover-background: var(--color-background-secondary);
+        --component-tab-hover-foreground: var(--color-foreground-primary);
+        --component-tab-active-foreground: var(--color-brand-primary);
+        --component-tab-active-indicator: var(--color-brand-primary);
+
+        --component-table-background: var(--color-background-primary);
+        --component-table-border: var(--color-border-subtle);
+        /* Header row: white background with brand-coloured text reads as
+           "structural delimiter" without competing with content. Previously
+           a soft grey-on-grey strip that visually blended into the body. */
+        --component-table-header-background: var(--color-surface-base);
+        --component-table-header-foreground: var(--color-brand-primary);
+        --component-table-row-hover: var(--color-background-secondary);
+      }
+      @media (max-width: 480px) { :root { --drawer-floating-margin: 0; } }
+}

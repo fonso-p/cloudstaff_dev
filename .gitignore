@@ -1,0 +1,41 @@
+# Built Account Priority Dashboard pages embed every account row (client names, scores, owners): never commit them.
+# Built by Marketing Intelligence/build_dashboard/build_dashboard.py
+Marketing Intelligence/outputs/html/*.html
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.claude/settings.local.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*
+*.swp
+*.tmp
+*.log
+.idea/
+.vscode/*
+!.vscode/extensions.json

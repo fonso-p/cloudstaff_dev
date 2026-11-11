@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<!-- Fonts, icons and Chart.js load from CDNs. No data is sent anywhere: the data is embedded below. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=Chivo+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ---- Cloudstaff Design System tokens (assets/tokens.css, inlined at build time) ---- */
+/*__TOKENS__*/
+
+/* ---- Dashboard layout (uses design-system tokens only) ---- */
+*{box-sizing:border-box}
+body{margin:0;background:var(--color-surface-page);color:var(--color-text-base-primary);font-family:var(--font-family-body);font-size:var(--font-size-sm)}
+h1,h2,h3{font-family:var(--font-family-heading);margin:0}
+.mono,.num{font-family:var(--font-family-mono)}
+.shell{display:grid;grid-template-columns:16rem minmax(0,1fr);min-height:100vh}
+/* sidebar */
+.side{background:var(--color-surface-primary);border-right:1px solid var(--border-color-default);padding:var(--component-card-padding);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:var(--component-tile-padding)}
+.brand{display:flex;flex-direction:column;gap:4px;padding-bottom:var(--component-tile-padding)}
+.brand svg{width:150px;height:auto}
+.brand small{color:var(--color-text-base-muted)}
+.nav-label{font-family:var(--font-family-mono);font-size:var(--font-size-xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-base-muted);margin:8px 0 4px}
+.nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-lg);color:var(--color-text-base-primary);text-decoration:none;font-weight:var(--font-weight-medium);cursor:pointer}
+.nav a i{width:18px;text-align:center;color:var(--color-text-base-secondary)}
+.nav a:hover{background:var(--color-surface-secondary)}
+.nav a.active{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.nav a.active i{color:var(--color-brand-primary-strong)}
+.side-box{border:1px solid var(--border-color-default);border-radius:var(--radius-xl);padding:var(--component-tile-padding);display:flex;flex-direction:column;gap:8px}
+.btn{display:flex;align-items:center;gap:8px;border:0;border-radius:var(--radius-lg);padding:10px 12px;font:inherit;font-weight:var(--font-weight-semibold);cursor:pointer}
+.btn-teal{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong)}
+.btn-blue{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.side-foot{margin-top:auto;color:var(--color-text-base-muted);font-size:var(--font-size-xs)}
+/* main */
+.main{padding:var(--component-pane-padding);min-width:0}
+.topbar{display:flex;align-items:center;gap:16px;padding-bottom:var(--component-card-padding);border-bottom:1px solid var(--border-color-default);margin-bottom:var(--component-card-padding)}
+.crumbs{color:var(--color-text-base-muted);font-size:var(--font-size-md)}
+.crumbs b{color:var(--color-text-base-primary)}
+.topbar .grow{flex:1}
+.chip{display:flex;align-items:center;gap:8px;font-weight:var(--font-weight-semibold)}
+.chip i{color:var(--color-brand-primary)}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--border-color-default);border-radius:var(--radius-lg);padding:8px 12px;background:var(--color-surface-primary);min-width:240px}
+.search input{border:0;outline:0;font:inherit;width:100%;background:transparent}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:var(--component-tile-padding);flex-wrap:wrap}
+.page-head h1{font-size:var(--font-size-3xl)}
+.page-head p{margin:6px 0 0;color:var(--color-text-base-secondary);font-size:var(--font-size-md)}
+/* filters: one panel, one or more labelled rows */
+.filters{display:flex;flex-direction:column;gap:10px;background:var(--color-surface-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-xl);padding:var(--component-tile-padding);margin-bottom:var(--component-card-padding);box-shadow:var(--shadow-sm)}
+.filters label{display:flex;flex-direction:column;gap:4px;font-size:var(--font-size-xs);color:var(--color-text-base-muted);font-weight:var(--font-weight-semibold)}
+.filters select{font:inherit;color:var(--color-text-base-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:7px 10px;background:var(--color-surface-primary);min-width:120px;max-width:220px}
+.filters .reset{align-self:flex-end}
+.frow{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.frow + .frow{border-top:1px solid var(--border-color-default);padding-top:10px}
+.frow-label{width:100%;font-family:var(--font-family-mono);font-size:var(--font-size-2xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-brand-primary-strong);font-weight:var(--font-weight-semibold)}
+.frow-note{font-size:var(--font-size-xs);color:var(--color-text-base-muted)}
+.frow-note:empty{display:none}
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--component-tile-padding);margin-bottom:var(--component-card-padding)}
+.kpi{border-radius:var(--radius-xl);padding:var(--component-tile-padding);display:flex;flex-direction:column;gap:10px}
+.kpi-top{display:flex;align-items:center;gap:10px;font-weight:var(--font-weight-semibold);font-size:var(--font-size-sm);line-height:1.3}
+.kpi-icon{width:40px;height:40px;border-radius:var(--radius-lg);display:grid;place-items:center;color:var(--color-surface-primary);flex:none}
+.kpi-value{font-family:var(--font-family-heading);font-size:var(--font-size-3xl);font-weight:var(--font-weight-bold)}
+.kpi-sub{color:var(--color-text-base-secondary)}
+.k-blue{background:var(--color-brand-primary-soft)} .k-blue .kpi-icon{background:var(--color-brand-primary)}
+.k-teal{background:var(--color-feature-01-soft)} .k-teal .kpi-icon{background:var(--color-feature-01)}
+.k-yellow{background:var(--color-feature-02-soft)} .k-yellow .kpi-icon{background:var(--color-feature-02)}
+.k-pink{background:var(--color-feature-03-soft)} .k-pink .kpi-icon{background:var(--color-feature-03)}
+.k-purple{background:var(--color-feature-05-soft)} .k-purple .kpi-icon{background:var(--color-feature-05)}
+.k-indigo{background:var(--color-feature-04-soft)} .k-indigo .kpi-icon{background:var(--color-feature-04)}
+/* cards with a solid blue header bar */
+.grid{display:grid;gap:var(--component-card-padding);margin-bottom:var(--component-card-padding)}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:3fr 2fr}
+.card{background:var(--color-surface-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm);overflow:hidden;min-width:0}
+.page > .card{margin-bottom:var(--component-card-padding)}
+.card-head{background:var(--color-brand-primary-strong);color:var(--color-surface-primary);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px var(--component-card-padding)}
+.card-head h3{font-size:var(--font-size-md);font-weight:var(--font-weight-bold);line-height:1.3}
+.card-head span{opacity:.9;font-size:var(--font-size-xs);text-align:right;flex:0 1 auto;max-width:45%}
+.card-body{padding:var(--component-card-padding)}
+.chart{position:relative;height:300px}
+.chart.tall{height:380px}
+.note{color:var(--color-text-base-muted);font-size:var(--font-size-xs);margin-top:10px;line-height:1.5}
+.warn{background:var(--color-feature-02-soft);border-radius:var(--radius-lg);padding:10px 14px;margin:0 0 var(--component-tile-padding);font-size:var(--font-size-xs)}
+.warn i{color:var(--color-feature-07)}
+.info{background:var(--color-brand-primary-soft);border-radius:var(--radius-lg);padding:10px 14px;margin:0 0 var(--component-tile-padding)}
+/* tables */
+.tbl-wrap{overflow:auto;max-height:560px}
+table{border-collapse:collapse;width:100%;font-size:var(--font-size-xs)}
+th{position:sticky;top:0;background:var(--color-surface-primary);color:var(--color-brand-primary-strong);text-align:left;font-weight:var(--font-weight-bold);padding:10px;border-bottom:2px solid var(--border-color-default);white-space:nowrap;cursor:default}
+th.sort{cursor:pointer} th.sort:hover{text-decoration:underline}
+td{padding:8px 10px;border-bottom:1px solid var(--border-color-default);vertical-align:top}
+td.n,th.n{text-align:right}
+td.n{font-family:var(--font-family-mono)}
+tr.small td{color:var(--color-text-base-muted)}
+.nowrap td{white-space:nowrap}
+.sticky1 td:first-child,.sticky1 th:first-child{position:sticky;left:0;background:var(--color-surface-primary);min-width:200px;z-index:1;box-shadow:inset -1px 0 0 var(--border-color-default)}
+.sticky1 th:first-child{z-index:2}
+.badge{display:inline-block;padding:2px 8px;border-radius:var(--radius-pill);font-size:var(--font-size-2xs);font-weight:var(--font-weight-semibold)}
+.b-ok{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong)}
+.b-warn{background:var(--color-feature-02-soft);color:var(--color-text-base-primary)}
+.b-no{background:var(--color-surface-secondary);color:var(--color-text-base-secondary)}
+.b-blue{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.heat td.h{text-align:center;font-family:var(--font-family-mono)}
+.tools{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.tools input{font:inherit;border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:7px 10px;min-width:260px}
+.tools select{font:inherit;border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:6px 8px}
+/* statistics blocks (Stats & method page) */
+.stat{border:1px solid var(--border-color-default);border-radius:var(--radius-lg);padding:var(--component-tile-padding);margin-bottom:12px}
+.stat h4{margin:0 0 6px;font-family:var(--font-family-heading)}
+.stat .reading{font-size:var(--font-size-md);font-weight:var(--font-weight-semibold);margin:6px 0}
+.page{display:none}
+.page.show{display:block}
+ul.rules{margin:0;padding-left:18px;line-height:1.7}
+/* "Numbers behind this chart" panels (added automatically by draw()) */
+details.chart-data{margin-top:12px;border-top:1px solid var(--border-color-default);padding-top:8px}
+details.chart-data summary{cursor:pointer;font-weight:var(--font-weight-semibold);color:var(--color-brand-primary-strong);display:flex;align-items:center;gap:10px;font-size:var(--font-size-xs)}
+details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
+.btn-mini{border:0;border-radius:var(--radius-md);padding:3px 8px;font:inherit;font-size:var(--font-size-2xs);background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong);cursor:pointer}
+/* insight cards */
+.ins .card-body{display:flex;flex-direction:column;gap:8px}
+.ins h4{margin:0;font-family:var(--font-family-heading);font-size:var(--font-size-lg)}
+.ins p{margin:0;line-height:1.6}
+.ins-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ins-link{cursor:pointer;color:var(--color-brand-primary-strong);font-size:var(--font-size-xs);font-weight:var(--font-weight-semibold)}
+@media (max-width:1100px){.g2,.g3{grid-template-columns:1fr}.shell{grid-template-columns:1fr}.side{position:static;height:auto}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- ================= sidebar ================= -->
+  <aside class="side">
+    <div class="brand"><!--__LOGO__--><small id="brandSub"></small></div>
+    <div class="nav-label">Workspace</div>
+    <nav class="nav">
+      <a data-page="overview" class="active"><i class="fa-solid fa-chart-column"></i>Overview</a>
+      <a data-page="insights"><i class="fa-solid fa-lightbulb"></i>Insights</a>
+      <a data-page="breakdown"><i class="fa-solid fa-sitemap"></i>Breakdown</a>
+      <a data-page="list"><i class="fa-solid fa-building"></i>Records</a>
+    </nav>
+    <div class="nav-label">Method</div>
+    <nav class="nav">
+      <a data-page="method"><i class="fa-solid fa-square-root-variable"></i>Stats &amp; method</a>
+      <a data-page="qa"><i class="fa-solid fa-clipboard-check"></i>QA &amp; data checks</a>
+    </nav>
+    <div class="side-box">
+      <div class="nav-label" style="margin:0"><i class="fa-solid fa-file-export"></i> Data</div>
+      <button class="btn btn-teal" id="btnCsv"><i class="fa-solid fa-file-csv"></i>Export filtered (CSV)</button>
+    </div>
+    <div class="side-foot"><i class="fa-solid fa-database"></i> <span id="sourceTxt"></span> to <span id="extractTxt"></span><br>Built <span id="builtTxt"></span></div>
+  </aside>
+
+  <!-- ================= main ================= -->
+  <main class="main">
+    <div class="topbar">
+      <div class="crumbs"><span id="crumbRoot"></span> &nbsp;<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>&nbsp; <b id="crumbPage">Overview</b></div>
+      <div class="grow"></div>
+      <div class="chip"><i class="fa-regular fa-calendar"></i><span id="dateChip"></span></div>
+      <div class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="topSearch" placeholder="Search records"></div>
+    </div>
+    <div class="page-head">
+      <div><h1 id="pageTitle">Overview</h1><p id="pageSub"></p></div>
+    </div>
+
+    <!-- shared filter bar: every page recalculates when any control changes. Add a second .frow for "how X is measured" settings. -->
+    <div class="filters" id="filters">
+      <div class="frow"><span class="frow-label">Which records</span>
+        <label>Region<select id="fReg"></select></label>
+        <label>Division<select id="fDiv"></select></label>
+        <button class="btn btn-blue reset" id="btnReset"><i class="fa-solid fa-rotate-left"></i>Reset</button>
+      </div>
+      <div class="frow-note" id="filterNote"></div>
+    </div>
+
+    <!-- ================= Overview ================= -->
+    <section class="page show" id="p-overview">
+      <div class="kpis" id="kpis"></div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Total value by region</h3><span>sum of value</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cReg"></canvas></div><div class="note">One plain-English sentence on how to read this chart and what is counted.</div></div></div>
+        <div class="card"><div class="card-head"><h3>Value by month</h3><span>by region</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cMonth"></canvas></div><div class="note" id="monthNote"></div></div></div>
+      </div>
+    </section>
+
+    <!-- ================= Insights ================= -->
+    <section class="page" id="p-insights">
+      <div class="info" id="insFilters"></div>
+      <div class="grid g2" id="insBox"></div>
+      <div class="note">Every sentence is recalculated from the filters above. "Differs" is used only when a test gives p &lt; 0.05. Groups under 20 are left out of tests and only groups of 30+ are named highest or lowest. These are associations in the data, not causes.</div>
+    </section>
+
+    <!-- ================= Breakdown ================= -->
+    <section class="page" id="p-breakdown">
+      <div class="info">One line on what this page answers and which filters apply to it.</div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Share with value above zero, by division</h3><span>(records) · grey = under 20, do not rank</span></div>
+          <div class="card-body"><div class="chart tall"><canvas id="cDiv"></canvas></div></div></div>
+        <div class="card"><div class="card-head"><h3>Division detail</h3><span>sorted by records</span></div>
+          <div class="card-body"><div class="tbl-wrap" id="tDiv"></div><div class="note">Grey rows = under 20 records, do not rank.</div></div></div>
+      </div>
+    </section>
+
+    <!-- ================= Records list ================= -->
+    <section class="page" id="p-list">
+      <div class="card"><div class="card-head"><h3>Records in this view</h3><span id="listSub"></span></div><div class="card-body">
+        <div class="tools"><input id="listSearch" placeholder="Search name, id, region, division">
+          <button class="btn btn-teal" id="btnCsv2"><i class="fa-solid fa-file-csv"></i>Export to CSV</button><span class="note" style="margin:0">Click a column header to sort.</span></div>
+        <div class="tbl-wrap nowrap" id="tList"></div></div></div>
+    </section>
+
+    <!-- ================= Method ================= -->
+    <section class="page" id="p-method">
+      <div class="card"><div class="card-head"><h3>Definitions</h3><span>how every number is counted</span></div><div class="card-body">
+        <ul class="rules"><li><b>Record:</b> define the unit of analysis.</li><li><b>Value:</b> define the measure.</li><li><b>Exclusions:</b> list each one; every excluded row is on the QA page.</li></ul></div></div>
+      <div class="card"><div class="card-head"><h3>Tests</h3><span>recalculated with the filters</span></div><div class="card-body" id="statBox"></div></div>
+    </section>
+
+    <!-- ================= QA ================= -->
+    <section class="page" id="p-qa">
+      <div class="card"><div class="card-head"><h3>Reconciliation</h3><span>source rows to rows in the analysis</span></div><div class="card-body"><div class="tbl-wrap" id="tQa"></div></div></div>
+    </section>
+  </main>
+</div>
+
+<!-- embedded data (built by scripts/build_dashboard.py) -->
+<script id="data" type="application/json">/*__DATA__*/</script>
+
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = id => document.getElementById(id);
+
+// ---- palette: brand order. Same category = same colour on every chart.
+const PALETTE = ['#007AFF', '#00AB9C', '#FFC426', '#E34678', '#4121A9', '#AA67FD', '#F46600', '#36D6E7', '#87DD7D', '#50505C'];
+const GREY = '#C9D2E1';                                      // small n, "stayed", "other"
+const REGIONS = [...new Set(D.rows.map(r => r.region))].sort();
+const REG_COLOUR = Object.fromEntries(REGIONS.map((r, i) => [r, PALETTE[i % PALETTE.length]]));   // fix this map by name when the categories are known
+const MONTHS_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const monLbl = ym => MONTHS_ABBR[+ym.slice(5, 7) - 1] + ' ' + ym.slice(0, 4);   // '2026-09' -> 'Sep 2026'
+
+// ---- maths and formatting
+const sum = a => a.reduce((s, x) => s + x, 0);
+const mean = a => a.length ? sum(a) / a.length : NaN;
+function median(a) { if (!a.length) return NaN; const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
+function groupBy(a, fn) { const m = new Map(); for (const x of a) { const k = fn(x); if (!m.has(k)) m.set(k, []); m.get(k).push(x); } return m; }
+function wilson(k, n) { if (!n) return [0, 0]; const z = 1.96, p = k / n, d = 1 + z * z / n, c = p + z * z / (2 * n), h = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)); return [Math.max(0, (c - h) / d), Math.min(1, (c + h) / d)]; }
+const uniq = a => [...new Set(a)].sort((x, y) => String(x).localeCompare(String(y)));
+const fmt = (v, d = 0) => v === null || v === undefined || Number.isNaN(v) ? '–' : Number(v).toLocaleString('en-AU', {minimumFractionDigits: d, maximumFractionDigits: d});
+const pct = (v, d = 1) => v === null || v === undefined || Number.isNaN(v) ? '–' : (100 * v).toFixed(d) + '%';
+const pfmt = p => p === null || p === undefined || Number.isNaN(p) ? '–' : p < 0.0001 ? '< 0.0001' : p.toFixed(4);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[ch]));
+const MIN_TEST = 20, MIN_NAME = 30;                          // groups under 20: not tested, shown grey; under 30: never named highest/lowest
+
+// ---- Chart.js house style
+Chart.defaults.font.family = 'Manrope, Segoe UI, Arial, sans-serif';
+Chart.defaults.color = '#737C90';
+Chart.defaults.borderColor = '#DCE3EE';
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.maintainAspectRatio = false;
+const pctAxis = {ticks: {callback: v => pct(v, 0)}, beginAtZero: true};   // use on any axis holding shares (0-1): draw() then shows % in the table
+
+const charts = {};
+function draw(id, cfg) {
+  const scales = (cfg.options && cfg.options.scales) || {};
+  const isPct = Object.values(scales).some(sc => sc.ticks && sc.ticks.callback);   // read before Chart.js adds its own defaults
+  if (charts[id]) charts[id].destroy(); charts[id] = new Chart($(id), cfg); chartData(id, cfg, isPct);
+}
+
+// ---- "Numbers behind this chart": every chart gets its exact values as a table with a CSV button
+const dataClosed = {};
+function chartData(id, cfg, isPct) {
+  const body = $(id).closest('.card-body');
+  let box = body.querySelector('details.chart-data');
+  if (!box) {
+    box = document.createElement('details'); box.className = 'chart-data'; box.open = true;
+    box.innerHTML = '<summary>Numbers behind this chart <button class="btn-mini" type="button">CSV</button></summary><div class="tbl-wrap"></div>';
+    box.ontoggle = () => { dataClosed[id] = !box.open; };
+    body.appendChild(box);
+  }
+  if (dataClosed[id]) box.open = false;
+  const show = v => v === null || v === undefined || Number.isNaN(v) ? '–' : isPct ? pct(v) : Number.isInteger(v) ? fmt(v) : fmt(v, 2);
+  const sets = cfg.data.datasets, labels = cfg.data.labels;
+  const cols = [{k: 'label', label: ''}, ...sets.map((d, j) => ({k: 'd' + j, label: esc(d.label) + (isPct ? ' (%)' : ''), n: 1, f: show}))];
+  const rows = labels.map((l, i) => Object.assign({label: l}, ...sets.map((d, j) => ({['d' + j]: d.data[i]}))));
+  table(box.querySelector('.tbl-wrap'), cols, rows);
+  box.querySelector('button').onclick = e => { e.preventDefault(); e.stopPropagation();
+    download(id + '_numbers.csv', rows.map(r => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, isPct && k !== 'label' && typeof v === 'number' ? +(100 * v).toFixed(2) : v]))),
+      cols.map(c => ({k: c.k, label: c.label.replace(/&amp;/g, '&') || 'group'}))); };
+}
+function table(el, cols, rows, opts = {}) {    // cols: [{k, label, n (numeric, right-aligned mono), f (format fn (v, row) -> html)}]; row._small = grey row
+  const sortable = !!opts.sortable;
+  let h = '<table><thead><tr>' + cols.map((c, i) => `<th class="${c.n ? 'n' : ''} ${sortable ? 'sort' : ''}" data-i="${i}">${c.label}</th>`).join('') + '</tr></thead><tbody>';
+  h += rows.map(r => `<tr class="${r._small ? 'small' : ''}">` + cols.map(c => `<td class="${c.n ? 'n' : ''}">${c.f ? c.f(r[c.k], r) : esc(r[c.k])}</td>`).join('') + '</tr>').join('');
+  el.innerHTML = h + '</tbody></table>';
+  if (sortable) el.querySelectorAll('th').forEach(th => th.onclick = () => opts.onSort(cols[+th.dataset.i].k));
+}
+function download(name, rows, cols) {
+  const q = v => { const s = v === null || v === undefined ? '' : String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const csv = [cols.map(c => q(c.label)).join(','), ...rows.map(r => cols.map(c => q(r[c.k])).join(','))].join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'})); a.download = name; a.click();
+}
+const kpiTiles = items => items.map(([cls, ic, l, v, s]) => `<div class="kpi ${cls}"><div class="kpi-top"><span class="kpi-icon"><i class="fa-solid ${ic}"></i></span>${esc(l)}</div><div class="kpi-value">${v}</div><div class="kpi-sub">${s}</div></div>`).join('');
+
+// ---- header text: every date comes from the data, never typed into the template
+const M = D.meta;
+document.title = M.title;
+$('brandSub').textContent = M.subtitle; $('crumbRoot').textContent = M.title; $('sourceTxt').textContent = M.source;
+$('extractTxt').textContent = new Date(M.extract).toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric'});
+$('builtTxt').textContent = M.generated.slice(0, 10);
+$('dateChip').textContent = 'Data to ' + $('extractTxt').textContent;
+
+// ---- filters
+function fillSelect(id, values, labels) { $(id).innerHTML = values.map((v, i) => `<option value="${esc(v)}">${esc(labels ? labels[i] : v)}</option>`).join(''); }
+fillSelect('fReg', ['All', ...REGIONS], ['All regions', ...REGIONS]);
+fillSelect('fDiv', ['All', ...uniq(D.rows.map(r => r.division))], ['All divisions', ...uniq(D.rows.map(r => r.division))]);
+const filt = () => ({region: $('fReg').value, division: $('fDiv').value});
+const applyFilt = f => D.rows.filter(r => (f.region === 'All' || r.region === f.region) && (f.division === 'All' || r.division === f.division));
+const filtText = f => [f.region === 'All' ? 'all regions' : f.region, f.division === 'All' ? 'all divisions' : f.division].join(' · ');
+
+// ---- page switching
+const TITLES = {overview: 'Overview', insights: 'Insights', breakdown: 'Breakdown', list: 'Records', method: 'Stats and method', qa: 'QA and data checks'};
+const FILTERED = {overview: 1, insights: 1, breakdown: 1, list: 1, method: 1};   // pages the filter bar applies to; hidden elsewhere
+let page = 'overview', current = [];
+document.querySelectorAll('.nav a').forEach(a => a.onclick = () => go(a.dataset.page));
+function go(p) {
+  page = p;
+  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('active', a.dataset.page === p));
+  document.querySelectorAll('.page').forEach(s => s.classList.toggle('show', s.id === 'p-' + p));
+  $('pageTitle').textContent = TITLES[p]; $('crumbPage').textContent = TITLES[p];
+  render();
+}
+function render() {
+  const f = filt();
+  $('filters').style.display = FILTERED[page] ? '' : 'none';
+  current = applyFilt(f);
+  $('pageSub').textContent = `${fmt(current.length)} records · ${monLbl(M.first_month)} to ${monLbl(M.last_month)} · ${filtText(f)}`;
+  ({overview: rOverview, insights: rInsights, breakdown: rBreakdown, list: rList, method: rMethod, qa: rQa})[page](f, current);   // only the visible page draws
+}
+
+// ---------------- Overview
+function rOverview(f, rows) {
+  const pos = rows.filter(r => r.value > 0).length;
+  $('kpis').innerHTML = kpiTiles([
+    ['k-blue', 'fa-list', 'Records', fmt(rows.length), 'in the current filters'],
+    ['k-teal', 'fa-percent', 'Share above zero', pct(rows.length ? pos / rows.length : NaN), `95% range ${wilson(pos, rows.length).map(v => pct(v)).join(' to ')}`],
+    ['k-yellow', 'fa-plus', 'Total value', fmt(sum(rows.map(r => r.value))), 'sum across records'],
+    ['k-pink', 'fa-scale-balanced', 'Median value', fmt(median(rows.map(r => r.value)), 1), 'median, because a few large records pull averages up'],
+  ]);
+  draw('cReg', {type: 'bar', data: {labels: REGIONS, datasets: [{label: 'Total value', backgroundColor: REGIONS.map(r => REG_COLOUR[r]), data: REGIONS.map(r => sum(rows.filter(x => x.region === r).map(x => x.value)))}]},
+    options: {plugins: {legend: {display: false}}, scales: {y: {title: {display: true, text: 'Total value'}}}}});
+  const months = uniq(D.rows.map(r => r.month));
+  draw('cMonth', {type: 'bar', data: {labels: months.map(monLbl), datasets: REGIONS.map(r => ({label: r, backgroundColor: REG_COLOUR[r], data: months.map(m => sum(rows.filter(x => x.region === r && x.month === m).map(x => x.value)))}))},
+    options: {scales: {x: {stacked: true}, y: {stacked: true, title: {display: true, text: 'Value'}}}}});
+  $('monthNote').textContent = `${monLbl(M.last_month)} is the extract month and may be partial.`;
+}
+
+// ---------------- Insights: sentences built from the numbers, with the evidence on each card
+function insightCard(title, text, evidence, link) {
+  return `<div class="card ins"><div class="card-body"><div class="ins-top"><h4>${esc(title)}</h4><span class="badge b-blue">${esc(evidence)}</span></div><p>${text}</p>`
+    + (link ? `<span class="ins-link" onclick="go('${link}')">See the detail <i class="fa-solid fa-arrow-right"></i></span>` : '') + '</div></div>';
+}
+function rInsights(f, rows) {
+  $('insFilters').innerHTML = `<i class="fa-solid fa-filter"></i> Showing ${esc(filtText(f))} (${fmt(rows.length)} records).`;
+  const g = [...groupBy(rows, r => r.division)].map(([k, a]) => ({k, n: a.length, rate: a.filter(r => r.value > 0).length / a.length})).filter(x => x.n >= MIN_NAME).sort((a, b) => b.rate - a.rate);
+  $('insBox').innerHTML = g.length < 2 ? insightCard('Divisions', 'Fewer than two divisions have 30+ records in this view, so none is named highest or lowest.', 'n < 30', 'breakdown')
+    : insightCard('Divisions', `${esc(g[0].k)} has the highest share above zero (${pct(g[0].rate)}), ${esc(g.at(-1).k)} the lowest (${pct(g.at(-1).rate)}). Add a test before saying they differ.`, `${g.length} divisions with n ≥ ${MIN_NAME}`, 'breakdown');
+}
+
+// ---------------- Breakdown
+function rBreakdown(f, rows) {
+  const g = [...groupBy(rows, r => r.division)].map(([k, a]) => ({k, n: a.length, total: sum(a.map(r => r.value)), rate: a.filter(r => r.value > 0).length / a.length, _small: a.length < MIN_TEST})).sort((a, b) => b.n - a.n);
+  draw('cDiv', {type: 'bar', data: {labels: g.map(r => `${r.k} (${r.n})`), datasets: [{label: 'Share above zero', data: g.map(r => r.rate), backgroundColor: g.map(r => r._small ? GREY : PALETTE[0])}]},
+    options: {indexAxis: 'y', plugins: {legend: {display: false}}, scales: {x: pctAxis}}});
+  table($('tDiv'), [{k: 'k', label: 'Division'}, {k: 'n', label: 'Records', n: 1, f: v => fmt(v)}, {k: 'total', label: 'Total value', n: 1, f: v => fmt(v)}, {k: 'rate', label: 'Share above zero', n: 1, f: v => pct(v)}], g);
+}
+
+// ---------------- Records list (sortable, searchable, CSV)
+const LIST_COLS = [{k: 'name', label: 'Name'}, {k: 'id', label: 'ID'}, {k: 'region', label: 'Region'}, {k: 'division', label: 'Division'}, {k: 'month', label: 'Month'}, {k: 'value', label: 'Value', n: 1, f: v => fmt(v)}];
+let sortKey = 'value', sortDir = -1;
+function listRows(rows) {
+  const q = ($('listSearch').value || $('topSearch').value).trim().toLowerCase();
+  return rows.filter(r => !q || [r.name, r.id, r.region, r.division].join(' ').toLowerCase().includes(q))
+    .sort((a, b) => { const x = a[sortKey], y = b[sortKey]; return x === y ? 0 : (x > y ? 1 : -1) * sortDir; });
+}
+function rList(f, rows) {
+  const out = listRows(rows);
+  $('listSub').textContent = `${fmt(out.length)} records · same filters as the charts`;
+  table($('tList'), LIST_COLS, out, {sortable: true, onSort: k => { sortDir = sortKey === k ? -sortDir : -1; sortKey = k; render(); }});
+}
+$('listSearch').oninput = () => render();
+$('topSearch').oninput = () => { if (page !== 'list') go('list'); else render(); };
+$('btnCsv').onclick = $('btnCsv2').onclick = () => download('records_filtered.csv', listRows(current), LIST_COLS);
+
+// ---------------- Method and QA
+function rMethod(f, rows) {
+  $('statBox').innerHTML = '<div class="stat"><h4>Example test</h4><div class="reading">Plain-English reading of the result.</div><div class="note">Test name, statistic, df, p (shown with pfmt), n per group. Groups under 20 left out.</div></div>';
+}
+function rQa() {
+  table($('tQa'), [{k: 'step', label: 'Step'}, {k: 'rows', label: 'Rows', n: 1, f: v => fmt(v)}], D.qa || []);
+}
+
+// ---- wire up
+document.querySelectorAll('#filters select').forEach(s => s.onchange = () => render());
+$('btnReset').onclick = () => { ['fReg', 'fDiv'].forEach(id => $(id).value = 'All'); render(); };
+render();
+</script>
+</body>
+</html>

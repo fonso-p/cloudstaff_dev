@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Client Growth Dashboard page guide</title>
+<!-- One-page guide to the dashboard pages. Built by build_page_guide.py (tokens and logo are inlined); prints to one A4 page. -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/*__TOKENS__*/
+@page{size:A4;margin:10mm 11mm}
+:root{--ink:var(--color-text-base-primary);--muted:var(--color-text-base-muted);--line:var(--border-color-default);--blue:var(--color-brand-primary-strong)}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--ink);font-family:var(--font-family-body);font-size:7.9pt;line-height:1.3}
+.page{max-width:190mm;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:6px;border-bottom:2px solid var(--color-brand-primary)}
+header svg{width:118px;height:auto}
+.htitle{text-align:right}
+h1{font-family:var(--font-family-heading);font-size:14pt;margin:0;line-height:1.15}
+.sub{color:var(--muted);font-size:7.4pt;margin-top:2px}
+h2{font-family:var(--font-family-heading);font-size:9pt;color:var(--blue);margin:7px 0 3px}
+p{margin:0 0 4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.box{border:1px solid var(--line);border-radius:6px;padding:5px 7px}
+.box b.lbl{display:block;font-family:var(--font-family-mono);font-size:7pt;letter-spacing:.06em;text-transform:uppercase;color:var(--blue);margin-bottom:2px}
+.five{background:var(--color-brand-primary-soft);border-radius:6px;padding:5px 7px;margin-top:5px}
+table{width:100%;border-collapse:collapse;font-size:7.6pt;line-height:1.25}
+th{text-align:left;color:var(--blue);font-weight:700;border-bottom:1.5px solid var(--line);padding:2px 4px}
+td{border-bottom:1px solid var(--line);padding:2px 4px;vertical-align:top}
+td.pg{font-weight:700;white-space:nowrap}
+td.ws{white-space:nowrap;text-align:center}
+.yes{color:var(--color-brand-secondary-strong);font-weight:700}
+.no{color:var(--muted)}
+ul{margin:0;padding-left:14px}
+li{margin:0 0 2px}
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;column-gap:8px;row-gap:2px}
+dt{font-weight:700;white-space:nowrap}
+dd{margin:0}
+footer{margin-top:7px;padding-top:4px;border-top:1px solid var(--line);color:var(--muted);font-size:7.2pt;display:flex;justify-content:space-between}
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <!--__LOGO__-->
+    <div class="htitle"><h1>Client Growth Dashboard: page guide</h1>
+      <div class="sub">How to read each page and the filters · clients first staffed from Jan 2020</div></div>
+  </header>
+
+  <h2>What the dashboard is</h2>
+  <p>One page per question about where, when and how clients grow. Growth = net seats: staff who started minus staff who left. Seats come from the SC Engagement List; region, Custom Division, industry and Active come from MyStaff. Internal and test accounts are excluded and listed on the QA page.</p>
+
+  <h2>The filter bar has two rows</h2>
+  <div class="grid2">
+    <div class="box"><b class="lbl">Which clients (always applies)</b>
+      Region (APAC, AMER incl. EMEA, OPTI), Custom division, Industry roll-up, Status and Path to 5 seats (headcount). They pick the clients you see, on every page.</div>
+    <div class="box"><b class="lbl">How growth is measured (only where it matters)</b>
+      Window length (3, 5, 6, 12 months), Net seats added in a window (3+, 5+, 10+, 20+), Starting segment and Window start year. Shown only on pages that use them; on Seasonality only the year shows, as Calendar year.</div>
+  </div>
+  <div class="five"><b>Two different "5"s.</b> <b>Path to 5 seats</b> is about size: did the account ever have 5 staff at the same time, and how fast. <b>Net seats added in a window</b> is about a growth spurt: did the account add, say, 5 net seats inside any 6-month stretch of its life. A client can be "Fast to 5" without ever adding 5 net seats in one window, for example by launching with 4.</div>
+
+  <h2>The pages</h2>
+  <table>
+    <thead><tr><th>Page</th><th>What it answers</th><th>Uses window settings</th></tr></thead>
+    <tbody>
+      <tr><td class="pg">Overview</td><td>How many clients add the chosen net seats in a window, in which window of their life, and net seats by calendar year.</td><td class="ws yes">Yes</td></tr>
+      <tr><td class="pg">Insights</td><td>Plain-English findings that rewrite themselves when any filter changes. "Differs" appears only when a statistical test supports it.</td><td class="ws yes">Yes</td></tr>
+      <tr><td class="pg">Path to 5 seats</td><td>Accounts that reached 5 fast (within 6 months), slowly, not yet, or churned without 5: what predicts getting there, how quickly, and what happens after.</td><td class="ws no">No</td></tr>
+      <tr><td class="pg">Lifecycle stage</td><td>Where in a client's life growth happens: months 1-3 (after launch), 4-6, 7-12, 13-24, 25-36 and 37+, by region and division.</td><td class="ws no">No</td></tr>
+      <tr><td class="pg">Size buckets</td><td>Growth by size at the start of each window (1-2, 3-4, 5-9, 10+ staff), and how often clients move up or down a size.</td><td class="ws yes">Yes</td></tr>
+      <tr><td class="pg">Divisions &amp; industry</td><td>Share of clients reaching the net-seat threshold by Custom Division and industry, with 95% ranges. Groups under 20 clients are greyed.</td><td class="ws yes">Yes</td></tr>
+      <tr><td class="pg">Seasonality</td><td>Hiring, churn and net seats by calendar month, and divisions whose hiring season differs from the company pattern (for example USTL).</td><td class="ws">Year only</td></tr>
+      <tr><td class="pg">Segment movement</td><td>Whether clients move up, stay or move down a size segment in each window, and the months when clients have their best growth.</td><td class="ws yes">Yes</td></tr>
+      <tr><td class="pg">Account profile</td><td>The account fields side by side for APAC, AMER and OPTI: starting seats, time to 5, second function, retention, tenure, current and peak seats.</td><td class="ws no">No</td></tr>
+      <tr><td class="pg">Clients</td><td>Every client in the filters, sortable, searchable and exportable to CSV.</td><td class="ws yes">Yes</td></tr>
+      <tr><td class="pg">Stats &amp; method</td><td>Every statistical test, its p-value and group sizes, and the rules used to read them.</td><td class="ws yes">Yes</td></tr>
+      <tr><td class="pg">QA &amp; data checks</td><td>Every excluded row and why, data flags, MyStaff differences, and where all staff on the books sit (for headcount reconciliation).</td><td class="ws no">No</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:4px">Under every chart: <b>Numbers behind this chart</b>, the exact values with a CSV button. Under each analysis page: <b>Client movement</b>, every client in the filters with added, churned and net seats by lifecycle stage or by window. With a Path to 5 group selected, this list is the interview shortlist for that group.</p>
+
+  <div class="grid2">
+    <div>
+      <h2>Key definitions</h2>
+      <dl>
+        <dt>Window</dt><dd>A block of the client's own life: window 1 = its first N months, window 2 = the next N. Complete windows only.</dd>
+        <dt>Window net</dt><dd>Staff at the window end minus staff at its start; window 1 starts at the end of month 1, so launch seats are not growth.</dd>
+        <dt>Starting seats</dt><dd>Staff at the end of the client's first month.</dd>
+        <dt>Peak seats</dt><dd>Most staff on the books on any single day.</dd>
+        <dt>Fast / Slow to 5</dt><dd>5 staff at the same time within 6 months (183 days) of the first start, or later.</dd>
+        <dt>Status</dt><dd>MyStaff Active plus staff today: active with staff, active with 0 staff, inactive.</dd>
+      </dl>
+    </div>
+    <div>
+      <h2>Reading the results</h2>
+      <ul>
+        <li>"Differs", "higher" or "lowest" only when a test gives p &lt; 0.05; otherwise "no clear difference".</li>
+        <li>Groups under 20 are greyed and flagged; only groups of 30+ are named highest or lowest.</li>
+        <li>These are associations in the data, not causes.</li>
+        <li>The latest month is a partial month.</li>
+        <li>Not available in the source files: company size, and gross margin or account economics.</li>
+        <li>Out of scope: clients whose first staff started before 2020, and accounts tagged VAR in MyStaff (see the QA page for their headcount).</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer><span>Cloudstaff Data &amp; Analytics · Client Growth Dashboard</span><span>Refresh steps: work/client_growth_dashboard/README.md</span></footer>
+</div>
+</body>
+</html>

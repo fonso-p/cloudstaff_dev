@@ -1,0 +1,128 @@
+[
+{
+"key": "hot_bonus",
+"label": "Act now bonus points (added after the industry nudge, score capped at 100)",
+"value": 15,
+"kind": "points"
+},
+{
+"key": "hot_bonus_diamond",
+"label": "Act now bonus points when the trigger is a Diamond referral (it already adds flag points)",
+"value": 7.5,
+"kind": "points"
+},
+{
+"key": "web_max_nl",
+"label": "Website max points, New Logo",
+"value": 40,
+"kind": "points"
+},
+{
+"key": "news_max_nl",
+"label": "News and jobs max points, New Logo",
+"value": 40,
+"kind": "points"
+},
+{
+"key": "dia_max",
+"label": "Diamond referral points (New Logo)",
+"value": 10,
+"kind": "points"
+},
+{
+"key": "bpo_max",
+"label": "Competitor client points (New Logo)",
+"value": 10,
+"kind": "points"
+},
+{
+"key": "web_max_og",
+"label": "Website max points, Organic Growth",
+"value": 40,
+"kind": "points"
+},
+{
+"key": "news_max_og",
+"label": "News and jobs max points, Organic Growth",
+"value": 40,
+"kind": "points"
+},
+{
+"key": "seat_max_og",
+"label": "Seat growth max points, Organic Growth",
+"value": 20,
+"kind": "points"
+},
+{
+"key": "tb_share",
+"label": "Website: Team Builder visit share",
+"value": 0.5,
+"kind": "share"
+},
+{
+"key": "ff_share",
+"label": "Website: form fill share",
+"value": 0.25,
+"kind": "share"
+},
+{
+"key": "vol_share",
+"label": "Website: visit volume share",
+"value": 0.25,
+"kind": "share"
+},
+{
+"key": "news_share",
+"label": "News and jobs: strongest news share",
+"value": 0.625,
+"kind": "share"
+},
+{
+"key": "jobs_share",
+"label": "News and jobs: hiring share",
+"value": 0.375,
+"kind": "share"
+},
+{
+"key": "base_web",
+"label": "Website baseline when unknown",
+"value": 0.25,
+"kind": "share"
+},
+{
+"key": "base_news",
+"label": "News and jobs baseline when unknown",
+"value": 0.25,
+"kind": "share"
+},
+{
+"key": "base_seats",
+"label": "Seat growth baseline when unknown",
+"value": 0.25,
+"kind": "share"
+},
+{
+"key": "seat_0",
+"label": "Seats added in 6 months: 0",
+"value": 0,
+"kind": "share"
+},
+{
+"key": "seat_1_5",
+"label": "Seats added in 6 months: 1-5",
+"value": 0.25,
+"kind": "share"
+},
+{
+"key": "seat_6_10",
+"label": "Seats added in 6 months: 6-10",
+"value": 0.5,
+"kind": "share"
+},
+{
+"key": "seat_11",
+"label": "Seats added in 6 months: 11 or more",
+"value": 1,
+"kind": "share"
+}
+]

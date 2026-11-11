@@ -1,0 +1,43 @@
+# Marketing Intelligence & Prioritization Proposal
+
+## Purpose
+
+The goal is to give Marketing a prioritization capability that turns data into clear, quick-to-action priorities for both growing existing clients organically and acquiring new ones. Marketing should have a clear picture of the clients most worth targeting, and the right teams (SDR, BDM, AM) should receive priority lists for prospecting and outreach, without overlapping efforts.
+
+## Proposed Solution
+
+Build a marketing intelligence and prioritization capability that brings together buying and growth signals from internal data and external sources for every account. It produces two outputs: sortable priority lists in a digestible, quick-to-action format, with separate lists for growing existing clients and acquiring new ones, assigned by role; and a priority profile of clients that Marketing can use for targeting.
+
+## Technical Approach
+
+The capability builds on existing systems first and adds new tools only where gaps remain, keeping it low-cost and scalable.
+
+- **Integrate and format existing data** from internal systems, apps, and existing data-gathering engines (e.g., a news/job scrapers) into a single data store. Clean, structured data is used as-is, while the rest is formatted first, from simple rules such as regex to advanced text processing that keeps only relevant buying and growth signals.
+
+- **Build net-new capabilities** where no data or engine exists today. While parts of these may already exist, they require new development from the ground up and are a bigger lift than formatting existing data. Each capability is subject to prioritization and moves forward only once it is deemed useful.
+
+- **Score and profile** the combined data. Signals and flags are brought together for each account, with a Priority Score that ranks accounts and assigns them to the right team's list. Historical internal data on the clients most likely to grow is analyzed to build the priority profile.
+
+- **Display** the outputs where each team already works: the priority lists in HubSpot (or another system), and the priority profile delivered to Marketing in a format ready for targeting.
+
+## Data Catalogue
+
+| Purpose | Name | Description | Existing System / Data Source | Applies To | Status |
+| --- | --- | --- | --- | --- | --- |
+| Useful Context | Company Profile (Industry, Size, Region) | Firmographic data (industry, size, region) used to segment accounts and assess fit against our ideal client profile | HubSpot, MyStaff | Both | Available |
+| Buying/Growth Signals | Website Activities | Website behavior tracked in HubSpot, such as visiting the Team Builder page or filling out forms, showing active interest from existing clients and prospects | HubSpot | Both | Needs Integration |
+| Buying/Growth Signals | Company News, Job Postings, Social Media | Public signals that a company is growing or restructuring (funding rounds, PE buyouts, M&A, hiring spikes), suggesting a near-term need for more staff | Yoga, TheHunt | Both | Needs Integration |
+| Buying/Growth Signals | Client Research | AI research on existing clients and prospects, estimating each company's likelihood to add or grow seats | Client Research | Both | Needs Integration |
+| Buying/Growth Signals | Positive Industry News | Sector-level trends (industry growth, regulatory changes, labor shortages) that raise demand for outsourced staff across a whole industry |  | Both | Needs Development |
+| Buying/Growth Signals | Department Growth Path | Analyzes historical staff engagements and disengagements by role, industry, and region to find the typical order in which clients add new departments (e.g., accounting, then marketing). Predicts each client's most likely next department and its likelihood, shown as a value per client (e.g., Next likely department: Customer Service, 60%), pointing to horizontal growth beyond adding seats in existing teams. | MyStaff | Organic Growth | Needs Development |
+| Flags | Diamond Referral Flag | Flags accounts referred through the Diamond referral program; referred leads typically convert faster and warrant priority follow-up | TheHunt | New Logo | Needs Integration |
+| Flags | Prior BPO Experience Flag (CS Jobs Scan) | Identifies companies that have previously outsourced to other BPOs, based on client names listed in existing Cloudstaffer resumes. Indicates openness to outsourcing and higher likelihood to convert. | CS Jobs | New Logo | Needs Integration |
+| Feature Consolidation | Priority Score | Numerical score that rolls up all signals and flags into one easy format, weighted differently for New Logo and Organic Growth and refined based on Marketing team feedback |  | Both | Needs Development |
+
+## Outputs
+
+The capability produces two outputs, both built from the Data Catalogue.
+
+- **Sortable priority lists.** A digestible, easy-to-read format that brings together every signal, flag, and score in the Data Catalogue for each account. Accounts can be ranked by Priority Score or sorted by any field (e.g., goal, segment, signal, or flag), so each team (SDR, BDM, AM) receives its own focused list for organic growth or new logo outreach, with no account on more than one team's list.
+
+- **Priority profile.** A profile of the clients most worth pursuing, based on shared traits such as industry, size, region, and departments hired. Marketing can use it to target similar companies, for example through lookalike audiences on ad platforms. The profile relies mainly on internal data, which covers each client's full history; external signals such as news are easier to scrape in real time than to gather historically for past clients.

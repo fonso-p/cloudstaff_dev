@@ -1,0 +1,1266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Client Growth Dashboard</title>
+<!-- Fonts, icons and Chart.js load from CDNs. No client data is sent anywhere: the data is embedded below. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=Chivo+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ---- Cloudstaff Design System tokens (css/tokens.css, inlined at build time) ---- */
+/*__TOKENS__*/
+
+/* ---- Dashboard layout (uses design-system tokens only) ---- */
+*{box-sizing:border-box}
+body{margin:0;background:var(--color-surface-page);color:var(--color-text-base-primary);font-family:var(--font-family-body);font-size:var(--font-size-sm)}
+h1,h2,h3{font-family:var(--font-family-heading);margin:0}
+.mono,.num{font-family:var(--font-family-mono)}
+.shell{display:grid;grid-template-columns:16rem minmax(0,1fr);min-height:100vh}
+/* sidebar */
+.side{background:var(--color-surface-primary);border-right:1px solid var(--border-color-default);padding:var(--component-card-padding);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:var(--component-tile-padding)}
+.brand{display:flex;flex-direction:column;gap:4px;padding-bottom:var(--component-tile-padding)}
+.brand svg{width:150px;height:auto}
+.brand small{color:var(--color-text-base-muted)}
+.nav-label{font-family:var(--font-family-mono);font-size:var(--font-size-xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-base-muted);margin:8px 0 4px}
+.nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-lg);color:var(--color-text-base-primary);text-decoration:none;font-weight:var(--font-weight-medium);cursor:pointer}
+.nav a i{width:18px;text-align:center;color:var(--color-text-base-secondary)}
+.nav a:hover{background:var(--color-surface-secondary)}
+.nav a.active{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.nav a.active i{color:var(--color-brand-primary-strong)}
+.side-box{border:1px solid var(--border-color-default);border-radius:var(--radius-xl);padding:var(--component-tile-padding);display:flex;flex-direction:column;gap:8px}
+.btn{display:flex;align-items:center;gap:8px;border:0;border-radius:var(--radius-lg);padding:10px 12px;font:inherit;font-weight:var(--font-weight-semibold);cursor:pointer}
+.btn-teal{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong)}
+.btn-blue{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.side-foot{margin-top:auto;color:var(--color-text-base-muted);font-size:var(--font-size-xs)}
+/* main */
+.main{padding:var(--component-pane-padding);min-width:0}
+.topbar{display:flex;align-items:center;gap:16px;padding-bottom:var(--component-card-padding);border-bottom:1px solid var(--border-color-default);margin-bottom:var(--component-card-padding)}
+.crumbs{color:var(--color-text-base-muted);font-size:var(--font-size-md)}
+.crumbs b{color:var(--color-text-base-primary)}
+.topbar .grow{flex:1}
+.chip{display:flex;align-items:center;gap:8px;font-weight:var(--font-weight-semibold)}
+.chip i{color:var(--color-brand-primary)}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--border-color-default);border-radius:var(--radius-lg);padding:8px 12px;background:var(--color-surface-primary);min-width:240px}
+.search input{border:0;outline:0;font:inherit;width:100%;background:transparent}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:var(--component-tile-padding);flex-wrap:wrap}
+.page-head h1{font-size:var(--font-size-3xl)}
+.page-head p{margin:6px 0 0;color:var(--color-text-base-secondary);font-size:var(--font-size-md)}
+/* filters */
+.filters{display:flex;flex-wrap:wrap;gap:12px;background:var(--color-surface-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-xl);padding:var(--component-tile-padding);margin-bottom:var(--component-card-padding);box-shadow:var(--shadow-sm)}
+.filters label{display:flex;flex-direction:column;gap:4px;font-size:var(--font-size-xs);color:var(--color-text-base-muted);font-weight:var(--font-weight-semibold)}
+.filters select{font:inherit;color:var(--color-text-base-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:7px 10px;background:var(--color-surface-primary);min-width:120px;max-width:220px}
+.filters .reset{align-self:flex-end}
+.filters{flex-direction:column;gap:10px}
+.frow{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.frow + .frow{border-top:1px solid var(--border-color-default);padding-top:10px}
+.frow-label{width:100%;font-family:var(--font-family-mono);font-size:var(--font-size-2xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-brand-primary-strong);font-weight:var(--font-weight-semibold)}
+.frow-note{font-size:var(--font-size-xs);color:var(--color-text-base-muted)}
+.frow-note:empty{display:none}
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--component-tile-padding);margin-bottom:var(--component-card-padding)}
+.kpi{border-radius:var(--radius-xl);padding:var(--component-tile-padding);display:flex;flex-direction:column;gap:10px}
+.kpi-top{display:flex;align-items:center;gap:10px;font-weight:var(--font-weight-semibold);font-size:var(--font-size-sm);line-height:1.3}
+.kpi-icon{width:40px;height:40px;border-radius:var(--radius-lg);display:grid;place-items:center;color:var(--color-surface-primary);flex:none}
+.kpi-value{font-family:var(--font-family-heading);font-size:var(--font-size-3xl);font-weight:var(--font-weight-bold)}
+.kpi-sub{color:var(--color-text-base-secondary)}
+.k-blue{background:var(--color-brand-primary-soft)} .k-blue .kpi-icon{background:var(--color-brand-primary)}
+.k-teal{background:var(--color-feature-01-soft)} .k-teal .kpi-icon{background:var(--color-feature-01)}
+.k-yellow{background:var(--color-feature-02-soft)} .k-yellow .kpi-icon{background:var(--color-feature-02)}
+.k-pink{background:var(--color-feature-03-soft)} .k-pink .kpi-icon{background:var(--color-feature-03)}
+.k-purple{background:var(--color-feature-05-soft)} .k-purple .kpi-icon{background:var(--color-feature-05)}
+.k-indigo{background:var(--color-feature-04-soft)} .k-indigo .kpi-icon{background:var(--color-feature-04)}
+/* cards with a solid blue header bar (reference layout) */
+.grid{display:grid;gap:var(--component-card-padding);margin-bottom:var(--component-card-padding)}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:3fr 2fr}
+.card{background:var(--color-surface-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm);overflow:hidden;min-width:0}
+.card-head{background:var(--color-brand-primary-strong);color:var(--color-surface-primary);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px var(--component-card-padding)}
+.card-head h3{font-size:var(--font-size-md);font-weight:var(--font-weight-bold);line-height:1.3}
+.card-head span{opacity:.9;font-size:var(--font-size-xs);text-align:right;flex:0 1 auto;max-width:45%}
+.card-body{padding:var(--component-card-padding)}
+.chart{position:relative;height:300px}
+.chart.tall{height:380px}
+.note{color:var(--color-text-base-muted);font-size:var(--font-size-xs);margin-top:10px;line-height:1.5}
+.warn{background:var(--color-feature-02-soft);border-radius:var(--radius-lg);padding:10px 14px;margin:0 0 var(--component-tile-padding);font-size:var(--font-size-xs)}
+.warn i{color:var(--color-feature-07)}
+.info{background:var(--color-brand-primary-soft);border-radius:var(--radius-lg);padding:10px 14px;margin:0 0 var(--component-tile-padding)}
+/* tables */
+.tbl-wrap{overflow:auto;max-height:560px}
+#tClients td{white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:var(--font-size-xs)}
+th{position:sticky;top:0;background:var(--color-surface-primary);color:var(--color-brand-primary-strong);text-align:left;font-weight:var(--font-weight-bold);padding:10px;border-bottom:2px solid var(--border-color-default);white-space:nowrap;cursor:default}
+th.sort{cursor:pointer} th.sort:hover{text-decoration:underline}
+td{padding:8px 10px;border-bottom:1px solid var(--border-color-default);vertical-align:top}
+td.n,th.n{text-align:right}
+td.n{font-family:var(--font-family-mono)}
+tr.small td{color:var(--color-text-base-muted)}
+.badge{display:inline-block;padding:2px 8px;border-radius:var(--radius-pill);font-size:var(--font-size-2xs);font-weight:var(--font-weight-semibold)}
+.b-ok{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong)}
+.b-warn{background:var(--color-feature-02-soft);color:var(--color-text-base-primary)}
+.b-no{background:var(--color-surface-secondary);color:var(--color-text-base-secondary)}
+.heat td.h{text-align:center;font-family:var(--font-family-mono)}
+.tools{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.tools input{font:inherit;border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:7px 10px;min-width:260px}
+.stat{border:1px solid var(--border-color-default);border-radius:var(--radius-lg);padding:var(--component-tile-padding);margin-bottom:12px}
+.stat h4{margin:0 0 6px;font-family:var(--font-family-heading)}
+.stat .reading{font-size:var(--font-size-md);font-weight:var(--font-weight-semibold);margin:6px 0}
+.page{display:none}
+.page.show{display:block}
+ul.rules{margin:0;padding-left:18px;line-height:1.7}
+/* "numbers behind this chart" panels and the client movement list */
+details.chart-data{margin-top:12px;border-top:1px solid var(--border-color-default);padding-top:8px}
+details.chart-data summary{cursor:pointer;font-weight:var(--font-weight-semibold);color:var(--color-brand-primary-strong);display:flex;align-items:center;gap:10px;font-size:var(--font-size-xs)}
+details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
+.btn-mini{border:0;border-radius:var(--radius-md);padding:3px 8px;font:inherit;font-size:var(--font-size-2xs);background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong);cursor:pointer}
+.tools select{font:inherit;border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:6px 8px}
+#tMvList th.grp{border-left:2px solid var(--border-color-default)}
+#tMvList td{white-space:nowrap}
+#tMvList table{width:auto}
+#tMvList td:first-child,#tMvList th:first-child{position:sticky;left:0;background:var(--color-surface-primary);white-space:normal;min-width:200px;max-width:260px;z-index:1;box-shadow:inset -1px 0 0 var(--border-color-default)}
+#tMvList th:first-child{z-index:2}
+/* insights cards */
+.ins .card-body{display:flex;flex-direction:column;gap:8px}
+.ins h4{margin:0;font-family:var(--font-family-heading);font-size:var(--font-size-lg)}
+.ins p{margin:0;line-height:1.6}
+.ins-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ins-link{cursor:pointer;color:var(--color-brand-primary-strong);font-size:var(--font-size-xs);font-weight:var(--font-weight-semibold)}
+.b-blue{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+@media (max-width:1100px){.g2,.g3{grid-template-columns:1fr}.shell{grid-template-columns:1fr}.side{position:static;height:auto}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- ================= sidebar ================= -->
+  <aside class="side">
+    <div class="brand"><!--__LOGO__--><small>Client growth analytics</small></div>
+    <div class="nav-label">Workspace</div>
+    <nav class="nav" id="nav">
+      <a data-page="overview" class="active"><i class="fa-solid fa-chart-column"></i>Overview</a>
+      <a data-page="insights"><i class="fa-solid fa-lightbulb"></i>Insights</a>
+      <a data-page="path"><i class="fa-solid fa-flag-checkered"></i>Path to 5 seats</a>
+      <a data-page="lifecycle"><i class="fa-solid fa-timeline"></i>Lifecycle stage</a>
+      <a data-page="buckets"><i class="fa-solid fa-layer-group"></i>Size buckets</a>
+      <a data-page="divisions"><i class="fa-solid fa-sitemap"></i>Divisions &amp; industry</a>
+      <a data-page="season"><i class="fa-solid fa-calendar-days"></i>Seasonality</a>
+      <a data-page="movement"><i class="fa-solid fa-arrows-up-down"></i>Segment movement</a>
+      <a data-page="profile"><i class="fa-solid fa-id-card"></i>Account profile</a>
+      <a data-page="clients"><i class="fa-solid fa-building"></i>Clients</a>
+    </nav>
+    <div class="nav-label">Method</div>
+    <nav class="nav">
+      <a data-page="stats"><i class="fa-solid fa-square-root-variable"></i>Stats &amp; method</a>
+      <a data-page="qa"><i class="fa-solid fa-clipboard-check"></i>QA &amp; data checks</a>
+    </nav>
+    <div class="side-box">
+      <div class="nav-label" style="margin:0"><i class="fa-solid fa-file-export"></i> Data</div>
+      <button class="btn btn-teal" id="btnCsv"><i class="fa-solid fa-file-csv"></i>Export clients (CSV)</button>
+      <button class="btn btn-blue" id="btnWinCsv"><i class="fa-solid fa-download"></i>Export windows (CSV)</button>
+    </div>
+    <div class="side-foot"><i class="fa-solid fa-database"></i> StaffCentral engagement list to <span id="extractTxt"></span> · MyStaff client list<br>Built <span id="builtTxt"></span></div>
+  </aside>
+
+  <!-- ================= main ================= -->
+  <main class="main">
+    <div class="topbar">
+      <div class="crumbs">Client growth &nbsp;<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>&nbsp; <b id="crumbPage">Overview</b></div>
+      <div class="grow"></div>
+      <div class="chip"><i class="fa-regular fa-calendar"></i><span id="dateChip"></span></div>
+      <div class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="topSearch" placeholder="Search clients"></div>
+    </div>
+    <div class="page-head">
+      <div><h1 id="pageTitle">Overview</h1><p id="pageSub"></p></div>
+    </div>
+
+    <!-- shared filter bar: every view recalculates when any control changes -->
+    <!-- two rows: "which clients" (always applies) and "how growth is measured" (shown only on pages that use it) -->
+    <div class="filters" id="filters">
+      <div class="frow"><span class="frow-label">Which clients</span>
+        <label>Region<select id="fReg"></select></label>
+        <label>Custom division<select id="fDiv"></select></label>
+        <label>Industry roll-up<select id="fInd"></select></label>
+        <label>Status<select id="fSta"></select></label>
+        <label>Path to 5 seats (headcount)<select id="fPath"></select></label>
+        <button class="btn btn-blue reset" id="btnReset"><i class="fa-solid fa-rotate-left"></i>Reset</button>
+      </div>
+      <div class="frow" id="measureRow"><span class="frow-label">How growth is measured</span>
+        <label>Window length<select id="fWin"><option value="3">3 months</option><option value="5">5 months</option><option value="6" selected>6 months</option><option value="12">12 months</option></select></label>
+        <label>Net seats added in a window<select id="fThr"><option value="3">3+ net seats</option><option value="5" selected>5+ net seats</option><option value="10">10+ net seats</option><option value="20">20+ net seats</option></select></label>
+        <label>Starting segment (staff at window start)<select id="fSeg"><option value="All">All</option><option value="1-4">1 to 4 staff</option><option value="5-10">5 to 10 staff</option><option value="10+">More than 10 staff</option></select></label>
+        <label><span id="lblYear">Window start year</span><select id="fYear"></select></label>
+      </div>
+      <div class="frow-note" id="measureNote"></div>
+    </div>
+
+    <!-- ================= Overview ================= -->
+    <section class="page show" id="p-overview">
+      <div class="kpis" id="kpis"></div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Clients hitting the threshold, by window</h3><span id="ovWinSub"></span></div>
+          <div class="card-body"><div class="chart"><canvas id="cWin"></canvas></div><div class="note">Window 1 = the client's first N months from its own start month, window 2 = the next N months, and so on. Only complete windows are counted. Window 1 measures growth after launch (from the end of month 1), so a client that launches big does not count as a hit.</div></div></div>
+        <div class="card"><div class="card-head"><h3>Net seats by calendar year</h3><span>starts minus churn</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cYear"></canvas></div><div class="note" id="yearNote"></div></div></div>
+      </div>
+    </section>
+
+    <!-- ================= Insights ================= -->
+    <section class="page" id="p-insights">
+      <div class="info" id="insFilters"></div>
+      <div class="grid g2" id="insBox"></div>
+      <div class="note">How these are written: every sentence is recalculated from the filters above. "Differs" is used only when a test gives p &lt; 0.05 (tests are listed on the Stats page and checked against Python scipy). Groups under 20 are left out of tests and only groups of 30+ are named highest or lowest. These are associations in the data, not causes.</div>
+    </section>
+
+    <!-- ================= Path to 5 seats ================= -->
+    <section class="page" id="p-path">
+      <div class="info">Accounts are split into four groups (the definitions agreed for the High-Growth Account Profile): <b>Fast to 5</b> = 5 staff at the same time within 6 months (183 days) of the first start,
+        <b>Slow to 5</b> = later than that, <b>Not yet at 5, still active</b> = never 5 and still has staff, <b>Churned without reaching 5</b> = never 5 and no staff today. Clients that reached 5 and later left stay in the Fast or Slow group; what happened after 5 is shown below.
+        Use the "Path to 5 seats (headcount)" filter to see any one group on every page, including the client list at the bottom (the interview shortlist). Company size and gross margin are not in the source files, so they cannot be shown.</div>
+      <div class="kpis" id="pathKpis"></div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Path to 5 group mix by region</h3><span>share of clients</span></div><div class="card-body"><div class="chart"><canvas id="cPathReg"></canvas></div></div></div>
+        <div class="card"><div class="card-head"><h3>How quickly clients reached 5 seats</h3><span>clients that reached 5, by region</span></div><div class="card-body"><div class="chart"><canvas id="cPathSpeed"></canvas></div><div class="note" id="pathSpeedNote"></div></div></div>
+      </div>
+      <div class="card" style="margin-bottom:24px"><div class="card-head"><h3>Profile of each group</h3><span>every field requested</span></div><div class="card-body"><div class="tbl-wrap" id="tPathProf"></div>
+        <div class="note">Medians, because a few large clients pull averages up. Starting seats = staff at the end of month 1. Function from role titles (match rate by year on the QA page); "2nd function" counts only clients whose first function is known. Same / new / unknown function adds are staff added from day 30 onwards. Client age = months from first start to the latest month.</div></div></div>
+      <div class="card" style="margin-bottom:24px"><div class="card-head"><h3>What predicts reaching 5 seats</h3><span>clients aged 12+ months that started below 5 seats</span></div><div class="card-body"><div class="tbl-wrap" id="tPathPred"></div>
+        <div class="note">Reached 5 within 12 months, so every client had the same time to get there. Each dimension is tested with chi-square on groups of 20+ clients; "differs" only when p &lt; 0.05. Only groups of 30+ should be compared or ranked. These are associations, not causes.</div></div></div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>What happens after reaching 5</h3><span>clients that reached 5, by region</span></div><div class="card-body"><div class="tbl-wrap" id="tPathAfter"></div><div class="note" id="pathAfterNote"></div></div></div>
+        <div class="card"><div class="card-head"><h3>Seat path by group</h3><span>median staff at each month of the client's life</span></div><div class="card-body"><div class="chart"><canvas id="cPathTraj"></canvas></div><div class="note">Only clients old enough for that month are counted; n is in the table below the chart.</div></div></div>
+      </div>
+    </section>
+
+    <!-- ================= Lifecycle ================= -->
+    <section class="page" id="p-lifecycle">
+      <div class="info">Where in the client's life does growth happen: after 3 months, 6 months, 1 year, 2 years, 3+ years. Each stage counts only clients old enough to have completed it (the 37+ stage uses each client's months 37 to today, shown per month). Every stage is growth after launch: months 1-3 count from the end of month 1, so the seats a client launched with are not counted as growth. Region, division, industry and status filters apply; window, segment and year filters do not. <span class="partialTxt"></span></div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Share of clients net growing, by stage</h3><span>by region</span></div><div class="card-body"><div class="chart"><canvas id="cLife"></canvas></div></div></div>
+        <div class="card"><div class="card-head"><h3>Average and median net seats per client, by stage</h3><span>all filtered clients</span></div><div class="card-body"><div class="chart"><canvas id="cLife2"></canvas></div></div></div>
+      </div>
+      <div class="card" style="margin-bottom:24px"><div class="card-head"><h3>Lifecycle stage detail</h3><span>by region</span></div><div class="card-body"><div class="tbl-wrap" id="tLife"></div></div></div>
+      <div class="card"><div class="card-head"><h3>Average net seats per client by stage and custom division</h3><span>divisions with 20+ clients</span></div><div class="card-body"><div class="tbl-wrap" id="tLifeDiv"></div><div class="note">n = clients old enough for the stage. Grey = under 20 clients, do not rank; under 10 not shown.</div></div></div>
+    </section>
+
+    <!-- ================= Size buckets ================= -->
+    <section class="page" id="p-buckets">
+      <div class="info">Growth by client size at the start of each window (1-2, 3-4, 5-9, 10+ staff). Change the window length to see 3, 5, 6 or 12-month views.</div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Average and median net seats per window, by size</h3><span id="bkSub"></span></div><div class="card-body"><div class="chart"><canvas id="cBk"></canvas></div></div></div>
+        <div class="card"><div class="card-head"><h3>Moved up, stayed or moved down a size bucket</h3><span>share of windows</span></div><div class="card-body"><div class="chart"><canvas id="cBk2"></canvas></div></div></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>Size bucket detail</h3><span>by region</span></div><div class="card-body"><div class="tbl-wrap" id="tBk"></div></div></div>
+    </section>
+
+    <!-- ================= Divisions & industry ================= -->
+    <section class="page" id="p-divisions">
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Share of clients hitting the threshold, by custom division</h3><span>(clients) · grey = under 20, do not rank</span></div><div class="card-body"><div class="chart tall"><canvas id="cDiv"></canvas></div></div></div>
+        <div class="card"><div class="card-head"><h3>Share of clients hitting the threshold, by industry roll-up</h3><span>(clients) · grey = under 20, do not rank</span></div><div class="card-body"><div class="chart tall"><canvas id="cInd"></canvas></div></div></div>
+      </div>
+      <div class="card" style="margin-bottom:24px"><div class="card-head"><h3>Custom division detail</h3><span>windows in the current filters</span></div><div class="card-body"><div class="note" style="margin:0 0 10px">Windows run to the latest complete window for every client, including windows after a client has left (0 staff, no growth). These count as windows that did not hit, which pulls down per-window rates for older clients; "% clients hitting" is less affected.</div><div class="tbl-wrap" id="tDiv"></div></div></div>
+      <div class="card"><div class="card-head"><h3>Industry roll-up detail</h3><span>windows in the current filters</span></div><div class="card-body"><div class="tbl-wrap" id="tInd"></div></div></div>
+    </section>
+
+    <!-- ================= Seasonality ================= -->
+    <section class="page" id="p-season">
+      <div class="filters" style="margin-bottom:16px">
+        <label>Months included<select id="fSeasonMode"><option value="3">Exclude each client's first 3 months (onboarding)</option><option value="0">All months</option></select></label>
+        <label>Measure<select id="fSeasonMeasure"><option value="starts">Starts (hiring)</option><option value="net">Net seats</option><option value="churn">Churn</option></select></label>
+      </div>
+      <div class="info"><span id="seasonYears"></span> Pick a year in the filter bar to see one year. The seasonal index is a division's share of its own hiring in a month divided by the company share in that month: 1.0 = typical, 1.5 = 50% above typical.</div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Starts, churn and net seats by calendar month</h3><span>filtered clients</span></div><div class="card-body"><div class="chart"><canvas id="cSeason"></canvas></div></div></div>
+        <div class="card"><div class="card-head"><h3>Seasonal pattern by region</h3><span>index, 1.0 = company average</span></div><div class="card-body"><div class="chart"><canvas id="cSeasonReg"></canvas></div></div></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>Seasonal index by custom division</h3><span>with chi-square test against the company pattern</span></div><div class="card-body"><div class="tbl-wrap heat" id="tSeason"></div><div class="note">Divisions shown need at least 40 events in the selected months; divisions under 20 clients are greyed and should not be ranked. p &lt; 0.05 = the division's monthly pattern differs from the company pattern by more than chance (chi-square goodness of fit). The test counts individual staff starts, and one client often hires several people in the same month, so very small p-values overstate the certainty: use the index and the consistency across years as the main evidence.</div></div></div>
+    </section>
+
+    <!-- ================= Segment movement ================= -->
+    <section class="page" id="p-movement">
+      <div class="grid g3">
+        <div class="card"><div class="card-head"><h3>Segment movement in each window</h3><span id="mvSub"></span></div><div class="card-body"><div class="chart"><canvas id="cMove"></canvas></div><div class="note">Segment at window start vs window end: 0, 1 to 4, 5 to 10, more than 10 staff.</div></div></div>
+        <div class="card"><div class="card-head"><h3>Peak growth months</h3><span>Jan to Dec, complete years</span></div><div class="card-body"><div class="chart"><canvas id="cPeak"></canvas></div><div class="note">Bars: number of clients whose best net month falls in that calendar month (clients aged 12+ months, complete years). Line: total net seats in that month. Both follow the "Months included" setting on the Seasonality page, so the launch month can be left out. The Clients table shows each client's peak month over its whole life.</div></div></div>
+      </div>
+      <div class="card" style="margin-bottom:24px"><div class="card-head"><h3>Movement by starting segment</h3><span>counts and %</span></div><div class="card-body"><div class="tbl-wrap" id="tMove"></div></div></div>
+      <div class="card"><div class="card-head"><h3>Movement by window number</h3><span>% of windows moving up</span></div><div class="card-body"><div class="tbl-wrap" id="tMoveWin"></div><div class="note">More than 10 staff is the top segment and cannot move up, so it is not shown here. n = windows; grey = under 20 windows.</div></div></div>
+    </section>
+
+    <!-- ================= Account profile ================= -->
+    <section class="page" id="p-profile">
+      <div class="warn"><i class="fa-solid fa-circle-info"></i> Company size is not in the MyStaff or StaffCentral data, so it cannot be shown. Request HubSpot "Number of employees" and "Annual revenue" by shortcode to add it.</div>
+      <div class="card" style="margin-bottom:24px"><div class="card-head"><h3>Account profile by region</h3><span>APAC, AMER and OPTI analysed separately</span></div><div class="card-body"><div class="tbl-wrap" id="tProf"></div><div class="note">Reached 5 within 12 months counts only clients that started at least 12 months before the extract. Medians shown because a few large clients pull averages up. Seats are counted per day (a stint counts on its start and end dates), so a handover day can lift a client to 5. Function comes from role titles in the monthly billed report (matched by staff name and kick-off date); the match rate by year is on the QA page, and "Added a 2nd function" counts only clients whose first function is known.</div></div></div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Reached 5 seats within 12 months, by starting seats</h3><span>hover for n and 95% range</span></div><div class="card-body"><div class="chart"><canvas id="cProf1"></canvas></div><div class="note">Clients starting with 5+ seats reach 5 by definition and are not charted. All counts and 95% ranges are in the table below.</div></div></div>
+        <div class="card"><div class="card-head"><h3>Reached 5 seats within 12 months, by initial function</h3><span>with 95% range</span></div><div class="card-body"><div class="chart"><canvas id="cProf2"></canvas></div></div></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>Reach-5 rate by starting seats, function, division and industry</h3><span>clients aged 12+ months</span></div><div class="card-body"><div class="tbl-wrap" id="tProf2"></div></div></div>
+    </section>
+
+    <!-- ================= Clients ================= -->
+    <section class="page" id="p-clients">
+      <div class="card"><div class="card-head"><h3>Clients</h3><span id="clSub"></span></div><div class="card-body">
+        <div class="tools"><input id="clSearch" placeholder="Search name, shortcode, division, industry"><button class="btn btn-teal" id="btnCsv2"><i class="fa-solid fa-file-csv"></i>Export to CSV</button><span class="note" style="margin:0">Click a column header to sort.</span></div>
+        <div class="tbl-wrap" id="tClients" style="max-height:640px"></div></div></div>
+    </section>
+
+    <!-- ================= Stats ================= -->
+    <section class="page" id="p-stats">
+      <div class="grid g3">
+        <div class="card"><div class="card-head"><h3>Statistical tests</h3><span>recalculated on every filter change</span></div><div class="card-body" id="statsBox"></div></div>
+        <div class="card"><div class="card-head"><h3>Statistical rules used</h3><span>how to read the results</span></div><div class="card-body"><ul class="rules">
+          <li>p &lt; 0.05 means the difference is unlikely to be chance; above that we say "no clear difference".</li>
+          <li>Kruskal-Wallis compares groups without assuming normal data (net seats are skewed by a few large clients). Ties are corrected.</li>
+          <li>Chi-square tests whether hitting the threshold is linked to the group. 2x2 tables use the Yates correction, as scipy does.</li>
+          <li>Any group with fewer than 20 clients makes the result unreliable; a warning is shown.</li>
+          <li>Medians are shown with averages; small groups are not ranked.</li>
+          <li>Window-level tests count each window once; windows from the same client are not fully independent, so read those p-values as indicative. Region and division tests use one value per client (average net per window).</li>
+          <li>Seasonality tests count individual staff starts. One client often hires several people in the same month, so starts are not independent and very small p-values overstate the certainty. Use the seasonal index and the consistency across years as the main evidence.</li>
+          <li>These are associations, not causes.</li>
+          <li class="partialTxt"></li>
+          <li>The JavaScript results were checked against Python scipy (verify_stats.py, 6 filter settings, largest difference below 1e-6).</li>
+        </ul></div></div>
+      </div>
+    </section>
+
+    <!-- ================= QA ================= -->
+    <section class="page" id="p-qa">
+      <div class="kpis" id="qaKpis"></div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Excluded rows by reason</h3><span>ties to the source row count</span></div><div class="card-body"><div class="tbl-wrap" id="tQaEx"></div></div></div>
+        <div class="card"><div class="card-head"><h3>Flagged rows</h3><span>kept or excluded as shown</span></div><div class="card-body"><div class="tbl-wrap" id="tQaFlag"></div></div></div>
+      </div>
+      <div class="card" style="margin-bottom:24px"><div class="card-head"><h3>Staff on the books on the extract date: where they sit</h3><span id="qaReconSub"></span></div><div class="card-body"><div class="tbl-wrap" id="tQaRecon"></div>
+        <div class="note">Every stint active on the extract date in the SC Engagement List (started on or before it, no end date or ending on or after it), by where it sits in this analysis and by Category. Use this to reconcile with headcount reports: the dashboard covers only clients whose first staff started from Jan 2020.</div></div></div>
+      <div class="card" style="margin-bottom:24px"><div class="card-head"><h3>Every excluded shortcode</h3><span>reason and evidence</span></div><div class="card-body"><div class="tools"><input id="qaSearch" placeholder="Search excluded list"></div><div class="tbl-wrap" id="tQaList"></div></div></div>
+      <div class="card" style="margin-bottom:24px"><div class="card-head"><h3>MyStaff vs engagement list differences</h3><span>flag only, the engagement list is the basis</span></div><div class="card-body"><div class="tbl-wrap" id="tQaDiff"></div></div></div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Role match rate by start year</h3><span>initial function coverage</span></div><div class="card-body"><div class="tbl-wrap" id="tQaRole"></div><div class="note">Function fields are less complete for early years, where fewer stints match a role title.</div></div></div>
+        <div class="card"><div class="card-head"><h3>Same client name on different shortcodes</h3><span>kept separate: the shortcode is the client</span></div><div class="card-body"><div class="tbl-wrap" id="tQaNames"></div><div class="note" id="qaNotInMs"></div></div></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>Flagged row detail</h3><span>all source rows with a data issue</span></div><div class="card-body"><div class="tbl-wrap" id="tQaFlagRows"></div></div></div>
+    </section>
+    <!-- ================= Clients in this view (shown under every analysis page) ================= -->
+    <div class="card" id="mvList" style="margin-top:24px"><div class="card-head"><h3>Client movement: added, churned and net</h3><span id="mvListSub"></span></div><div class="card-body">
+      <div class="tools"><input id="mvSearch" placeholder="Search name, shortcode, division, industry">
+        <select id="mvMode"><option value="stage">By lifecycle stage</option><option value="window">By window</option></select>
+        <button class="btn btn-teal" id="mvCsv"><i class="fa-solid fa-file-csv"></i>Export to CSV</button><span class="note" style="margin:0">Click a column header to sort.</span></div>
+      <div class="tbl-wrap" id="tMvList" style="max-height:560px"></div><div class="note" id="mvNote"></div></div></div>
+  </main>
+</div>
+
+<!-- embedded data (built by work/client_growth_dashboard/build_dashboard.py from data/client_monthly.json) -->
+<script id="data" type="application/json">/*__DATA__*/</script>
+
+<!-- ================= core logic (no DOM) : windows, filters, statistics ================= -->
+<script id="core">
+const D = JSON.parse(document.getElementById('data').textContent);
+const PALETTE = ['#007AFF', '#00AB9C', '#FFC426', '#E34678', '#4121A9', '#AA67FD', '#F46600', '#36D6E7', '#87DD7D', '#50505C'];
+const REGIONS = ['APAC', 'AMER', 'OPTI'].concat(D.clients.some(c => c.region === 'Unknown') ? ['Unknown'] : []);   // Unknown = not in MyStaff (listed on QA)
+const REG_COLOUR = {APAC: '#007AFF', AMER: '#00AB9C', OPTI: '#AA67FD', Unknown: '#50505C'};
+const MONTHS_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const FIRST = D.first_month;                       // e.g. '2020-01'
+const ym2i = ym => (+ym.slice(0, 4) - +FIRST.slice(0, 4)) * 12 + (+ym.slice(5, 7) - 1);   // month index from FIRST
+const i2y = i => +FIRST.slice(0, 4) + Math.floor(i / 12);
+const i2m = i => i % 12;                            // 0 = Jan
+const LAST_I = ym2i(D.last_month);
+const EXTRACT = new Date(D.extract);
+const LAST_FULL_YEAR = i2m(LAST_I) === 11 ? i2y(LAST_I) : i2y(LAST_I) - 1;   // last complete calendar year in the data
+const monLbl = ym => MONTHS_ABBR[+ym.slice(5, 7) - 1] + ' ' + ym.slice(0, 4);   // '2026-09' -> 'Sep 2026'
+const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const monthsIn = y => (y === 'All' || +y <= LAST_FULL_YEAR) ? 12 : i2m(LAST_I) + 1;   // calendar months available for a year filter
+
+// ---- per-client derived arrays: active staff at each month end, calendar offset
+for (const c of D.clients) {
+  c.off = ym2i(c.start_month);
+  c.n = c.starts.length;
+  c.act = []; let a = 0;
+  for (let i = 0; i < c.n; i++) { a += c.starts[i] - c.churn[i]; c.act.push(a); }
+  c.aged12 = (EXTRACT - new Date(c.start_date)) / 86400000 >= 365;
+}
+
+// ---- segments
+const seg3 = h => h <= 0 ? '0 staff' : h <= 4 ? '1-4' : h <= 10 ? '5-10' : '10+';
+const SEG3 = ['0 staff', '1-4', '5-10', '10+'];
+const SEG3_LABEL = {'0 staff': '0 staff', '1-4': '1 to 4 staff', '5-10': '5 to 10 staff', '10+': 'More than 10 staff'};
+const bucket4 = h => h <= 0 ? '0' : h <= 2 ? '1-2' : h <= 4 ? '3-4' : h <= 9 ? '5-9' : '10+';
+const BK4 = ['1-2', '3-4', '5-9', '10+'];
+
+// ---- windows: window k = months (k-1)N+1 .. kN of the client's life; complete windows only
+// window 1 measures growth after launch: from the end of month 1 (the launch seats) to the end of month N (Jobs, 2026-10-10)
+function buildWindows(clients, N) {
+  const W = [];
+  for (const c of clients) {
+    const K = Math.floor(c.n / N);
+    for (let k = 1; k <= K; k++) {
+      const a = (k - 1) * N, b = k * N - 1;                 // 0-based month positions in the client's life
+      const startHC = k === 1 ? c.act[0] : c.act[a - 1];     // window 1 starts from the headcount at the end of month 1 (agreed)
+      const from = k === 1 ? 1 : a;                          // so month 1 (launch) starts and churn are not window growth
+      let st = 0, ch = 0;
+      for (let i = from; i <= b; i++) { st += c.starts[i]; ch += c.churn[i]; }
+      W.push({c, k, sIdx: c.off + a, year: i2y(c.off + a), startHC, endHC: c.act[b], net: c.act[b] - startHC, starts: st, churn: ch});
+    }
+  }
+  return W;
+}
+
+// ---- path to 5 seats: the four groups agreed for the High-Growth Account Profile (set in prep.py; fast = 5 seats within 183 days)
+const PATHS = ['Fast to 5 (within 6 months)', 'Slow to 5 (after 6 months)', 'Not yet at 5, still active', 'Churned without reaching 5'];
+const PATH_SHORT = {[PATHS[0]]: 'Fast to 5', [PATHS[1]]: 'Slow to 5', [PATHS[2]]: 'Not yet at 5', [PATHS[3]]: 'Churned without 5'};
+const reach12 = c => c.date_5 !== null && c.months_to_5 <= 12;           // reached 5 seats within 12 months of start
+function chiBy(cl, keyFn, okFn, minN = 20) {                              // [yes, no] counts by group; groups under minN left out
+  const g = {};
+  for (const c of cl) { const k = keyFn(c); if (k === null || k === undefined) continue; (g[k] ||= [0, 0])[okFn(c) ? 0 : 1]++; }
+  const names = Object.keys(g).filter(k => g[k][0] + g[k][1] >= minN).sort();
+  return {names, g, t: names.map(k => g[k]), res: chi2Contingency(names.map(k => g[k]), names)};
+}
+
+// ---- filters: client-level (region, division, industry, status, path to 5) and window-level (segment, year)
+function clientFilter(f) {
+  return D.clients.filter(c => (f.region === 'All' || c.region === f.region) && (f.division === 'All' || c.custom_division === f.division)
+    && (f.industry === 'All' || c.industry_rollup === f.industry) && (f.status === 'All' || c.status === f.status)
+    && (!f.path || f.path === 'All' || c.path_group === f.path));
+}
+function windowFilter(W, f) {
+  return W.filter(w => (f.segment === 'All' || seg3(w.startHC) === f.segment) && (f.year === 'All' || w.year === +f.year));
+}
+function compute(f) {
+  const clients = clientFilter(f);
+  const W = windowFilter(buildWindows(clients, f.win), f);
+  for (const w of W) w.hit = w.net >= f.thr;
+  return {clients, W};
+}
+
+// ---- small helpers
+const sum = a => a.reduce((s, x) => s + x, 0);
+const mean = a => a.length ? sum(a) / a.length : NaN;
+function median(a) { if (!a.length) return NaN; const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
+function groupBy(a, fn) { const m = new Map(); for (const x of a) { const k = fn(x); if (!m.has(k)) m.set(k, []); m.get(k).push(x); } return m; }
+function wilson(k, n) { if (!n) return [0, 0]; const z = 1.96, p = k / n, d = 1 + z * z / n, c = p + z * z / (2 * n), h = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)); return [Math.max(0, (c - h) / d), Math.min(1, (c + h) / d)]; }
+
+// ---- statistics (checked against scipy in verify_stats.py)
+function lnGamma(x) {   // Lanczos approximation
+  const g = 7, cf = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059,
+    12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+  if (x < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * x)) - lnGamma(1 - x);
+  x -= 1; let a = cf[0]; const t = x + g + 0.5;
+  for (let i = 1; i < g + 2; i++) a += cf[i] / (x + i);
+  return 0.5 * Math.log(2 * Math.PI) + (x + 0.5) * Math.log(t) - t + Math.log(a);
+}
+function gammaQ(a, x) {  // regularised upper incomplete gamma Q(a, x)
+  if (x <= 0) return 1;
+  if (x < a + 1) {       // series for P, then Q = 1 - P
+    let ap = a, s = 1 / a, d = s;
+    for (let n = 0; n < 1000; n++) { ap += 1; d *= x / ap; s += d; if (Math.abs(d) < Math.abs(s) * 1e-15) break; }
+    return Math.max(0, 1 - s * Math.exp(-x + a * Math.log(x) - lnGamma(a)));
+  }
+  let b = x + 1 - a, c = 1 / 1e-300, d = 1 / b, h = d;   // continued fraction (Lentz)
+  for (let i = 1; i < 1000; i++) {
+    const an = -i * (i - a); b += 2;
+    d = an * d + b; if (Math.abs(d) < 1e-300) d = 1e-300;
+    c = b + an / c; if (Math.abs(c) < 1e-300) c = 1e-300;
+    d = 1 / d; const del = d * c; h *= del; if (Math.abs(del - 1) < 1e-15) break;
+  }
+  return Math.exp(-x + a * Math.log(x) - lnGamma(a)) * h;
+}
+const chi2sf = (x, df) => gammaQ(df / 2, x / 2);
+
+function kruskal(groups) {     // groups: {name: [values]}; returns H (tie-corrected), df, p
+  const names = Object.keys(groups).filter(k => groups[k].length > 0);
+  const all = [];
+  names.forEach((g, gi) => groups[g].forEach(v => all.push([v, gi])));
+  const N = all.length;
+  if (names.length < 2 || N < 3) return null;
+  all.sort((a, b) => a[0] - b[0]);
+  const ranks = new Array(N); let ties = 0;
+  for (let i = 0; i < N;) {      // average ranks for ties
+    let j = i; while (j + 1 < N && all[j + 1][0] === all[i][0]) j++;
+    const r = (i + j + 2) / 2, t = j - i + 1;
+    for (let q = i; q <= j; q++) ranks[q] = r;
+    ties += t * t * t - t; i = j + 1;
+  }
+  const R = new Array(names.length).fill(0), n = new Array(names.length).fill(0);
+  all.forEach((x, i) => { R[x[1]] += ranks[i]; n[x[1]]++; });
+  let H = 12 / (N * (N + 1)) * R.reduce((s, r, i) => s + r * r / n[i], 0) - 3 * (N + 1);
+  const C = 1 - ties / (N * N * N - N);
+  if (C <= 0) return null;
+  H /= C;
+  const df = names.length - 1;
+  return {stat: H, df, p: chi2sf(H, df), n: Object.fromEntries(names.map((g, i) => [g, n[i]])), N};
+}
+function chi2Contingency(table, rowNames) {   // rows = groups, cols = [hit, no hit]; Yates correction when df = 1 (as scipy)
+  const rows = table.map((r, i) => [r, rowNames[i]]).filter(([r]) => sum(r) > 0);
+  const t = rows.map(r => r[0]);
+  if (t.length < 2) return null;
+  const nc = t[0].length, colT = Array.from({length: nc}, (_, j) => sum(t.map(r => r[j])));
+  if (colT.some(x => x === 0)) return null;
+  const N = sum(colT), df = (t.length - 1) * (nc - 1);
+  let stat = 0;
+  t.forEach(r => { const rt = sum(r); r.forEach((o, j) => { const e = rt * colT[j] / N; let d = Math.abs(o - e); if (df === 1) d = Math.max(0, d - 0.5); stat += d * d / e; }); });
+  return {stat, df, p: chi2sf(stat, df), n: Object.fromEntries(rows.map(([r, nm]) => [nm, sum(r)])), N};
+}
+function chi2GoF(obs, exp) {    // goodness of fit, expected scaled to the observed total; cells with no expected value are left out
+  const keep = exp.map((e, i) => i).filter(i => exp[i] > 0);
+  const o = keep.map(i => obs[i]), x = keep.map(i => exp[i]);
+  const so = sum(o), se = sum(x);
+  if (!so || !se || keep.length < 2) return null;
+  let stat = 0; o.forEach((v, i) => { const e = x[i] * so / se; stat += (v - e) * (v - e) / e; });
+  return {stat, df: keep.length - 1, p: chi2sf(stat, keep.length - 1), N: so};
+}
+
+// ---- the tests shown on the Stats page (also used by verify_stats.py)
+function runTests(f) {
+  const {clients, W} = compute(f);
+  const out = [];
+  // 1. net growth per window across starting segments (window-level)
+  const bySeg = {}; for (const w of W) if (w.startHC > 0) (bySeg[seg3(w.startHC)] ||= []).push(w.net);   // windows starting with 0 staff are left out
+  out.push({id: 'kw_segment', name: 'Kruskal-Wallis: window net seats across starting segments (1-4, 5-10, 10+)', note: 'Windows that start with 0 staff (clients between staff) are left out.', unit: 'windows', res: kruskal(bySeg), what: 'Growth', between: 'segments'});
+  // 2 and 3. client-level: each client's average net per window, across regions and divisions
+  const perClient = groupBy(W, w => w.c.shortcode);
+  const byReg = {}, byDiv = {};
+  for (const [, ws] of perClient) { const c = ws[0].c, v = mean(ws.map(w => w.net)); (byReg[c.region] ||= []).push(v); (byDiv[c.custom_division] ||= []).push(v); }
+  out.push({id: 'kw_region', name: 'Kruskal-Wallis: average net seats per window across regions', unit: 'clients', res: kruskal(byReg), what: 'Growth', between: 'regions'});
+  out.push({id: 'kw_division', name: 'Kruskal-Wallis: average net seats per window across custom divisions', unit: 'clients', res: kruskal(byDiv), what: 'Growth', between: 'divisions'});
+  // 4. hit vs segment (window-level)
+  const segNames = SEG3.filter(s => s !== '0 staff' && bySeg[s]);
+  const tSeg = segNames.map(s => { const ws = W.filter(w => seg3(w.startHC) === s); const h = ws.filter(w => w.hit).length; return [h, ws.length - h]; });
+  out.push({id: 'chi_segment', name: 'Chi-square: hitting the threshold vs starting segment', unit: 'windows', res: chi2Contingency(tSeg, segNames), what: 'Hitting the threshold', between: 'segments', note: 'Windows that start with 0 staff are left out.'});
+  // 5. hit vs region (client-level: did the client hit in any window)
+  const regNames = REGIONS.filter(r => byReg[r]);
+  const tReg = regNames.map(r => { let h = 0, n = 0; for (const [, ws] of perClient) { if (ws[0].c.region !== r) continue; n++; if (ws.some(w => w.hit)) h++; } return [h, n - h]; });
+  out.push({id: 'chi_region', name: 'Chi-square: client hit the threshold in any window vs region', unit: 'clients', res: chi2Contingency(tReg, regNames), what: 'Hitting the threshold', between: 'regions', note: 'Older clients have more windows and so more chances to hit; compare with the per-window hit rates on the Divisions and Size pages.'});
+  // 6. seasonality: starts by calendar month (complete years, after onboarding months) vs an even spread
+  const sm = seasonMonths(clients, f.year, 3, 'starts').total.slice(0, monthsIn(f.year));   // a part year is tested only on its months
+  out.push({id: 'chi_season', name: 'Chi-square goodness of fit: starts by calendar month vs an even spread', unit: 'starts', res: chi2GoF(sm, sm.map(() => 1)), what: 'Hiring', between: 'calendar months', season: true});
+  // 7 and 8. client hit the threshold in any window vs custom division / industry (groups with 20+ clients in view)
+  const hitBy = key => { const g = {}; for (const [, ws] of perClient) { const c = ws[0].c; (g[c[key]] ||= [0, 0])[ws.some(w => w.hit) ? 0 : 1]++; }
+    const names = Object.keys(g).filter(k => g[k][0] + g[k][1] >= 20).sort(); return {names, t: names.map(k => g[k]), g}; };
+  const dv = hitBy('custom_division'), iv = hitBy('industry_rollup');
+  out.push({id: 'chi_division', name: 'Chi-square: client hit the threshold in any window vs custom division', unit: 'clients', res: chi2Contingency(dv.t, dv.names), what: 'Hitting the threshold', between: 'divisions', note: 'Divisions with fewer than 20 clients in view are left out.', groups: dv});
+  out.push({id: 'chi_industry', name: 'Chi-square: client hit the threshold in any window vs industry roll-up', unit: 'clients', res: chi2Contingency(iv.t, iv.names), what: 'Hitting the threshold', between: 'industries', note: 'Industries with fewer than 20 clients in view are left out.', groups: iv});
+  // 9. window moved up a size bucket vs size at window start (1-2, 3-4, 5-9; 10+ cannot move up)
+  const BK_ORDER = ['0', ...BK4], upB = w => BK_ORDER.indexOf(bucket4(w.endHC)) > BK_ORDER.indexOf(bucket4(w.startHC));
+  const bkN = ['1-2', '3-4', '5-9'], tUp = bkN.map(b => { const ws = W.filter(w => w.startHC > 0 && bucket4(w.startHC) === b), u = ws.filter(upB).length; return [u, ws.length - u]; });
+  out.push({id: 'chi_bucket_up', name: 'Chi-square: window moved up a size bucket vs size at window start', unit: 'windows', res: chi2Contingency(tUp, bkN), what: 'Moving up a size bucket', between: 'size buckets', note: '10+ staff cannot move up and is left out.', table: tUp, names: bkN});
+  // 10. reached 5 seats within 12 months vs starting seats (clients aged 12+ months; 5+ starting seats reach 5 by definition)
+  const sbk = c => c.starting_seats <= 1 ? '0-1 seat' : c.starting_seats === 2 ? '2 seats' : c.starting_seats <= 4 ? '3-4 seats' : null;
+  const r5 = {}; for (const c of clients) { const b = sbk(c); if (!c.aged12 || !b) continue; (r5[b] ||= [0, 0])[c.months_to_5 !== null && c.months_to_5 <= 12 ? 0 : 1]++; }
+  const r5n = ['0-1 seat', '2 seats', '3-4 seats'].filter(b => r5[b]);
+  out.push({id: 'chi_reach5', name: 'Chi-square: reached 5 seats within 12 months vs starting seats', unit: 'clients', res: chi2Contingency(r5n.map(b => r5[b]), r5n), what: 'Reaching 5 seats within 12 months', between: 'starting seat groups',
+    note: 'Clients aged 12+ months; clients starting with 5+ seats reach 5 by definition and are left out. Segment and year filters do not apply.', table: r5n.map(b => r5[b]), names: r5n});
+  // 11. path to 5 group vs region
+  const pr = REGIONS.filter(r => clients.some(c => c.region === r));
+  out.push({id: 'chi_path_region', name: 'Chi-square: path to 5 group vs region', unit: 'clients', res: chi2Contingency(pr.map(r => PATHS.map(p => clients.filter(c => c.region === r && c.path_group === p).length)), pr),
+    what: 'The mix of path to 5 groups', between: 'regions'});
+  // 12-15. reached 5 within 12 months by region, initial function, industry and division (clients aged 12+ months that started below 5 seats)
+  const elig = clients.filter(c => c.aged12 && c.starting_seats < 5);
+  for (const [id, lab, fn] of [['chi_reach_region', 'region', c => c.region], ['chi_reach_function', 'initial function', c => c.initial_function === 'Unknown' ? null : c.initial_function],
+    ['chi_reach_industry', 'industry roll-up', c => c.industry_rollup], ['chi_reach_division', 'custom division', c => c.custom_division]]) {
+    const x = chiBy(elig, fn, reach12);
+    out.push({id, name: `Chi-square: reached 5 seats within 12 months vs ${lab}`, unit: 'clients', res: x.res, what: 'Reaching 5 seats within 12 months', between: lab + ' groups', groups: x,
+      note: 'Clients aged 12+ months that started below 5 seats; groups under 20 left out' + (id === 'chi_reach_function' ? '; unknown function left out.' : '.')});
+  }
+  // 16. after 5: still with staff today, reached 5 vs never reached 5 (clients aged 24+ months, so both had time)
+  const a24 = chiBy(clients.filter(c => (EXTRACT - new Date(c.start_date)) / 86400000 >= 730), c => c.date_5 ? 'Reached 5' : 'Never reached 5', c => c.current_seats > 0, 1);
+  out.push({id: 'chi_after5', name: 'Chi-square: still with staff today vs reached 5 seats (clients aged 24+ months)', unit: 'clients', res: a24.res, what: 'Staying with staff', between: 'clients that reached 5 and those that did not', groups: a24});
+  // 17. speed: days to reach 5 across regions (clients that started below 5 seats and reached 5)
+  const sp = {}; for (const c of clients) if (c.date_5 && c.starting_seats < 5) (sp[c.region] ||= []).push(c.days_to_5);
+  out.push({id: 'kw_speed_region', name: 'Kruskal-Wallis: days to reach 5 seats across regions', unit: 'clients', res: kruskal(sp), what: 'Time to reach 5 seats', between: 'regions', note: 'Clients that started below 5 seats and reached 5.'});
+  return out;
+}
+
+// ---- seasonality: counts by calendar month (Jan..Dec) for complete years, skipping each client's first `skip` months
+function seasonMonths(clients, year, skip, measure) {
+  const yrs = year === 'All' ? null : +year;
+  const lastFull = LAST_FULL_YEAR;
+  const total = new Array(12).fill(0), byKey = {};
+  for (const c of clients) {
+    for (let i = skip; i < c.n; i++) {
+      const idx = c.off + i, y = i2y(idx);
+      if (yrs ? y !== yrs : y > lastFull) continue;
+      const v = measure === 'starts' ? c.starts[i] : measure === 'churn' ? c.churn[i] : c.starts[i] - c.churn[i];
+      total[i2m(idx)] += v;
+    }
+  }
+  return {total, byKey};
+}
+</script>
+
+<!-- ================= UI (DOM, charts, tables) ================= -->
+<script id="ui">
+const $ = id => document.getElementById(id);
+const fmt = (v, d = 0) => v === null || v === undefined || Number.isNaN(v) ? '–' : Number(v).toLocaleString('en-AU', {minimumFractionDigits: d, maximumFractionDigits: d});
+const pct = (v, d = 1) => v === null || v === undefined || Number.isNaN(v) ? '–' : (100 * v).toFixed(d) + '%';
+const pfmt = p => p === null || p === undefined || Number.isNaN(p) ? '–' : p < 0.0001 ? '< 0.0001' : p.toFixed(4);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[ch]));
+const charts = {};
+let current = null, page = 'overview';
+
+Chart.defaults.font.family = 'Manrope, Segoe UI, Arial, sans-serif';
+Chart.defaults.color = '#737C90';
+Chart.defaults.borderColor = '#DCE3EE';
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.maintainAspectRatio = false;
+
+function draw(id, cfg) {
+  const scales = (cfg.options && cfg.options.scales) || {};
+  const isPct = Object.values(scales).some(sc => sc.ticks && sc.ticks.callback);   // read before Chart.js adds its own defaults
+  if (charts[id]) charts[id].destroy(); charts[id] = new Chart($(id), cfg); chartData(id, cfg, isPct);
+}
+
+// ---- "Numbers behind this chart": the chart's labels x series as a table, with CSV export
+const dataClosed = {};                                   // panels the viewer collapsed stay collapsed
+function chartData(id, cfg, isPct) {   // isPct: the chart's axis is formatted with pct()
+  const body = $(id).closest('.card-body');
+  let box = body.querySelector('details.chart-data');
+  if (!box) {
+    box = document.createElement('details'); box.className = 'chart-data'; box.open = true;
+    box.innerHTML = '<summary>Numbers behind this chart <button class="btn-mini" type="button">CSV</button></summary><div class="tbl-wrap"></div>';
+    box.ontoggle = () => { dataClosed[id] = !box.open; };
+    body.appendChild(box);
+  }
+  if (dataClosed[id]) box.open = false;
+  const show = v => v === null || v === undefined || Number.isNaN(v) ? '–' : isPct ? pct(v) : Number.isInteger(v) ? fmt(v) : fmt(v, 2);
+  const sets = cfg.data.datasets, labels = cfg.data.labels;
+  const cols = [{k: 'label', label: ''}, ...sets.map((d, j) => ({k: 'd' + j, label: esc(d.label) + (isPct ? ' (%)' : ''), n: 1, f: show}))];
+  const rows = labels.map((l, i) => Object.assign({label: l}, ...sets.map((d, j) => ({['d' + j]: d.data[i]}))));
+  table(box.querySelector('.tbl-wrap'), cols, rows);
+  box.querySelector('button').onclick = e => { e.preventDefault(); e.stopPropagation();
+    download(id + '_numbers.csv', rows.map(r => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, isPct && k !== 'label' && typeof v === 'number' ? +(100 * v).toFixed(2) : v]))),
+      cols.map(c => ({k: c.k, label: c.label.replace(/&amp;/g, '&') || 'group'}))); };
+}
+function table(el, cols, rows, opts = {}) {    // cols: [{k, label, n (numeric), f (format fn)}]
+  const sortable = !!opts.sortable;
+  let h = '<table><thead><tr>' + cols.map((c, i) => `<th class="${c.n ? 'n' : ''} ${sortable ? 'sort' : ''}" data-i="${i}">${c.label}</th>`).join('') + '</tr></thead><tbody>';
+  h += rows.map(r => `<tr class="${r._small ? 'small' : ''}">` + cols.map(c => `<td class="${c.n ? 'n' : ''}">${c.f ? c.f(r[c.k], r) : esc(r[c.k])}</td>`).join('') + '</tr>').join('');
+  el.innerHTML = h + '</tbody></table>';
+  if (sortable) el.querySelectorAll('th').forEach(th => th.onclick = () => opts.onSort(cols[+th.dataset.i].k));
+}
+
+// ---- filter controls
+function fillSelect(id, values, labels) { $(id).innerHTML = values.map((v, i) => `<option value="${esc(v)}">${esc(labels ? labels[i] : v)}</option>`).join(''); }
+const uniq = a => [...new Set(a)].sort((x, y) => String(x).localeCompare(String(y)));
+const REG_LABEL = {APAC: 'APAC', AMER: 'AMER (incl. EMEA)', OPTI: 'OPTI', Unknown: 'Unknown (not in MyStaff)'};
+const regIn = REGIONS.filter(r => D.clients.some(c => c.region === r));
+fillSelect('fReg', ['All', ...regIn], ['All regions', ...regIn.map(r => REG_LABEL[r])]);
+fillSelect('fDiv', ['All', ...uniq(D.clients.map(c => c.custom_division))], ['All divisions', ...uniq(D.clients.map(c => c.custom_division))]);
+fillSelect('fInd', ['All', ...uniq(D.clients.map(c => c.industry_rollup))], ['All industries', ...uniq(D.clients.map(c => c.industry_rollup))]);
+fillSelect('fSta', ['All', 'Active with staff', 'Active, 0 staff', 'Inactive'], ['All statuses', 'Active with staff', 'Active, 0 staff', 'Inactive']);
+const YEARS = [...new Set(D.clients.map(c => +c.start_month.slice(0, 4)))].concat([i2y(LAST_I)]).filter((v, i, a) => a.indexOf(v) === i).sort();
+fillSelect('fYear', ['All', ...YEARS.map(String)], ['All years', ...YEARS.map(String)]);
+fillSelect('fPath', ['All', ...PATHS], ['All groups', ...PATHS]);
+const filt = () => ({win: +$('fWin').value, thr: +$('fThr').value, region: $('fReg').value, division: $('fDiv').value, industry: $('fInd').value,
+  status: $('fSta').value, segment: $('fSeg').value, year: $('fYear').value, path: $('fPath').value});
+
+$('extractTxt').textContent = new Date(D.extract).toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric'});
+$('builtTxt').textContent = D.generated.slice(0, 10);
+$('dateChip').textContent = 'Data to ' + $('extractTxt').textContent;
+const PARTIAL_TXT = `${MONTHS_FULL[i2m(LAST_I)]} ${i2y(LAST_I)} is a partial month (extract ${$('extractTxt').textContent}) and is treated as complete in windows and stages.`;
+document.querySelectorAll('.partialTxt').forEach(e => e.textContent = PARTIAL_TXT);
+
+// ---- page switching
+const TITLES = {overview: 'Overview', insights: 'Insights', path: 'Path to 5 seats', lifecycle: 'Lifecycle stage', buckets: 'Size buckets', divisions: 'Divisions and industry', season: 'Seasonality',
+  movement: 'Segment movement and peak months', profile: 'Account profile', clients: 'Clients', stats: 'Stats and method', qa: 'QA and data checks'};
+document.querySelectorAll('.nav a').forEach(a => a.onclick = () => go(a.dataset.page));
+function go(p) {
+  page = p;
+  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('active', a.dataset.page === p));
+  document.querySelectorAll('.page').forEach(s => s.classList.toggle('show', s.id === 'p-' + p));
+  $('pageTitle').textContent = TITLES[p]; $('crumbPage').textContent = TITLES[p];
+  render();
+}
+
+// ---- render everything for the current filters (only the visible page draws charts)
+// which "How growth is measured" settings each page uses: all four, only the year (as a calendar year), or none (row hidden)
+const MEASURE = {overview: 'all', insights: 'all', buckets: 'all', divisions: 'all', movement: 'all', clients: 'all', stats: 'all', season: 'year'};
+const pageFilt = () => { const fa = filt(); return (MEASURE[page] || 'none') === 'all' ? fa : {...fa, segment: 'All', year: 'All'}; };   // filters as the current page applies them
+function render() {
+  const mode = MEASURE[page] || 'none', fAll = filt();
+  const f = pageFilt();                                  // settings a page does not show must not change it: segment and year fall back to All
+  $('measureRow').style.display = mode === 'none' ? 'none' : '';
+  ['fWin', 'fThr', 'fSeg'].forEach(id => { $(id).closest('label').style.display = mode === 'all' ? '' : 'none'; });
+  $('lblYear').textContent = mode === 'year' ? 'Calendar year' : 'Window start year';
+  $('measureNote').textContent = mode === 'none' ? 'Window length, net seats added, starting segment and year do not change this page.'
+    : mode === 'year' ? 'Only the calendar year applies here; window length, net seats added and starting segment do not change this page.' : '';
+  current = compute(f);
+  const {clients, W} = current;
+  const nClientsW = new Set(W.map(w => w.c.shortcode)).size;
+  $('pageSub').textContent = `${fmt(clients.length)} clients started ${monLbl(D.first_month)} to ${monLbl(D.last_month)} · growth = net seats (starts minus churn)`
+    + (mode === 'all' ? ` · ${fmt(nClientsW)} with a complete ${f.win}-month window in view` : '');
+  ({overview: rOverview, insights: rInsights, path: rPath, lifecycle: rLifecycle, buckets: rBuckets, divisions: rDivisions, season: rSeason, movement: rMovement,
+    profile: rProfile, clients: rClients, stats: rStats, qa: rQa})[page](mode === 'year' ? {...f, year: fAll.year} : f, clients, W);
+  const listed = !['insights', 'clients', 'stats', 'qa'].includes(page);   // (the Path to 5 page keeps the list: it is the interview shortlist)   // the movement list sits under every analysis page
+  $('mvList').style.display = listed ? '' : 'none';
+  if (listed) rMoveList(f, clients, W);
+}
+
+// ---------------- Overview
+function rOverview(f, clients, W) {
+  const byClient = groupBy(W, w => w.c.shortcode);
+  const hitters = [...byClient.values()].filter(ws => ws.some(w => w.hit)).length;
+  const kp = [
+    ['k-blue', 'fa-arrow-trend-up', 'Clients hitting the threshold', fmt(hitters), `${f.thr}+ net seats in a ${f.win}-month window`],
+    ['k-teal', 'fa-percent', 'Share of clients', pct(byClient.size ? hitters / byClient.size : NaN), `of ${fmt(byClient.size)} clients with a window in view · 95% range ${wilson(hitters, byClient.size).map(v => pct(v)).join(' to ')}`],
+    ['k-yellow', 'fa-user-plus', 'Net seats added', fmt(sum(W.map(w => w.net))), `${fmt(sum(W.map(w => w.starts)))} starts across the windows`],
+    ['k-pink', 'fa-user-minus', 'Total churned', fmt(sum(W.map(w => w.churn))), 'staff ending in the windows'],
+    ['k-purple', 'fa-users', 'Active staff now', fmt(sum(clients.map(c => c.current_seats))), `end of ${D.last_month}, filtered clients`],
+    ['k-indigo', 'fa-user-clock', 'Active, 0 staff', fmt(clients.filter(c => c.status === 'Active, 0 staff').length), 'flagged active in MyStaff, no staff today'],
+  ];
+  $('kpis').innerHTML = kp.map(([cls, ic, l, v, s]) => `<div class="kpi ${cls}"><div class="kpi-top"><span class="kpi-icon"><i class="fa-solid ${ic}"></i></span>${l}</div><div class="kpi-value">${v}</div><div class="kpi-sub">${s}</div></div>`).join('');
+  const maxK = Math.min(12, Math.max(1, ...W.map(w => w.k)));
+  const ks = Array.from({length: maxK}, (_, i) => i + 1);
+  $('ovWinSub').textContent = `${f.win}-month windows, ${f.thr}+ net`;
+  draw('cWin', {type: 'bar', data: {labels: ks.map(k => 'Window ' + k), datasets: REGIONS.map(r => ({label: r, backgroundColor: REG_COLOUR[r],
+    data: ks.map(k => W.filter(w => w.k === k && w.hit && w.c.region === r).length)}))},
+    options: {scales: {x: {stacked: true}, y: {stacked: true, title: {display: true, text: 'Clients hitting the threshold'}}}}});
+  // calendar years from the monthly arrays (year filter not applied: this chart is the year view)
+  const years = []; for (let y = i2y(0); y <= i2y(LAST_I); y++) years.push(y);
+  const netBy = r => years.map(y => sum(clients.filter(c => c.region === r).map(c => { let s = 0; for (let i = 0; i < c.n; i++) if (i2y(c.off + i) === y) s += c.starts[i] - c.churn[i]; return s; })));
+  draw('cYear', {type: 'bar', data: {labels: years.map(y => y > LAST_FULL_YEAR ? `${y} (to ${MONTHS_ABBR[i2m(LAST_I)]})` : String(y)), datasets: REGIONS.map(r => ({label: r, backgroundColor: REG_COLOUR[r], data: netBy(r)}))},
+    options: {scales: {x: {stacked: true}, y: {stacked: true, title: {display: true, text: 'Net seats'}}}}});
+  $('yearNote').textContent = 'Net seats = staff started minus staff ended in that calendar year, for the filtered clients (window, segment and year filters do not apply to this chart). ' + (LAST_FULL_YEAR < i2y(LAST_I) ? `${i2y(LAST_I)} runs to ${MONTHS_FULL[i2m(LAST_I)]}.` : '');
+}
+
+// ---------------- Lifecycle
+const STAGES = [[1, 3, 'Months 1-3 (after launch)'], [4, 6, 'Months 4-6'], [7, 12, 'Months 7-12'], [13, 24, 'Months 13-24'], [25, 36, 'Months 25-36'], [37, null, 'Months 37+']];
+// stage net = growth after launch: stage 1-3 counts from the end of month 1
+function stageNet(c, a, b) { const end = b === null ? c.n : b; if (c.n < (b === null ? a : b)) return null; const prev = a === 1 ? c.act[0] : c.act[a - 2]; return {net: c.act[end - 1] - prev, months: end - a + 1}; }
+function stageStats(cl, a, b) {
+  const v = cl.map(c => stageNet(c, a, b)).filter(x => x);
+  const nets = v.map(x => b === null ? x.net / x.months : x.net);
+  return {n: v.length, grow: v.filter(x => x.net > 0).length / (v.length || 1), shrink: v.filter(x => x.net < 0).length / (v.length || 1),
+    avg: mean(nets), med: median(nets), total: sum(v.map(x => x.net))};
+}
+function rLifecycle(f, clients) {
+  draw('cLife', {type: 'bar', data: {labels: STAGES.map(s => s[2]), datasets: REGIONS.map(r => ({label: r, backgroundColor: REG_COLOUR[r],
+    data: STAGES.map(([a, b]) => stageStats(clients.filter(c => c.region === r), a, b).grow)}))},
+    options: {scales: {y: {ticks: {callback: v => pct(v, 0)}, title: {display: true, text: '% of clients net growing'}}}}});
+  const all = STAGES.map(([a, b]) => stageStats(clients, a, b));
+  draw('cLife2', {type: 'bar', data: {labels: STAGES.map(s => s[2]), datasets: [
+    {label: 'Average', backgroundColor: PALETTE[0], data: all.map(s => s.avg)}, {label: 'Median', backgroundColor: PALETTE[1], data: all.map(s => s.med)}]},
+    options: {scales: {y: {title: {display: true, text: 'Net seats per client (37+: per month)'}}}}});
+  const rows = [];
+  for (const r of ['All', ...REGIONS]) { const cl = r === 'All' ? clients : clients.filter(c => c.region === r);
+    STAGES.forEach(([a, b, lab], i) => { const s = stageStats(cl, a, b); rows.push({region: r, stage: lab, ...s, _small: s.n < 20}); }); }
+  table($('tLife'), [{k: 'region', label: 'Region'}, {k: 'stage', label: 'Stage'}, {k: 'n', label: 'Clients old enough', n: 1, f: v => fmt(v)},
+    {k: 'grow', label: '% net growing', n: 1, f: v => pct(v)}, {k: 'shrink', label: '% shrinking', n: 1, f: v => pct(v)},
+    {k: 'avg', label: 'Average net', n: 1, f: v => fmt(v, 2)}, {k: 'med', label: 'Median net', n: 1, f: v => fmt(v, 1)}, {k: 'total', label: 'Total net', n: 1, f: v => fmt(v)}], rows);
+  const divs = [...groupBy(clients, c => c.custom_division)].filter(([, cl]) => cl.length >= 20).sort((a, b) => b[1].length - a[1].length);
+  const drows = divs.map(([d, cl]) => { const o = {div: d, n: cl.length}; STAGES.forEach(([a, b], i) => { const s = stageStats(cl, a, b); o['s' + i] = s.n >= 10 ? s.avg : NaN; o['g' + i] = s.n >= 10 ? s.grow : NaN; o['n' + i] = s.n; }); return o; });
+  table($('tLifeDiv'), [{k: 'div', label: 'Custom division'}, {k: 'n', label: 'Clients', n: 1, f: v => fmt(v)},
+    ...STAGES.map((s, i) => ({k: 's' + i, label: s[2] + ' avg net', n: 1, f: (v, r) => r['n' + i] < 10 ? '–' : `<span style="${r['n' + i] < 20 ? 'color:var(--color-text-base-muted)' : ''}">${fmt(v, 2)} <span class="note">(${pct(r['g' + i], 0)} grow, n ${fmt(r['n' + i])})</span></span>`}))], drows);
+}
+
+// ---------------- Size buckets
+function moveDir(a, b, fn, order) { const i = order.indexOf(fn(a)), j = order.indexOf(fn(b)); return j > i ? 'up' : j < i ? 'down' : 'stay'; }
+function rBuckets(f, clients, W) {
+  const order = ['0', ...BK4];
+  const Wb = W.filter(w => w.startHC > 0);
+  $('bkSub').textContent = `${f.win}-month windows`;
+  const stats = BK4.map(b => { const ws = Wb.filter(w => bucket4(w.startHC) === b); const n = ws.length || 1;
+    return {b, n: ws.length, avg: mean(ws.map(w => w.net)), med: median(ws.map(w => w.net)), grow: ws.filter(w => w.net > 0).length / n, shrink: ws.filter(w => w.net < 0).length / n,
+      up: ws.filter(w => moveDir(w.startHC, w.endHC, bucket4, order) === 'up').length / n, stay: ws.filter(w => moveDir(w.startHC, w.endHC, bucket4, order) === 'stay').length / n,
+      down: ws.filter(w => moveDir(w.startHC, w.endHC, bucket4, order) === 'down').length / n, hit: ws.filter(w => w.hit).length / n}; });
+  draw('cBk', {type: 'bar', data: {labels: BK4.map(b => b + ' staff'), datasets: [{label: 'Average net', backgroundColor: PALETTE[0], data: stats.map(s => s.avg)}, {label: 'Median net', backgroundColor: PALETTE[1], data: stats.map(s => s.med)}]}});
+  draw('cBk2', {type: 'bar', data: {labels: BK4.map(b => b + ' staff'), datasets: [{label: 'Moved up', backgroundColor: PALETTE[1], data: stats.map(s => s.up)}, {label: 'Stayed', backgroundColor: '#C9D2E1', data: stats.map(s => s.stay)}, {label: 'Moved down', backgroundColor: PALETTE[3], data: stats.map(s => s.down)}]},
+    options: {scales: {x: {stacked: true}, y: {stacked: true, max: 1, ticks: {callback: v => pct(v, 0)}}}}});
+  const rows = [];
+  for (const r of ['All', ...REGIONS]) for (const b of BK4) { const ws = Wb.filter(w => bucket4(w.startHC) === b && (r === 'All' || w.c.region === r)); const n = ws.length || 1;
+    rows.push({r, b, n: ws.length, clients: new Set(ws.map(w => w.c.shortcode)).size, avg: mean(ws.map(w => w.net)), med: median(ws.map(w => w.net)), grow: ws.filter(w => w.net > 0).length / n,
+      shrink: ws.filter(w => w.net < 0).length / n, hit: ws.filter(w => w.hit).length / n, up: ws.filter(w => moveDir(w.startHC, w.endHC, bucket4, order) === 'up').length / n,
+      stay: ws.filter(w => moveDir(w.startHC, w.endHC, bucket4, order) === 'stay').length / n, down: ws.filter(w => moveDir(w.startHC, w.endHC, bucket4, order) === 'down').length / n, _small: new Set(ws.map(w => w.c.shortcode)).size < 20}); }
+  table($('tBk'), [{k: 'r', label: 'Region'}, {k: 'b', label: 'Size at window start'}, {k: 'n', label: 'Windows', n: 1, f: v => fmt(v)}, {k: 'clients', label: 'Clients', n: 1, f: v => fmt(v)},
+    {k: 'avg', label: 'Average net', n: 1, f: v => fmt(v, 2)}, {k: 'med', label: 'Median net', n: 1, f: v => fmt(v, 1)}, {k: 'grow', label: '% growing', n: 1, f: v => pct(v)},
+    {k: 'shrink', label: '% shrinking', n: 1, f: v => pct(v)}, {k: 'hit', label: `% hitting ${f.thr}+`, n: 1, f: v => pct(v)}, {k: 'up', label: 'Moved up', n: 1, f: (v, r) => `${pct(v)} <span class="note">(${fmt(Math.round(v * r.n))})</span>`}, {k: 'stay', label: 'Stayed', n: 1, f: (v, r) => `${pct(v)} <span class="note">(${fmt(Math.round(v * r.n))})</span>`},
+    {k: 'down', label: 'Moved down', n: 1, f: (v, r) => `${pct(v)} <span class="note">(${fmt(Math.round(v * r.n))})</span>`}], rows);
+}
+
+// ---------------- Divisions and industry
+function groupRows(W, key) {
+  const g = groupBy(W, w => w.c[key]);
+  return [...g].map(([k, ws]) => { const cl = groupBy(ws, w => w.c.shortcode); const hitC = [...cl.values()].filter(x => x.some(w => w.hit)).length;
+    const [lo, hi] = wilson(hitC, cl.size);
+    return {k, clients: cl.size, windows: ws.length, hitC: hitC / cl.size, lo, hi, hitW: ws.filter(w => w.hit).length / ws.length, avg: mean(ws.map(w => w.net)), med: median(ws.map(w => w.net)),
+      total: sum(ws.map(w => w.net)), churn: sum(ws.map(w => w.churn)), _small: cl.size < 20}; }).sort((a, b) => b.clients - a.clients);
+}
+function rDivisions(f, clients, W) {
+  const cols = lab => [{k: 'k', label: lab}, {k: 'clients', label: 'Clients', n: 1, f: v => fmt(v)}, {k: 'windows', label: 'Windows', n: 1, f: v => fmt(v)},
+    {k: 'hitC', label: '% clients hitting', n: 1, f: v => pct(v)}, {k: 'lo', label: '95% range', n: 1, f: (v, r) => `${pct(r.lo)} to ${pct(r.hi)}`}, {k: 'hitW', label: '% windows hitting', n: 1, f: v => pct(v)}, {k: 'avg', label: 'Average net / window', n: 1, f: v => fmt(v, 2)},
+    {k: 'med', label: 'Median net / window', n: 1, f: v => fmt(v, 1)}, {k: 'total', label: 'Total net', n: 1, f: v => fmt(v)}, {k: 'churn', label: 'Churned', n: 1, f: v => fmt(v)}];
+  for (const [key, cid, tid, lab] of [['custom_division', 'cDiv', 'tDiv', 'Custom division'], ['industry_rollup', 'cInd', 'tInd', 'Industry roll-up']]) {
+    const rows = groupRows(W, key);
+    const top = [...rows].sort((a, b) => (a._small - b._small) || (b.hitC - a.hitC)).slice(0, 30);   // groups of 20+ first, small groups (grey) after
+    $(cid).parentElement.style.height = Math.max(300, top.length * 22 + 60) + 'px';
+    draw(cid, {type: 'bar', data: {labels: top.map(r => `${r.k} (${r.clients})`), datasets: [{label: '% clients hitting', data: top.map(r => r.hitC), backgroundColor: top.map(r => r._small ? '#C9D2E1' : PALETTE[0])}]},
+      options: {indexAxis: 'y', plugins: {legend: {display: false}}, scales: {x: {max: 1, ticks: {callback: v => pct(v, 0)}}, y: {ticks: {autoSkip: false, font: {size: 10}}}}}});
+    table($(tid), cols(lab), rows);
+  }
+}
+
+// ---------------- Seasonality
+function rSeason(f, clients) {
+  $('seasonYears').textContent = f.year === 'All' ? `Calendar months use complete years ${i2y(0)} to ${LAST_FULL_YEAR} only, so every month is counted the same number of times.`
+    : `Showing ${f.year}` + (monthsIn(f.year) < 12 ? `, January to ${MONTHS_FULL[monthsIn(f.year) - 1]} only (tests use those months).` : '.');
+  const skip = +$('fSeasonMode').value, meas = $('fSeasonMeasure').value;
+  const S = m => seasonMonths(clients, f.year, skip, m).total;
+  draw('cSeason', {type: 'bar', data: {labels: MONTHS_ABBR, datasets: [{label: 'Starts', backgroundColor: PALETTE[0], data: S('starts')}, {label: 'Churn', backgroundColor: PALETTE[3], data: S('churn')},
+    {label: 'Net seats', type: 'line', borderColor: PALETTE[1], backgroundColor: PALETTE[1], data: S('net')}]}});
+  const base = S(meas), bt = sum(base);
+  const index = arr => { const t = sum(arr); return arr.map((v, i) => t && bt && base[i] ? (v / t) / (base[i] / bt) : null); };
+  draw('cSeasonReg', {type: 'line', data: {labels: MONTHS_ABBR, datasets: REGIONS.map(r => ({label: r, borderColor: REG_COLOUR[r], backgroundColor: REG_COLOUR[r],
+    data: index(seasonMonths(clients.filter(c => c.region === r), f.year, skip, meas).total)}))}, options: {scales: {y: {title: {display: true, text: 'Seasonal index'}}}}});
+  const rows = [];
+  for (const [d, cl] of groupBy(clients, c => c.custom_division)) {
+    const arr = seasonMonths(cl, f.year, skip, meas).total, t = sum(arr.map(Math.abs));
+    if (t < 40) continue;                                   // too few events to read a monthly pattern
+    const idx = index(arr);
+    const test = meas === 'net' ? null : chi2GoF(arr, base);
+    const peak = arr.indexOf(Math.max(...arr));
+    rows.push({d, n: cl.length, t: sum(arr), idx, p: test ? test.p : NaN, peak: MONTHS_ABBR[peak], small: cl.length < 20});
+  }
+  rows.sort((a, b) => (a.small - b.small) || ((a.p || 1) - (b.p || 1)));   // divisions with 20+ clients first
+  const cell = v => { if (v === null || Number.isNaN(v)) return '<td class="h">–</td>'; const a = Math.min(1, Math.abs(v - 1)); const col = v >= 1 ? `rgba(0,171,156,${a})` : `rgba(227,70,120,${a})`; return `<td class="h" style="background:${col}">${v.toFixed(2)}</td>`; };
+  $('tSeason').innerHTML = '<table><thead><tr><th>Custom division</th><th class="n">Clients</th><th class="n">' + (meas === 'starts' ? 'Starts' : meas === 'churn' ? 'Churn' : 'Net') + '</th>' + MONTHS_ABBR.map(m => `<th>${m}</th>`).join('') +
+    '<th>Busiest month</th><th class="n">p-value</th><th>Reading</th></tr></thead><tbody>' + rows.map(r => `<tr${r.small ? ' class="small"' : ''}><td>${esc(r.d)}${r.small ? ' <span class="badge b-warn">under 20 clients</span>' : ''}</td><td class="n">${fmt(r.n)}</td><td class="n">${fmt(r.t)}</td>${r.idx.map(cell).join('')}<td>${r.peak}</td><td class="n">${pfmt(r.p)}</td><td>${Number.isNaN(r.p) ? 'test not used for net seats' : r.p < 0.05 ? '<span class="badge b-ok">differs from company pattern</span>' : '<span class="badge b-no">no clear difference</span>'}</td></tr>`).join('') + '</tbody></table>';
+}
+$('fSeasonMode').onchange = $('fSeasonMeasure').onchange = () => render();
+
+// ---------------- Segment movement and peak months
+function rMovement(f, clients, W) {
+  $('mvSub').textContent = `${f.win}-month windows`;
+  const segs = ['1-4', '5-10', '10+'];
+  const res = segs.map(s => { const ws = W.filter(w => seg3(w.startHC) === s); const c = d => ws.filter(w => moveDir(w.startHC, w.endHC, seg3, SEG3) === d).length; return {s, n: ws.length, up: c('up'), stay: c('stay'), down: c('down')}; });
+  draw('cMove', {type: 'bar', data: {labels: segs.map(s => SEG3_LABEL[s]), datasets: [['up', 'Moved up', PALETTE[1]], ['stay', 'Stayed', '#C9D2E1'], ['down', 'Moved down', PALETTE[3]]].map(([k, l, col]) =>
+    ({label: l, backgroundColor: col, data: res.map(r => r.n ? r[k] / r.n : 0)}))}, options: {scales: {x: {stacked: true}, y: {stacked: true, max: 1, ticks: {callback: v => pct(v, 0)}}}}});
+  table($('tMove'), [{k: 's', label: 'Starting segment', f: v => SEG3_LABEL[v]}, {k: 'n', label: 'Windows', n: 1, f: v => fmt(v)}, {k: 'up', label: 'Moved up', n: 1, f: (v, r) => `${fmt(v)} (${pct(v / (r.n || 1))})`},
+    {k: 'stay', label: 'Stayed', n: 1, f: (v, r) => `${fmt(v)} (${pct(v / (r.n || 1))})`}, {k: 'down', label: 'Moved down', n: 1, f: (v, r) => `${fmt(v)} (${pct(v / (r.n || 1))})`}], res);
+  const ks = [...new Set(W.map(w => w.k))].sort((a, b) => a - b).slice(0, 12);
+  const rows = ks.map(k => { const o = {k}; segs.forEach(s => { const ws = W.filter(w => w.k === k && seg3(w.startHC) === s); o[s] = ws.length ? ws.filter(w => moveDir(w.startHC, w.endHC, seg3, SEG3) === 'up').length / ws.length : NaN; o['n' + s] = ws.length; }); return o; });
+  table($('tMoveWin'), [{k: 'k', label: 'Window', f: v => 'Window ' + v}, ...segs.filter(s => s !== '10+').map(s => ({k: s, label: SEG3_LABEL[s] + ': % up', n: 1, f: (v, r) => `<span style="${r['n' + s] < 20 ? 'color:var(--color-text-base-muted)' : ''}">${pct(v)} <span class="note">(n ${fmt(r['n' + s])})</span></span>`}))], rows);
+  // peak months: client's best net month (complete years only), clients aged 12+ months
+  const peakCount = new Array(12).fill(0), skip = +$('fSeasonMode').value;   // skip = months excluded at the start of each client (Seasonality setting)
+  for (const c of clients.filter(c => c.aged12)) { let best = -Infinity, bi = -1; for (let i = skip; i < c.n; i++) { const idx = c.off + i; if (i2y(idx) > LAST_FULL_YEAR) continue; const v = c.starts[i] - c.churn[i]; if (v > best) { best = v; bi = idx; } } if (bi >= 0 && best > 0) peakCount[i2m(bi)]++; }
+  draw('cPeak', {type: 'bar', data: {labels: MONTHS_ABBR, datasets: [{label: 'Clients with their peak month here', order: 1, yAxisID: 'y', backgroundColor: PALETTE[0], data: peakCount},
+    {label: 'Net seats (all clients)', type: 'line', order: 0, yAxisID: 'y2', borderColor: PALETTE[1], backgroundColor: PALETTE[1], data: seasonMonths(clients, f.year, skip, 'net').total}]},
+    options: {scales: {y: {position: 'left', beginAtZero: true, title: {display: true, text: 'Clients'}}, y2: {position: 'right', grid: {display: false}, title: {display: true, text: 'Net seats'}}}}});
+}
+
+// ---------------- Account profile (ICP)
+function profRow(label, cl) {
+  const e12 = cl.filter(c => c.aged12), r5 = e12.filter(c => c.months_to_5 !== null && c.months_to_5 <= 12).length;
+  const reached = cl.filter(c => c.months_to_5 !== null);
+  const known = sum(cl.map(c => c.adds_same_function + c.adds_new_function));
+  const kf = cl.filter(c => c.initial_function !== 'Unknown');   // a 2nd function can only be seen when the first one is known
+  return {label, n: cl.length, startMed: median(cl.map(c => c.starting_seats)), d90: median(cl.map(c => c.seats_day90)), r5: e12.length ? r5 / e12.length : NaN, e12: e12.length,
+    ever5: reached.length / (cl.length || 1), t5: median(reached.map(c => c.months_to_5)), fn2: kf.filter(c => c.months_to_2nd_function !== null).length / (kf.length || 1),
+    t2: median(kf.filter(c => c.months_to_2nd_function !== null).map(c => c.months_to_2nd_function)), newShare: known ? sum(cl.map(c => c.adds_new_function)) / known : NaN,
+    ret: cl.filter(c => c.current_seats > 0).length / (cl.length || 1), tenure: median(cl.map(c => c.months_active)), cur: median(cl.map(c => c.current_seats)), peak: median(cl.map(c => c.peak_seats)),
+    _small: cl.length < 20};
+}
+function rateRows(cl, keyFn, label) {
+  const e = cl.filter(c => c.aged12);
+  return [...groupBy(e, keyFn)].map(([k, g]) => { const h = g.filter(c => c.months_to_5 !== null && c.months_to_5 <= 12).length; const [lo, hi] = wilson(h, g.length);
+    return {dim: label, k, n: g.length, h, rate: h / g.length, lo, hi, _small: g.length < 20}; }).sort((a, b) => b.n - a.n);
+}
+function rProfile(f, clients) {
+  const rows = [profRow('All filtered', clients), ...REGIONS.map(r => profRow(r, clients.filter(c => c.region === r)))];
+  table($('tProf'), [{k: 'label', label: 'Region'}, {k: 'n', label: 'Clients', n: 1, f: v => fmt(v)}, {k: 'startMed', label: 'Median starting seats', n: 1, f: v => fmt(v, 1)},
+    {k: 'd90', label: 'Median seats day 90', n: 1, f: v => fmt(v, 1)}, {k: 'r5', label: 'Reached 5 in 12 months', n: 1, f: (v, r) => `${pct(v)} <span class="note">(n ${fmt(r.e12)})</span>`},
+    {k: 'ever5', label: 'Ever reached 5', n: 1, f: v => pct(v)}, {k: 't5', label: 'Median months to 5', n: 1, f: v => fmt(v, 1)}, {k: 'fn2', label: 'Added a 2nd function (known first function)', n: 1, f: v => pct(v)},
+    {k: 't2', label: 'Median months to 2nd function', n: 1, f: v => fmt(v, 1)}, {k: 'newShare', label: 'Adds into new functions', n: 1, f: v => pct(v)}, {k: 'ret', label: 'Retained (staff today)', n: 1, f: v => pct(v)},
+    {k: 'tenure', label: 'Median months active', n: 1, f: v => fmt(v, 0)}, {k: 'cur', label: 'Median current seats', n: 1, f: v => fmt(v, 1)}, {k: 'peak', label: 'Median peak seats (any day)', n: 1, f: v => fmt(v, 1)}], rows);
+  const sb = c => c.starting_seats <= 1 ? '0-1 seat' : c.starting_seats === 2 ? '2 seats' : c.starting_seats <= 4 ? '3-4 seats' : '5+ seats';
+  const bySeats = ['0-1 seat', '2 seats', '3-4 seats'];   // 5+ starting seats reach 5 by definition, so not charted
+  const cell = (r, b) => { const g = clients.filter(c => c.region === r && c.aged12 && sb(c) === b), h = g.filter(c => c.months_to_5 !== null && c.months_to_5 <= 12).length; return {n: g.length, h, ci: wilson(h, g.length)}; };
+  const P1 = Object.fromEntries(REGIONS.map(r => [r, bySeats.map(b => cell(r, b))]));
+  draw('cProf1', {type: 'bar', data: {labels: bySeats, datasets: REGIONS.map(r => ({label: r, backgroundColor: REG_COLOUR[r], data: P1[r].map(x => x.n ? x.h / x.n : null)}))},
+    options: {scales: {y: {max: 1, ticks: {callback: v => pct(v, 0)}}}, plugins: {tooltip: {callbacks: {label: ctx => { const x = P1[ctx.dataset.label][ctx.dataIndex];
+      return `${ctx.dataset.label}: ${pct(x.n ? x.h / x.n : NaN)} (${x.h} of ${x.n}, 95% range ${pct(x.ci[0])} to ${pct(x.ci[1])})${x.n < 20 ? ', under 20' : ''}`; }}}}}});
+  const fr = rateRows(clients, c => c.initial_function, 'Initial function').filter(r => r.n >= 20).sort((a, b) => b.rate - a.rate);
+  draw('cProf2', {type: 'bar', data: {labels: fr.map(r => r.k), datasets: [{label: 'Reached 5 in 12 months', backgroundColor: PALETTE[0], data: fr.map(r => r.rate)},
+    {label: '95% range low', type: 'line', showLine: false, pointStyle: 'line', borderColor: PALETTE[4], data: fr.map(r => r.lo)}, {label: '95% range high', type: 'line', showLine: false, pointStyle: 'line', borderColor: PALETTE[4], data: fr.map(r => r.hi)}]},
+    options: {indexAxis: 'y', scales: {x: {max: 1, ticks: {callback: v => pct(v, 0)}}, y: {ticks: {font: {size: 10}}}}}});
+  const all = [...rateRows(clients, sb, 'Starting seats'), ...rateRows(clients, c => c.initial_function, 'Initial function'), ...rateRows(clients, c => c.custom_division, 'Custom division'), ...rateRows(clients, c => c.industry_rollup, 'Industry roll-up')];
+  table($('tProf2'), [{k: 'dim', label: 'Dimension'}, {k: 'k', label: 'Group'}, {k: 'n', label: 'Clients aged 12+ months', n: 1, f: v => fmt(v)}, {k: 'h', label: 'Reached 5 in 12 months', n: 1, f: v => fmt(v)},
+    {k: 'rate', label: 'Rate', n: 1, f: v => pct(v)}, {k: 'lo', label: '95% low', n: 1, f: v => pct(v)}, {k: 'hi', label: '95% high', n: 1, f: v => pct(v)}, {k: '_small', label: 'Note', f: v => v ? '<span class="badge b-warn">under 20, do not rank</span>' : ''}], all);
+}
+
+// ---------------- Clients table
+let sortKey = 'net', sortDir = -1;
+function clientRows(f, clients, W) {
+  const restrict = f.segment !== 'All' || f.year !== 'All';
+  const byC = groupBy(W, w => w.c.shortcode);
+  const q = ($('clSearch').value || $('topSearch').value || '').toLowerCase();
+  return clients.filter(c => !restrict || byC.has(c.shortcode)).map(c => {
+    const ws = byC.get(c.shortcode) || [], first = ws.find(w => w.hit);
+    return {name: c.client_name, sc: c.shortcode, region: c.region, div: c.custom_division, ind: c.industry_rollup, status: c.status, path: c.path_group, seg: SEG3_LABEL[seg3(c.starting_seats)],
+      starts: c.total_starts, churn: c.total_churned, net: c.net_seats, cur: c.current_seats, peakSeats: c.peak_seats, peakMonth: c.peak_net_month,
+      firstHit: first ? first.k : null, startSeats: c.starting_seats, fn: c.initial_function, t5: c.months_to_5, t2: c.months_to_2nd_function, tenure: c.months_active, start: c.start_month};
+  }).filter(r => !q || [r.name, r.sc, r.div, r.ind, r.region].join(' ').toLowerCase().includes(q));
+}
+const CLIENT_COLS = [{k: 'name', label: 'Client'}, {k: 'sc', label: 'Shortcode'}, {k: 'region', label: 'Region'}, {k: 'div', label: 'Custom division'}, {k: 'ind', label: 'Industry roll-up'},
+  {k: 'status', label: 'Status'}, {k: 'path', label: 'Path to 5 group'}, {k: 'start', label: 'Start month'}, {k: 'seg', label: 'Starting segment'}, {k: 'startSeats', label: 'Starting seats', n: 1}, {k: 'starts', label: 'Starts', n: 1},
+  {k: 'churn', label: 'Churned', n: 1}, {k: 'net', label: 'Net seats', n: 1}, {k: 'cur', label: 'Current staff', n: 1}, {k: 'peakSeats', label: 'Peak seats (any day)', n: 1}, {k: 'peakMonth', label: 'Peak net month'},
+  {k: 'firstHit', label: 'First window hitting threshold', n: 1, f: v => v ? 'Window ' + v : '–'}, {k: 'fn', label: 'Initial function'}, {k: 't5', label: 'Months to 5', n: 1, f: v => fmt(v, 1)},
+  {k: 't2', label: 'Months to 2nd function', n: 1, f: v => fmt(v, 1)}, {k: 'tenure', label: 'Months active', n: 1}];
+function rClients(f, clients, W) {
+  const rows = clientRows(f, clients, W).sort((a, b) => { const x = a[sortKey], y = b[sortKey]; if (x === y) return 0; if (x === null || x === undefined) return 1; if (y === null || y === undefined) return -1; return (x > y ? 1 : -1) * sortDir; });
+  $('clSub').textContent = `${fmt(rows.length)} clients · respects all filters`;
+  table($('tClients'), CLIENT_COLS.map(c => c.n && !c.f ? {...c, f: v => fmt(v)} : c), rows, {sortable: true, onSort: k => { sortDir = sortKey === k ? -sortDir : -1; sortKey = k; render(); }});
+}
+$('clSearch').oninput = () => render();
+$('topSearch').oninput = () => { if (page !== 'clients') go('clients'); else render(); };
+function download(name, rows, cols) {
+  const q = v => { const s = v === null || v === undefined ? '' : String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const csv = [cols.map(c => q(c.label)).join(','), ...rows.map(r => cols.map(c => q(r[c.k])).join(','))].join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'})); a.download = name; a.click();
+}
+$('btnCsv').onclick = $('btnCsv2').onclick = () => { const f = pageFilt(); download('clients_filtered.csv', clientRows(f, current.clients, current.W), CLIENT_COLS); };
+$('btnWinCsv').onclick = () => download('windows_filtered.csv', current.W.map(w => ({sc: w.c.shortcode, name: w.c.client_name, region: w.c.region, k: w.k, start: D.first_month && (i2y(w.sIdx) + '-' + String(i2m(w.sIdx) + 1).padStart(2, '0')),
+  startHC: w.startHC, endHC: w.endHC, starts: w.starts, churn: w.churn, net: w.net, hit: w.hit})), [{k: 'sc', label: 'shortcode'}, {k: 'name', label: 'client'}, {k: 'region', label: 'region'}, {k: 'k', label: 'window'},
+  {k: 'start', label: 'window start month'}, {k: 'startHC', label: 'staff at start'}, {k: 'endHC', label: 'staff at end'}, {k: 'starts', label: 'starts'}, {k: 'churn', label: 'churned'}, {k: 'net', label: 'net seats'}, {k: 'hit', label: 'hit threshold'}]);
+
+// ---------------- Stats
+const pTxt = p => p < 0.0001 ? 'p < 0.0001' : 'p = ' + pfmt(p);   // p-value as a phrase
+function rStats(f) {
+  const tests = runTests(f);
+  $('statsBox').innerHTML = tests.map(t => {
+    const r = t.res;
+    if (!r) return `<div class="stat"><h4>${t.name}</h4><div class="reading">Not enough data in the current filters to run this test.</div></div>`;
+    const groups = r.n ? Object.entries(r.n) : [];
+    const small = groups.filter(([, n]) => n < 20);
+    const sig = r.p < 0.05;
+    const reading = t.season ? (sig ? `Hiring is not spread evenly across the year, ${pTxt(r.p)}, ${fmt(r.N)} ${t.unit}.` : `No clear seasonal pattern in hiring, ${pTxt(r.p)}, ${fmt(r.N)} ${t.unit}.`)
+      : (sig ? `${t.what} differs between ${t.between}, ${pTxt(r.p)}, ${fmt(r.N)} ${t.unit}.` : `No clear difference in ${t.what.toLowerCase()} between ${t.between}, ${pTxt(r.p)}, ${fmt(r.N)} ${t.unit}.`);
+    return `<div class="stat"><h4>${t.name}</h4><div class="reading">${reading}</div>
+      ${t.note ? `<div class="note" style="margin:0 0 4px">${t.note}</div>` : ''}
+      <div class="note" style="margin:0">Statistic ${fmt(r.stat, 3)} · df ${r.df} · p ${pfmt(r.p)} · unit: ${t.unit}</div>
+      ${groups.length ? `<div class="note">n per group: ${groups.map(([g, n]) => `${esc(g)} ${fmt(n)}`).join(' · ')}</div>` : ''}
+      ${small.length ? `<div class="warn" style="margin:8px 0 0"><i class="fa-solid fa-triangle-exclamation"></i> ${small.length} group(s) have fewer than 20: ${small.map(([g, n]) => `${esc(g)} (${n})`).join(', ')}. The result is not reliable for those groups.</div>` : ''}</div>`;
+  }).join('');
+}
+
+// ---------------- QA
+function rQa() {
+  const q = D.qa;
+  const ex = Object.entries(q.excluded).sort((a, b) => b[1] - a[1]);
+  $('qaKpis').innerHTML = [['k-blue', 'fa-table-list', 'Source rows', fmt(q.source_rows), 'SC Engagement List'], ['k-teal', 'fa-circle-check', 'Rows used', fmt(q.included_rows), `${pct(q.included_rows / q.source_rows)} of source`],
+    ['k-pink', 'fa-filter-circle-xmark', 'Rows excluded', fmt(q.source_rows - q.included_rows), `${ex.length} reasons, listed below`], ['k-yellow', 'fa-user-tie', 'Role match rate', pct(q.role_match_rate), 'stints matched to a role title'],
+    ['k-purple', 'fa-building-circle-exclamation', 'MyStaff clients never staffed', fmt(q.never_staffed_mystaff_clients.total), `${q.never_staffed_mystaff_clients.active_yes} of them Active = Yes` + ((q.never_staffed_mystaff_clients.no_valid_stint || []).length ? ` · includes ${q.never_staffed_mystaff_clients.no_valid_stint.join(', ')} (only stint ends before it starts)` : '') + ((q.never_staffed_mystaff_clients.share_name_with_staffed_client || []).length ? ` · ${q.never_staffed_mystaff_clients.share_name_with_staffed_client.length} share a name with a staffed client (see name list)` : '')]]
+    .map(([cls, ic, l, v, s]) => `<div class="kpi ${cls}"><div class="kpi-top"><span class="kpi-icon"><i class="fa-solid ${ic}"></i></span>${l}</div><div class="kpi-value">${v}</div><div class="kpi-sub">${s}</div></div>`).join('');
+  table($('tQaEx'), [{k: 0, label: 'Reason'}, {k: 1, label: 'Rows', n: 1, f: v => fmt(v)}], [...ex, ['Total excluded', sum(ex.map(e => e[1]))], ['Rows used', q.included_rows], ['Source rows', q.source_rows]]);
+  table($('tQaFlag'), [{k: 0, label: 'Flag (in scope?)'}, {k: 1, label: 'Rows', n: 1, f: v => fmt(v)}], Object.entries(q.flags));
+  const rq = () => { const s = ($('qaSearch').value || '').toLowerCase(); table($('tQaList'), [{k: 'reason', label: 'Reason'}, {k: 'shortcode', label: 'Shortcode'}, {k: 'client', label: 'Client'}, {k: 'rows', label: 'Rows', n: 1}, {k: 'evidence', label: 'Evidence'}],
+    q.excluded_lists.filter(r => !s || JSON.stringify(r).toLowerCase().includes(s))); };
+  $('qaSearch').oninput = rq; rq();
+  table($('tQaDiff'), [{k: 'shortcode', label: 'Shortcode'}, {k: 'client_name', label: 'Client'}, {k: 'region', label: 'Region'}, {k: 'start_month', label: 'Start month (engagement list)'},
+    {k: 'mystaff_first_month', label: 'First staff month (MyStaff)'}, {k: 'engagement_list_staff', label: `Staff ${$('extractTxt').textContent} (engagement list)`, n: 1}, {k: 'mystaff_staff', label: 'Total staff (MyStaff)', n: 1}, {k: 'staff_diff', label: 'Difference', n: 1}], q.mystaff_diff_rows);
+  const rc = q.active_reconciliation || [], rcCols = rc.length ? Object.keys(rc[0]).filter(k => k !== 'where') : [];
+  $('qaReconSub').textContent = q.active_reconciliation_date ? 'on ' + q.active_reconciliation_date : '';
+  table($('tQaRecon'), [{k: 'where', label: 'Where the staff sit'}, ...rcCols.map(k => ({k, label: k === 'Total' ? 'Total' : `Category: ${k}`, n: 1, f: v => fmt(v)}))],
+    [...rc, Object.fromEntries([['where', 'All staff on the books'], ...rcCols.map(k => [k, sum(rc.map(r => r[k]))])])]);
+  table($('tQaRole'), [{k: 'y', label: 'Stint start year'}, {k: 'stints', label: 'Stints', n: 1, f: v => fmt(v)}, {k: 'match_rate', label: 'Matched to a role', n: 1, f: v => pct(v)}], q.role_match_by_year || []);
+  table($('tQaNames'), [{k: 'client', label: 'Client name'}, {k: 'shortcode', label: 'Shortcode'}, {k: 'name_source', label: 'Name from'}, {k: 'has_staff', label: 'Has staff', f: v => v ? 'Yes' : 'No'}, {k: 'in_scope', label: 'In scope', f: v => v ? 'Yes' : 'No'},
+    {k: 'excluded_reason', label: 'Excluded reason'}], q.name_pairs || []);
+  const nim = q.not_in_mystaff_kept || [];
+  $('qaNotInMs').textContent = `Clients in the engagement list but not in MyStaff (kept, region Unknown): ${nim.length ? nim.join(', ') : 'none'}.`;
+  table($('tQaFlagRows'), [{k: 'flag', label: 'Flag'}, {k: 'in_scope', label: 'In scope'}, {k: 'excluded_reason', label: 'Excluded reason'}, {k: 'row', label: 'Source row', n: 1}, {k: 'sc', label: 'Shortcode'},
+    {k: 'Client Name', label: 'Client'}, {k: 'CSID', label: 'CSID'}, {k: 'Engagement Date', label: 'Engagement date'}, {k: 'Disengagement Date', label: 'Disengagement date'}, {k: 'Engagement Status', label: 'Status'}], q.flag_rows);
+}
+
+// ---------------- Path to 5 seats: the four groups, what predicts reaching 5, how fast, and what happens after
+const i5 = c => ym2i(c.date_5.slice(0, 7)) - c.off;                    // month position (0 = start month) when the client first had 5 staff
+function pathRow(label, cl, all) {
+  const kf = cl.filter(c => c.initial_function !== 'Unknown'), f2 = kf.filter(c => c.months_to_2nd_function !== null), reached = cl.filter(c => c.date_5);
+  const same = sum(cl.map(c => c.adds_same_function)), nw = sum(cl.map(c => c.adds_new_function)), unk = sum(cl.map(c => c.adds_unknown_function));
+  const byR = r => cl.filter(c => c.region === r).length;
+  return {label, n: cl.length, share: cl.length / (all || 1), apac: byR('APAC'), amer: byR('AMER'), opti: byR('OPTI'), start: median(cl.map(c => c.starting_seats)), d90: median(cl.map(c => c.seats_day90)),
+    t5: median(reached.map(c => c.months_to_5)), peak: median(cl.map(c => c.peak_seats)), cur: median(cl.map(c => c.current_seats)), ret: cl.filter(c => c.current_seats > 0).length / (cl.length || 1),
+    tenure: median(cl.map(c => c.months_active)), age: median(cl.map(c => c.n)), fn2: f2.length / (kf.length || 1), t2: median(f2.map(c => c.months_to_2nd_function)),
+    same, nw, unk, newShare: same + nw ? nw / (same + nw) : NaN, _small: cl.length < 20};
+}
+function rPath(f, clients) {
+  const n = clients.length;
+  const cls = ['k-blue', 'k-teal', 'k-yellow', 'k-pink'], ics = ['fa-bolt', 'fa-person-walking', 'fa-hourglass-half', 'fa-user-xmark'];
+  $('pathKpis').innerHTML = PATHS.map((p, i) => { const k = clients.filter(c => c.path_group === p).length; return `<div class="kpi ${cls[i]}"><div class="kpi-top"><span class="kpi-icon"><i class="fa-solid ${ics[i]}"></i></span>${p}</div>`
+    + `<div class="kpi-value">${fmt(k)}</div><div class="kpi-sub">${pct(k / (n || 1))} of ${fmt(n)} clients</div></div>`; }).join('');
+  const regs = REGIONS.filter(r => clients.some(c => c.region === r));
+  draw('cPathReg', {type: 'bar', data: {labels: regs, datasets: PATHS.map((p, i) => ({label: PATH_SHORT[p], backgroundColor: [PALETTE[0], PALETTE[1], PALETTE[2], PALETTE[3]][i],
+    data: regs.map(r => { const cr = clients.filter(c => c.region === r); return cr.filter(c => c.path_group === p).length / (cr.length || 1); })}))},
+    options: {scales: {x: {stacked: true}, y: {stacked: true, max: 1, ticks: {callback: v => pct(v, 0)}}}}});
+  // speed bands (days from first start to 5 staff at the same time)
+  const BANDS = [[0, 30, 'Within month 1'], [31, 91, '1-3 months'], [92, 183, '3-6 months'], [184, 365, '6-12 months'], [366, 730, '1-2 years'], [731, 1e9, '2+ years']];
+  const reached = clients.filter(c => c.date_5);
+  draw('cPathSpeed', {type: 'bar', data: {labels: BANDS.map(b => b[2]), datasets: regs.map(r => ({label: r, backgroundColor: REG_COLOUR[r],
+    data: BANDS.map(([a, b]) => reached.filter(c => c.region === r && c.days_to_5 >= a && c.days_to_5 <= b).length)}))}, options: {scales: {y: {title: {display: true, text: 'Clients'}}}}});
+  const below = reached.filter(c => c.starting_seats < 5);
+  $('pathSpeedNote').textContent = `${fmt(reached.length)} clients reached 5; ${fmt(reached.filter(c => c.starting_seats >= 5).length)} of them started with 5+. For clients that started below 5, the median time to 5 was `
+    + regs.map(r => { const v = below.filter(c => c.region === r); return `${r} ${fmt(median(v.map(c => c.months_to_5)), 1)} months (n ${fmt(v.length)})`; }).join(', ') + '.';
+  // profile of each group
+  const rows = [pathRow('All filtered clients', clients, n), ...PATHS.map(p => pathRow(p, clients.filter(c => c.path_group === p), n))];
+  table($('tPathProf'), [{k: 'label', label: 'Group'}, {k: 'n', label: 'Clients', n: 1, f: v => fmt(v)}, {k: 'share', label: '% of clients', n: 1, f: v => pct(v)},
+    {k: 'apac', label: 'APAC', n: 1, f: v => fmt(v)}, {k: 'amer', label: 'AMER', n: 1, f: v => fmt(v)}, {k: 'opti', label: 'OPTI', n: 1, f: v => fmt(v)},
+    {k: 'start', label: 'Median starting seats', n: 1, f: v => fmt(v, 1)}, {k: 'd90', label: 'Median seats day 90', n: 1, f: v => fmt(v, 1)}, {k: 't5', label: 'Median months to 5', n: 1, f: v => fmt(v, 1)},
+    {k: 'peak', label: 'Median peak seats', n: 1, f: v => fmt(v, 1)}, {k: 'cur', label: 'Median current seats', n: 1, f: v => fmt(v, 1)}, {k: 'ret', label: 'Still with staff', n: 1, f: v => pct(v)},
+    {k: 'tenure', label: 'Median months with staff', n: 1, f: v => fmt(v, 0)}, {k: 'age', label: 'Median client age (months)', n: 1, f: v => fmt(v, 0)},
+    {k: 'fn2', label: 'Added a 2nd function', n: 1, f: v => pct(v)}, {k: 't2', label: 'Median months to 2nd function', n: 1, f: v => fmt(v, 1)},
+    {k: 'same', label: 'Adds, same function', n: 1, f: v => fmt(v)}, {k: 'nw', label: 'Adds, new function', n: 1, f: v => fmt(v)}, {k: 'unk', label: 'Adds, function unknown', n: 1, f: v => fmt(v)},
+    {k: 'newShare', label: '% of known adds in a new function', n: 1, f: v => pct(v)}], rows);
+  // what predicts reaching 5 (tests from runTests, so they match the Stats page)
+  const T = Object.fromEntries(runTests(f).map(t => [t.id, t]));
+  const elig = clients.filter(c => c.aged12 && c.starting_seats < 5), pred = [];
+  const sb = c => c.starting_seats <= 1 ? '0-1 seat' : c.starting_seats === 2 ? '2 seats' : '3-4 seats';
+  for (const [id, dim, fn] of [['chi_reach_region', 'Region', c => c.region], ['chi_reach5', 'Starting seats', sb], ['chi_reach_function', 'Initial function', c => c.initial_function],
+    ['chi_reach_industry', 'Industry roll-up', c => c.industry_rollup], ['chi_reach_division', 'Custom division', c => c.custom_division]]) {
+    const t = T[id], res = t && t.res, names = id === 'chi_reach5' ? (t.names || []) : ((t && t.groups && t.groups.names) || []);
+    names.forEach((k, i) => { const g = elig.filter(c => fn(c) === k), h = g.filter(reach12).length, [lo, hi] = wilson(h, g.length), rch = g.filter(c => c.date_5);
+      pred.push({dim, k, n: g.length, h, rate: h / (g.length || 1), lo, hi, fast: g.filter(c => c.days_to_5 !== null && c.days_to_5 <= 183).length / (g.length || 1),
+        t5: median(rch.map(c => c.months_to_5)), p: i === 0 && res ? res.p : NaN, read: i === 0 ? (res ? (res.p < 0.05 ? 'differs' : 'no clear difference') : 'not testable') : '', _small: g.length < 30}); });
+  }
+  table($('tPathPred'), [{k: 'dim', label: 'Dimension'}, {k: 'k', label: 'Group'}, {k: 'n', label: 'Clients', n: 1, f: v => fmt(v)}, {k: 'h', label: 'Reached 5 in 12 months', n: 1, f: v => fmt(v)},
+    {k: 'rate', label: 'Rate', n: 1, f: v => pct(v)}, {k: 'lo', label: '95% range', n: 1, f: (v, r) => `${pct(r.lo)} to ${pct(r.hi)}`}, {k: 'fast', label: 'Fast to 5 (6 months)', n: 1, f: v => pct(v)},
+    {k: 't5', label: 'Median months to 5 (those that did)', n: 1, f: v => fmt(v, 1)}, {k: 'p', label: 'p-value (dimension)', n: 1, f: v => Number.isNaN(v) ? '' : pfmt(v)},
+    {k: 'read', label: 'Reading', f: v => v === 'differs' ? '<span class="badge b-ok">differs</span>' : v ? `<span class="badge b-no">${v}</span>` : ''}], pred);
+  // after reaching 5
+  const LAST = LAST_I;
+  const after = r => { const cl = reached.filter(c => r === 'All' || c.region === r), m = {n: cl.length, label: r === 'All' ? 'All filtered' : r};
+    m.staff = cl.filter(c => c.current_seats > 0).length / (cl.length || 1); m.five = cl.filter(c => c.current_seats >= 5).length / (cl.length || 1);
+    m.ten = cl.filter(c => c.date_10).length / (cl.length || 1);
+    for (const X of [12, 24, 36]) { const e = cl.filter(c => i5(c) + X <= c.n - 1); m['r' + X] = e.filter(c => c.act[i5(c) + X] > 0).length / (e.length || 1); m['n' + X] = e.length; }
+    m.cur = median(cl.map(c => c.current_seats)); m.peak = median(cl.map(c => c.peak_seats)); m._small = cl.length < 20; return m; };
+  table($('tPathAfter'), [{k: 'label', label: 'Region'}, {k: 'n', label: 'Reached 5', n: 1, f: v => fmt(v)}, {k: 'staff', label: 'Still with staff', n: 1, f: v => pct(v)},
+    {k: 'five', label: 'Still at 5+', n: 1, f: v => pct(v)}, {k: 'ten', label: 'Went on to 10', n: 1, f: v => pct(v)},
+    ...[12, 24, 36].map(X => ({k: 'r' + X, label: `With staff ${X} months after reaching 5`, n: 1, f: (v, r) => r['n' + X] ? `${pct(v)} <span class="note">(n ${fmt(r['n' + X])})</span>` : '–'})),
+    {k: 'cur', label: 'Median current seats', n: 1, f: v => fmt(v, 1)}, {k: 'peak', label: 'Median peak seats', n: 1, f: v => fmt(v, 1)}], ['All', ...regs].map(after));
+  const ta = T.chi_after5;
+  $('pathAfterNote').textContent = ta && ta.res ? `Clients aged 24+ months: ${ta.groups.names.map(k => { const [y, no] = ta.groups.g[k]; return `${k} ${pct(y / (y + no))} still with staff (n ${fmt(y + no)})`; }).join(', ')}; `
+    + `${ta.res.p < 0.05 ? 'the difference is statistically clear' : 'no clear difference'} (chi-square, ${pTxt(ta.res.p)}). "With staff X months after" counts only clients whose 5-seat date is at least X months before ${monLbl(D.last_month)}.` : 'Not enough clients aged 24+ months in the current filters to compare.';
+  // seat path by group
+  const MS = [1, 3, 6, 12, 24, 36];
+  const traj = PATHS.map(p => clients.filter(c => c.path_group === p));
+  draw('cPathTraj', {type: 'line', data: {labels: MS.map(m => 'Month ' + m), datasets: PATHS.map((p, i) => ({label: PATH_SHORT[p], borderColor: [PALETTE[0], PALETTE[1], PALETTE[2], PALETTE[3]][i], backgroundColor: [PALETTE[0], PALETTE[1], PALETTE[2], PALETTE[3]][i],
+    data: MS.map(m => { const v = traj[i].filter(c => c.n >= m); return v.length ? median(v.map(c => c.act[m - 1])) : null; })}))}, options: {scales: {y: {title: {display: true, text: 'Median staff'}}}}});
+  const box = $('cPathTraj').closest('.card-body').querySelector('.note');
+  box.textContent = 'Clients counted at each month (n): ' + PATHS.map((p, i) => `${PATH_SHORT[p]} ` + MS.map(m => fmt(traj[i].filter(c => c.n >= m).length)).join(' / ')).join('; ') + ' (months 1 / 3 / 6 / 12 / 24 / 36).';
+}
+
+// ---------------- Insights: plain-English findings recalculated from the current filters
+// rules: "differs / highest" only when a test gives p < 0.05; groups under 20 are not tested, groups under 30 are never named highest or lowest
+function rInsights(f, clients, W) {
+  const T = Object.fromEntries(runTests(f).map(t => [t.id, t]));
+  const cards = [], add = (kind, title, text, ev, pg) => cards.push({kind, title, text, ev, pg});
+  const ok = t => t && t.res && t.res.p < 0.05;
+  const ev = t => t && t.res ? `${t.name.replace(/^[^:]+: /, '')}: ${pTxt(t.res.p)}, ${fmt(t.res.N)} ${t.unit}` : '';
+  const sgn = (v, d = 0) => (v > 0 ? '+' : '') + fmt(v, d);
+  $('insFilters').textContent = `Findings for: ${f.win}-month windows, ${f.thr}+ net seats, ${f.region === 'All' ? 'all regions' : f.region}, ${f.division === 'All' ? 'all divisions' : f.division}, `
+    + `${f.industry === 'All' ? 'all industries' : f.industry}, ${f.status === 'All' ? 'all statuses' : f.status}, ${f.segment === 'All' ? 'all starting segments' : 'starting segment ' + f.segment}, ${f.year === 'All' ? 'all years' : 'windows starting in ' + f.year}, ${f.path === 'All' ? 'all path to 5 groups' : f.path}. Change any filter and these update.`;
+
+  // 1. how many clients grow
+  const byC = groupBy(W, w => w.c.shortcode), nC = byC.size;
+  if (!nC) add('caution', 'No complete windows in view', `No client has a complete ${f.win}-month window in the current filters. Try a shorter window or fewer filters.`, '', null);
+  else {
+    const hitC = [...byC.values()].filter(ws => ws.some(w => w.hit)), [lo, hi] = wilson(hitC.length, nC);
+    const early = hitC.filter(ws => ws.find(w => w.hit).k <= 2).length;
+    add('desc', 'How many clients grow', `${fmt(hitC.length)} of ${fmt(nC)} clients (${pct(hitC.length / nC)}, 95% range ${pct(lo)} to ${pct(hi)}) added ${f.thr}+ net seats in at least one ${f.win}-month window.`
+      + (hitC.length ? ` For ${pct(early / hitC.length)} of them the first hit came in window 1 or 2, within their first ${2 * f.win} months.` : ''), `${fmt(W.length)} windows; growth = net seats after launch`, 'overview');
+  }
+
+  // 1b. path to 5 seats: the research question (who gets there, what predicts it, how fast, what follows)
+  const nAll = clients.length || 1, cntP = p => clients.filter(c => c.path_group === p).length;
+  add('desc', 'Path to 5 seats: who gets there', `Of ${fmt(clients.length)} clients: ` + PATHS.map(p => `${PATH_SHORT[p]}: ${fmt(cntP(p))} (${pct(cntP(p) / nAll)})`).join('; ') + '.'
+    + (f.region === 'All' && T.chi_path_region && T.chi_path_region.res ? ' ' + ['APAC', 'AMER'].map(r => { const cr = clients.filter(c => c.region === r); return cr.length ? `${r}: ${pct(cr.filter(c => c.path_group === PATHS[0]).length / cr.length)} fast, ${pct(cr.filter(c => c.path_group === PATHS[3]).length / cr.length)} churned without 5 (n ${fmt(cr.length)})` : ''; }).filter(Boolean).join('; ')
+      + `. ${ok(T.chi_path_region) ? 'The group mix differs by region.' : 'No clear difference in the group mix by region.'}` : ''),
+    T.chi_path_region && T.chi_path_region.res ? ev(T.chi_path_region) : 'Fast = 5 staff within 6 months of the first start', 'path');
+  const predIds = [['chi_reach_region', 'region'], ['chi_reach5', 'starting seats'], ['chi_reach_function', 'initial function'], ['chi_reach_industry', 'industry'], ['chi_reach_division', 'custom division']];
+  const eligP = clients.filter(c => c.aged12 && c.starting_seats < 5);
+  const yes = [], no = [];
+  for (const [id, lab] of predIds) {
+    const t = T[id]; if (!t || !t.res) continue;
+    const g = id === 'chi_reach5' ? Object.fromEntries(t.names.map((k, i) => [k, t.table[i]])) : t.groups.g;
+    const rows = Object.entries(g).map(([k, [h, nh]]) => ({k, n: h + nh, rate: h / (h + nh)})).filter(x => x.n >= 30).sort((a, b) => b.rate - a.rate);
+    if (ok(t)) yes.push(`${lab} (${pTxt(t.res.p)}` + (rows.length >= 2 ? `; highest ${esc(rows[0].k)} ${pct(rows[0].rate)}, lowest ${esc(rows[rows.length - 1].k)} ${pct(rows[rows.length - 1].rate)}` : '') + ')');
+    else no.push(lab);
+  }
+  if (eligP.length) add(yes.length ? 'test-yes' : 'test-no', 'What predicts reaching 5 seats', `Of ${fmt(eligP.length)} clients aged 12+ months that started below 5 seats, ${pct(eligP.filter(reach12).length / eligP.length)} reached 5 within 12 months. `
+    + (yes.length ? `The chance differs by ${yes.join('; ')}. ` : '') + (no.length ? `No clear difference by ${no.join(', ')}.` : ''), 'Chi-square per dimension on groups of 20+; only groups of 30+ named', 'path');
+  const reachedI = clients.filter(c => c.date_5), belowI = reachedI.filter(c => c.starting_seats < 5), ks = T.kw_speed_region;
+  if (reachedI.length) add(ks && ks.res && f.region === 'All' ? (ok(ks) ? 'test-yes' : 'test-no') : 'desc', 'How quickly clients reach 5', `${fmt(reachedI.length)} clients reached 5 seats; ${pct(clients.filter(c => c.path_group === PATHS[0]).length / reachedI.length)} of them within 6 months. `
+    + (belowI.length ? `Clients that started below 5 took a median of ${fmt(median(belowI.map(c => c.months_to_5)), 1)} months. ` : '')
+    + (ks && ks.res && f.region === 'All' ? (ok(ks) ? 'The time to reach 5 differs by region: ' : 'No clear difference in speed by region: ') + Object.entries(ks.res.n).map(([r, k]) => `${r} median ${fmt(median(belowI.filter(c => c.region === r).map(c => c.months_to_5)), 1)} months (n ${fmt(k)})`).join(', ') + '.' : ''),
+    ks && ks.res ? ev(ks) : '', 'path');
+  const ta = T.chi_after5;
+  if (ta && ta.res && ta.groups.names.length === 2) {
+    const r = k => { const [y, no] = ta.groups.g[k]; return {rate: y / (y + no), n: y + no}; }, a = r('Reached 5'), b = r('Never reached 5');
+    const ten = reachedI.filter(c => c.date_10).length / (reachedI.length || 1);
+    add(ok(ta) ? 'test-yes' : 'test-no', 'What happens after reaching 5', `Among clients aged 24+ months, ${pct(a.rate)} of those that reached 5 still have staff (n ${fmt(a.n)}), against ${pct(b.rate)} of those that never did (n ${fmt(b.n)}). `
+      + (ok(ta) ? (a.rate > b.rate ? 'Retention is clearly higher for clients that reached 5, in line with 5 seats being an important threshold (an association, not proof of cause). '
+        : 'Retention is clearly lower for clients that reached 5. ') : 'No clear difference in retention. ')
+      + `${pct(ten)} of clients that reached 5 went on to reach 10.`, ev(ta), 'path');
+  }
+
+  // 2. lifecycle: average net per client by stage (descriptive)
+  const st = STAGES.map(([a, b, lab]) => ({lab: lab.replace(' (after launch)', ''), ...stageStats(clients, a, b)})).filter(x => x.n >= 30);
+  if (st.length) {
+    const neg = st.filter(x => x.avg < 0).map(x => x.lab), topGrow = Math.max(...st.map(x => x.grow));
+    add('desc', 'Where in the client life growth happens', 'Average net seats per client: ' + st.map(x => `${x.lab} ${sgn(x.avg, 2)}${x.lab.includes('37') ? ' per month' : ''}`).join(', ') + '. '
+      + (neg.length ? `The average is below zero in ${neg.join(' and ')}: more staff ended than started. ` : 'The average is above zero in every stage. ')
+      + (topGrow < 0.5 ? `In every stage fewer than half of clients grew (at most ${pct(topGrow)}), so growth comes from a minority of clients.` : ''),
+      `Clients old enough for each stage, n ${fmt(Math.min(...st.map(x => x.n)))} to ${fmt(Math.max(...st.map(x => x.n)))}; stages with fewer than 30 clients left out`, 'lifecycle');
+  }
+
+  // 3. region
+  const tr = T.chi_region;
+  if (f.region === 'All' && tr && tr.res) {
+    const rates = Object.entries(tr.res.n).map(([g, n]) => ({g, n, rate: [...byC.values()].filter(ws => ws[0].c.region === g && ws.some(w => w.hit)).length / n}));
+    const txt = rates.map(x => `${x.g} ${pct(x.rate)} (n ${fmt(x.n)})`).join(', ');
+    const big = rates.filter(x => x.n >= 30).sort((a, b) => b.rate - a.rate);
+    if (ok(tr)) add('test-yes', 'Region makes a difference', `The share of clients hitting ${f.thr}+ differs by region: ${txt}.` + (big.length === rates.length && big.length > 1 ? ` ${big[0].g} is highest and ${big[big.length - 1].g} lowest.` : ''), `${ev(tr)}. ${tr.note}`, 'overview');
+    else add('test-no', 'No clear regional difference', `Share of clients hitting ${f.thr}+: ${txt}. The gap is within what chance could produce.`, ev(tr), 'overview');
+  }
+
+  // 4. starting segment
+  const ts = T.chi_segment;
+  if (ts && ts.res) {
+    const txt = Object.entries(ts.res.n).map(([g, n]) => `${SEG3_LABEL[g]} ${pct(W.filter(w => w.startHC > 0 && seg3(w.startHC) === g && w.hit).length / n)} (n ${fmt(n)})`).join(', ');
+    add(ok(ts) ? 'test-yes' : 'test-no', ok(ts) ? 'Size at window start makes a difference' : 'No clear difference by size at window start',
+      `Share of windows hitting ${f.thr}+, by staff at the start of the window: ${txt}.` + (ok(ts) ? ' The chance of a hit differs by size.' : ''), `${ev(ts)}. ${ts.note}`, 'movement');
+  }
+
+  // 5. moving up a size bucket
+  const tb = T.chi_bucket_up;
+  if (tb && tb.res) {
+    const txt = tb.names.map((b, i) => { const [u, nu] = tb.table[i]; return u + nu ? `${b} staff ${pct(u / (u + nu))} (n ${fmt(u + nu)})` : null; }).filter(Boolean).join(', ');
+    add(ok(tb) ? 'test-yes' : 'test-no', 'Moving up a size bucket', `Share of ${f.win}-month windows in which the client moved up a size bucket: ${txt}.` + (ok(tb) ? ' The chance of moving up differs by size.' : ' No clear difference by size.'), `${ev(tb)}. ${tb.note}`, 'buckets');
+  }
+
+  // 6 and 7. custom division and industry
+  for (const [id, lab, many, fk] of [['chi_division', 'custom division', 'divisions', 'division'], ['chi_industry', 'industry', 'industries', 'industry']]) {
+    const t = T[id];
+    if (f[fk] !== 'All' || !t || !t.res) continue;
+    const rows = t.groups.names.map(k => { const [h, nh] = t.groups.g[k]; return {k, n: h + nh, rate: h / (h + nh)}; });
+    const big = rows.filter(x => x.n >= 30).sort((a, b) => b.rate - a.rate), rates = rows.map(x => x.rate);
+    if (ok(t) && big.length >= 2) add('test-yes', `${lab[0].toUpperCase() + lab.slice(1)} makes a difference`, `The share of clients hitting ${f.thr}+ differs by ${lab}. Among ${many} with 30+ clients, `
+      + `${esc(big[0].k)} is highest at ${pct(big[0].rate)} (n ${fmt(big[0].n)}) and ${esc(big[big.length - 1].k)} lowest at ${pct(big[big.length - 1].rate)} (n ${fmt(big[big.length - 1].n)}).`, `${ev(t)}. ${t.note}`, 'divisions');
+    else if (ok(t)) add('test-yes', `${lab[0].toUpperCase() + lab.slice(1)} makes a difference`, `The share of clients hitting ${f.thr}+ differs by ${lab}, but fewer than two ${many} have 30+ clients, so none is named highest or lowest.`, `${ev(t)}. ${t.note}`, 'divisions');
+    else add('test-no', `No clear difference by ${lab}`, `Across ${fmt(rows.length)} ${many} with 20+ clients, the share hitting ${f.thr}+ ranges from ${pct(Math.min(...rates))} to ${pct(Math.max(...rates))}, within what chance could produce.`, ev(t), 'divisions');
+  }
+
+  // 8. seasonality (company, then divisions with their own pattern)
+  const tsn = T.chi_season, mN = monthsIn(f.year), yrs = f.year === 'All' ? `complete years ${i2y(0)} to ${LAST_FULL_YEAR}` : f.year;
+  if (tsn && tsn.res) {
+    const tot = seasonMonths(clients, f.year, 3, 'starts').total.slice(0, mN), avg = sum(tot) / mN;
+    const iMax = tot.indexOf(Math.max(...tot)), iMin = tot.indexOf(Math.min(...tot));
+    if (ok(tsn)) add('test-yes', 'Hiring is seasonal', `Staff starts (${yrs}, leaving out each client's first 3 months) are not spread evenly across the year. ${MONTHS_FULL[iMax]} is the busiest month `
+      + `(${fmt(tot[iMax])} starts, ${pct(tot[iMax] / avg - 1, 0)} above an average month) and ${MONTHS_FULL[iMin]} the quietest (${fmt(tot[iMin])}, ${pct(1 - tot[iMin] / avg, 0)} below).`,
+      `${ev(tsn)}. One client often hires several people at once, so treat the p-value as indicative`, 'season');
+    else add('test-no', 'No clear hiring season', `Staff starts (${yrs}) are spread across the months about as evenly as chance would give.`, ev(tsn), 'season');
+    if (f.division === 'All') {
+      const diff = [];
+      for (const [d, cl] of groupBy(clients, c => c.custom_division)) {
+        const arr = seasonMonths(cl, f.year, 3, 'starts').total.slice(0, mN), t = sum(arr);
+        if (t < 40) continue;
+        const g = chi2GoF(arr, tot);
+        if (!g || g.p >= 0.05) continue;
+        const idx = arr.map((v, i) => tot[i] ? (v / t) / (tot[i] / sum(tot)) : 0), pk = idx.indexOf(Math.max(...idx));
+        diff.push(`${esc(d)} (most above the company pattern in ${MONTHS_ABBR[pk]}, index ${fmt(idx[pk], 2)}, ${fmt(t)} starts${cl.length < 20 ? ', under 20 clients' : ''})`);
+      }
+      if (diff.length) add('test-yes', 'Divisions with their own hiring season', `${fmt(diff.length)} ${diff.length === 1 ? 'division has' : 'divisions have'} a monthly hiring pattern that differs from the company pattern: ${diff.join('; ')}. `
+        + 'Index = the division\'s share of its own hiring in that month divided by the company share; 1.0 = typical.', 'Chi-square goodness of fit per division vs the company pattern, p < 0.05; divisions with 40+ starts in the selected months', 'season');
+    }
+  }
+
+  // 9. churn against hiring, and active clients with no staff (descriptive)
+  const addW = sum(W.map(w => w.starts)), outW = sum(W.map(w => w.churn)), a0 = clients.filter(c => c.status === 'Active, 0 staff').length;
+  if (W.length) add('desc', 'Churn against hiring', `Across the windows in view, clients added ${fmt(addW)} staff and ${fmt(outW)} ended, so churn offset ${pct(addW ? outW / addW : NaN, 0)} of additions (net ${sgn(addW - outW)}). `
+    + `${fmt(a0)} of ${fmt(clients.length)} clients (${pct(a0 / (clients.length || 1))}) are marked Active in MyStaff but have no staff today.`, 'Window additions and churn leave out the launch month', 'overview');
+
+  // 10. account profile: starting seats and reaching 5
+  const t5 = T.chi_reach5;
+  if (t5 && t5.res) {
+    const txt = t5.names.map((b, i) => { const [h, nh] = t5.table[i]; return `${b} ${pct(h / (h + nh))} (n ${fmt(h + nh)})`; }).join(', ');
+    const reached = clients.filter(c => c.months_to_5 !== null), kf = clients.filter(c => c.initial_function !== 'Unknown'), f2 = kf.filter(c => c.months_to_2nd_function !== null).length;
+    add(ok(t5) ? 'test-yes' : 'test-no', 'Starting seats and reaching 5', `Share reaching 5 seats within 12 months, by starting seats: ${txt}.` + (ok(t5) ? ' The chance differs by starting seats.' : ' No clear difference by starting seats.')
+      + (reached.length ? ` Clients that reached 5 took a median of ${fmt(median(reached.map(c => c.months_to_5)), 1)} months.` : '') + (kf.length ? ` ${pct(f2 / kf.length)} of clients with a known first function later added a second one.` : ''),
+      `${ev(t5)}. ${t5.note}`, 'profile');
+  }
+
+  // 11. cautions
+  const notes = [];
+  if (nC && nC < 100) notes.push(`Only ${fmt(nC)} clients have a window in view, so percentages can move a lot with a few clients.`);
+  const small = Object.values(T).filter(t => t.res && t.res.n && Object.values(t.res.n).some(n => n < 20)).map(t => t.name.split(': ')[1]);
+  if (small.length) notes.push(`Some tested groups have fewer than 20 (${small.join('; ')}); read those results with care.`);
+  notes.push(PARTIAL_TXT, 'These are associations in the data, not causes.');
+  add('caution', 'Read with care', notes.join(' '), '', 'stats');
+
+  const B = {'test-yes': ['b-ok', 'Tested: difference'], 'test-no': ['b-no', 'Tested: no clear difference'], desc: ['b-blue', 'Descriptive'], caution: ['b-warn', 'Caution']};
+  $('insBox').innerHTML = cards.map(c => `<div class="card ins"><div class="card-body"><div class="ins-top"><span class="badge ${B[c.kind][0]}">${B[c.kind][1]}</span>`
+    + (c.pg ? `<a class="ins-link" onclick="go('${c.pg}')">Open ${TITLES[c.pg]}</a>` : '') + `</div><h4>${c.title}</h4><p>${c.text}</p>${c.ev ? `<div class="note" style="margin:0">${c.ev}</div>` : ''}</div></div>`).join('');
+}
+
+// ---------------- Client movement table: every filtered client, with added / churned / net by lifecycle stage or by window
+// stage sums match the Lifecycle page: growth after launch, so stage 1-3 covers months 2-3 and month 1 is shown as launch
+function stageMoves(c, a, b) {
+  if (c.n < (b === null ? a : b)) return null;                  // client not old enough for this stage
+  const from = a === 1 ? 1 : a - 1, to = (b === null ? c.n : b) - 1;
+  let add = 0, out = 0; for (let i = from; i <= to; i++) { add += c.starts[i]; out += c.churn[i]; }
+  return {add, out, net: add - out, end: c.act[to]};
+}
+let mvSort = 'now', mvDir = -1;
+function moveRows(f, clients, W) {
+  const restrict = f.segment !== 'All' || f.year !== 'All';      // segment / year filters keep clients with a window in view
+  const byC = groupBy(W, w => w.c.shortcode);
+  const q = ($('mvSearch').value || '').toLowerCase();
+  return clients.filter(c => !restrict || byC.has(c.shortcode))
+    .filter(c => !q || [c.client_name, c.shortcode, c.custom_division, c.industry_rollup, c.region].join(' ').toLowerCase().includes(q))
+    .map(c => {
+      const ws = byC.get(c.shortcode) || [], now = c.act[c.n - 1], first = ws.find(w => w.hit);
+      const r = {name: c.client_name, sc: c.shortcode, region: c.region, div: c.custom_division, ind: c.industry_rollup, status: c.status, path: c.path_group, start: c.start_month,
+        lAdd: c.starts[0], lOut: c.churn[0], launch: c.act[0], now, peak: c.peak_seats, addAll: c.total_starts, outAll: c.total_churned, netAll: c.net_seats,
+        segStart: seg3(c.act[0]), segNow: seg3(now), move: {up: 'Up', down: 'Down', stay: 'Same'}[moveDir(c.act[0], now, seg3, SEG3)],
+        nWin: ws.length, hits: ws.filter(w => w.hit).length, firstHit: first ? first.k : null};
+      STAGES.forEach(([a, b], i) => { const m = stageMoves(c, a, b); if (m) { r['sa' + i] = m.add; r['so' + i] = m.out; r['sn' + i] = m.net; r['se' + i] = m.end; } });
+      for (const w of ws) { r['wa' + w.k] = w.starts; r['wo' + w.k] = w.churn; r['wn' + w.k] = w.net; r['ws' + w.k] = w.startHC; r['we' + w.k] = w.endHC; r['wh' + w.k] = w.hit ? 'Yes' : 'No'; }
+      return r;
+    });
+}
+function moveCols(f, W) {
+  const signed = v => v === null || v === undefined ? '–' : (v > 0 ? '+' : '') + fmt(v);
+  const num = v => v === null || v === undefined ? '–' : fmt(v);
+  const base = [{k: 'name', label: 'Client'}, {k: 'sc', label: 'Shortcode'}, {k: 'region', label: 'Region'}, {k: 'div', label: 'Custom division'},
+    {k: 'ind', label: 'Industry roll-up'}, {k: 'status', label: 'Status'}, {k: 'path', label: 'Path to 5 group'}, {k: 'start', label: 'Start month'}];
+  const tail = [{k: 'now', label: 'Staff now', n: 1, f: num, grp: 1}, {k: 'peak', label: 'Peak seats (any day)', n: 1, f: num}, {k: 'addAll', label: 'Total added', n: 1, f: num},
+    {k: 'outAll', label: 'Total churned', n: 1, f: num}, {k: 'netAll', label: 'Total net', n: 1, f: signed}, {k: 'segStart', label: 'Segment at month 1'}, {k: 'segNow', label: 'Segment now'}, {k: 'move', label: 'Movement'}];
+  if ($('mvMode').value === 'window') {
+    const K = Math.max(0, ...W.map(w => w.k));
+    const win = Array.from({length: K}, (_, i) => i + 1).flatMap(k => [
+      {k: 'ws' + k, label: `W${k} staff at start`, n: 1, f: num, grp: 1}, {k: 'wa' + k, label: `W${k} added`, n: 1, f: num}, {k: 'wo' + k, label: `W${k} churned`, n: 1, f: num},
+      {k: 'wn' + k, label: `W${k} net`, n: 1, f: (v, r) => `<span class="${r['wh' + k] === 'Yes' ? 'badge b-ok' : ''}">${signed(v)}</span>`}, {k: 'we' + k, label: `W${k} staff at end`, n: 1, f: num},
+      {k: 'wh' + k, label: `W${k} hit ${f.thr}+`, csvOnly: 1}]);
+    return [...base, {k: 'launch', label: 'Staff end month 1 (launch)', n: 1, f: num}, {k: 'nWin', label: 'Windows', n: 1, f: num},
+      {k: 'hits', label: `Windows hitting ${f.thr}+`, n: 1, f: num}, {k: 'firstHit', label: 'First hit', n: 1, f: v => v ? 'Window ' + v : '–'}, ...win, ...tail];
+  }
+  const stg = STAGES.flatMap(([, , lab], i) => { const L = lab.replace('Months', 'M').replace(' (after launch)', ''); return [
+    {k: 'sa' + i, label: `${L} added`, n: 1, f: num, grp: 1}, {k: 'so' + i, label: `${L} churned`, n: 1, f: num}, {k: 'sn' + i, label: `${L} net`, n: 1, f: signed}, {k: 'se' + i, label: `${L} staff at end`, n: 1, f: num}]; });
+  return [...base, {k: 'lAdd', label: 'Launch (month 1) added', n: 1, f: num, grp: 1}, {k: 'lOut', label: 'Launch churned', n: 1, f: num}, {k: 'launch', label: 'Staff end month 1', n: 1, f: num}, ...stg, ...tail];
+}
+function rMoveList(f, clients, W) {
+  const cols = moveCols(f, W).filter(c => !c.csvOnly);
+  const rows = moveRows(f, clients, W).sort((a, b) => { const x = a[mvSort], y = b[mvSort]; if (x === y) return 0; if (x === null || x === undefined) return 1; if (y === null || y === undefined) return -1; return (x > y ? 1 : -1) * mvDir; });
+  $('mvListSub').textContent = `${fmt(rows.length)} clients · same filters as the charts above`;
+  table($('tMvList'), cols, rows, {sortable: true, onSort: k => { mvDir = mvSort === k ? -mvDir : -1; mvSort = k; rMoveList(pageFilt(), current.clients, current.W); }});
+  $('tMvList').querySelectorAll('th').forEach(th => { if (cols[+th.dataset.i].grp) th.classList.add('grp'); });
+  $('mvNote').textContent = $('mvMode').value === 'window'
+    ? ((MEASURE[page] || 'none') !== 'all' ? `Window length (${f.win} months) and net seats added (${f.thr}+) come from "How growth is measured", shown on pages such as Overview. ` : '') + `W1, W2 ... = the client's own ${f.win}-month windows. Added = staff starts, churned = staff ending, net = added minus churned = staff at end minus staff at start. Window 1 starts at the end of month 1, so launch staff are not counted as growth. Green net = hit the ${f.thr}+ threshold. Only complete windows, and only windows in the segment and year filters, are shown ("–" = no such window).`
+    : 'Launch = month 1. Stages are months of the client\'s own life: M1-3 covers months 2 and 3 (growth after launch), then M4-6, M7-12, M13-24, M25-36 and M37+ (month 37 to today). Added = staff starts, churned = staff ending, net = added minus churned. "–" = the client is not old enough for that stage yet. Totals include launch.';
+}
+$('mvSearch').oninput = $('mvMode').onchange = () => rMoveList(pageFilt(), current.clients, current.W);
+$('mvCsv').onclick = () => { const f = pageFilt(); download(`clients_movement_${$('mvMode').value}.csv`, moveRows(f, current.clients, current.W), moveCols(f, current.W)); };
+
+// ---- wire up
+document.querySelectorAll('#filters select').forEach(s => s.onchange = () => render());
+$('btnReset').onclick = () => { $('fWin').value = '6'; $('fThr').value = '5'; ['fReg', 'fDiv', 'fInd', 'fSta', 'fSeg', 'fYear', 'fPath'].forEach(id => $(id).value = 'All'); render(); };
+render();
+</script>
+</body>
+</html>
