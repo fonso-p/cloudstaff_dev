@@ -2,6 +2,10 @@
 # Built by Marketing Intelligence/build_dashboard/build_dashboard.py
 Marketing Intelligence/outputs/html/*.html
 
+# Client Propensity: the propensity workbook lists client names and scores: never commit it.
+# Built by Client Propensity/run_pipeline.py
+Client Propensity/outputs/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -39,3 +43,11 @@ desktop.ini
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Client Extraction (CS Jobs): resume exports are personal data. Data lives outside the repo
+# (see that folder's CLAUDE.md); these rules are a safety net in case files get copied in.
+Client Extraction (CS Jobs)/data/
+Client Extraction (CS Jobs)/**/*.xlsx
+Client Extraction (CS Jobs)/**/*.xls
+Client Extraction (CS Jobs)/**/*.csv
+Client Extraction (CS Jobs)/**/*.jsonl

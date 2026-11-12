@@ -1,0 +1,173 @@
+source_field,raw_value,status,industry_group,industry_sector,borderline_alternative,note
+Industry Hubspot,Information Technology and Services,mapped,Technology,Technology & Media,,
+Industry Hubspot,Computer Software,mapped,Technology,Technology & Media,,
+Industry Hubspot,Software Development,mapped,Technology,Technology & Media,,
+Industry Hubspot,Information Services,mapped,Technology,Technology & Media,,
+Industry Hubspot,Information Technology,mapped,Technology,Technology & Media,,
+Industry Hubspot,Internet,mapped,Technology,Technology & Media,,
+Industry Hubspot,Computer Networking,mapped,Technology,Technology & Media,,
+Industry Hubspot,Computer & Network Security,mapped,Technology,Technology & Media,,
+Industry Hubspot,Computer Hardware,mapped,Technology,Technology & Media,,
+Industry Hubspot,Telecommunications,mapped,Technology,Technology & Media,,
+Industry Hubspot,Marketing and Advertising,mapped,"Marketing, Media & Creative",Technology & Media,,
+Industry Hubspot,Online Media,mapped,"Marketing, Media & Creative",Technology & Media,,
+Industry Hubspot,Media Production,mapped,"Marketing, Media & Creative",Technology & Media,,
+Industry Hubspot,Publishing,mapped,"Marketing, Media & Creative",Technology & Media,,
+Industry Hubspot,Printing,mapped,"Marketing, Media & Creative",Technology & Media,Manufacturing & Industrial,
+Industry Hubspot,Graphic Design,mapped,"Marketing, Media & Creative",Technology & Media,,
+Industry Hubspot,Design,mapped,"Marketing, Media & Creative",Technology & Media,,
+Industry Hubspot,Photography,mapped,"Marketing, Media & Creative",Technology & Media,,
+Industry Hubspot,Broadcast Media,mapped,"Marketing, Media & Creative",Technology & Media,,
+Industry Hubspot,Entertainment,mapped,"Marketing, Media & Creative",Technology & Media,,
+Industry Hubspot,Performing Arts,mapped,"Marketing, Media & Creative",Technology & Media,,
+Industry Hubspot,Arts and Crafts,mapped,"Marketing, Media & Creative",Technology & Media,,
+Industry Hubspot,Real Estate,mapped,Real Estate,Property & Construction,,
+Industry Hubspot,Commercial Real Estate,mapped,Real Estate,Property & Construction,,
+Industry Hubspot,Construction,mapped,Construction & Engineering,Property & Construction,,
+Industry Hubspot,Building Materials,mapped,Construction & Engineering,Property & Construction,,
+Industry Hubspot,Civil Engineering,mapped,Construction & Engineering,Property & Construction,,
+Industry Hubspot,Architecture & Planning,mapped,Construction & Engineering,Property & Construction,,
+Industry Hubspot,Mechanical or Industrial Engineering,mapped,Construction & Engineering,Property & Construction,Manufacturing & Industrial,
+Industry Hubspot,Accounting,mapped,Accounting,Financial & Professional Services,,
+Industry Hubspot,Financial Services,mapped,Financial Services,Financial & Professional Services,,
+Industry Hubspot,Banking,mapped,Financial Services,Financial & Professional Services,,
+Industry Hubspot,Capital Markets,mapped,Financial Services,Financial & Professional Services,,
+Industry Hubspot,Investment Management,mapped,Financial Services,Financial & Professional Services,,
+Industry Hubspot,Venture Capital & Private Equity,mapped,Financial Services,Financial & Professional Services,,
+Industry Hubspot,Mortgage Broker,mapped,Financial Services,Financial & Professional Services,,
+Industry Hubspot,Insurance,mapped,Insurance,Financial & Professional Services,,
+Industry Hubspot,Legal Services,mapped,Legal,Financial & Professional Services,,
+Industry Hubspot,Law Practice,mapped,Legal,Financial & Professional Services,,
+Industry Hubspot,Management Consulting,mapped,Professional Services,Financial & Professional Services,,
+Industry Hubspot,Human Resources,mapped,Professional Services,Financial & Professional Services,,
+Industry Hubspot,Staffing and Recruiting,mapped,Professional Services,Financial & Professional Services,,
+Industry Hubspot,Executive Office,mapped,Professional Services,Financial & Professional Services,,
+Industry Hubspot,Translation and Localization,mapped,Professional Services,Financial & Professional Services,,
+Industry Hubspot,Market Research,mapped,Professional Services,Financial & Professional Services,,
+Industry Hubspot,Research,mapped,Professional Services,Financial & Professional Services,,
+Industry Hubspot,Think Tanks,mapped,Professional Services,Financial & Professional Services,,
+Industry Hubspot,Retail,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,
+Industry Hubspot,Ecommerce,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,
+Industry Hubspot,Wholesale,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,
+Industry Hubspot,Apparel & Fashion,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,
+Industry Hubspot,Textiles,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,
+Industry Hubspot,Consumer Goods,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,
+Industry Hubspot,Consumer Electronics,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,
+Industry Hubspot,Cosmetics,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,
+Industry Hubspot,Luxury Goods & Jewelry,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,
+Industry Hubspot,Sporting Goods,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,
+Industry Hubspot,Food & Beverages,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services","Hospitality, Travel & Leisure",
+Industry Hubspot,Wine and Spirits,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services","Hospitality, Travel & Leisure",
+Industry Hubspot,Food Production,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,
+Industry Hubspot,Ranching,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,
+Industry Hubspot,Hospitality,mapped,"Hospitality, Travel & Leisure","Consumer, Hospitality & Services",,
+Industry Hubspot,"Leisure, Travel & Tourism",mapped,"Hospitality, Travel & Leisure","Consumer, Hospitality & Services",,
+Industry Hubspot,Restaurants,mapped,"Hospitality, Travel & Leisure","Consumer, Hospitality & Services",,
+Industry Hubspot,Events Services,mapped,"Hospitality, Travel & Leisure","Consumer, Hospitality & Services",,
+Industry Hubspot,Sports,mapped,"Hospitality, Travel & Leisure","Consumer, Hospitality & Services",,
+Industry Hubspot,Facilities Services,mapped,Business & Consumer Services,"Consumer, Hospitality & Services",,
+Industry Hubspot,Security and Investigations,mapped,Business & Consumer Services,"Consumer, Hospitality & Services",,
+Industry Hubspot,Consumer Services,mapped,Business & Consumer Services,"Consumer, Hospitality & Services",Personal Care (MyStaff Roll Up calls all 9 clients Personal Care),
+Industry Hubspot,Individual & Family Services,mapped,Business & Consumer Services,"Consumer, Hospitality & Services",,
+Industry Hubspot,Non-Profit Organization Management,mapped,Non-profit & Public Sector,"Consumer, Hospitality & Services",,
+Industry Hubspot,Civic & Social Organization,mapped,Non-profit & Public Sector,"Consumer, Hospitality & Services",,
+Industry Hubspot,Public Safety,mapped,Non-profit & Public Sector,"Consumer, Hospitality & Services",,
+Industry Hubspot,Hospital & Health Care,mapped,Healthcare & Wellness,Health & Education,,
+Industry Hubspot,Medical Practice,mapped,Healthcare & Wellness,Health & Education,,
+Industry Hubspot,Medical Devices,mapped,Healthcare & Wellness,Health & Education,,
+Industry Hubspot,Mental Health Care,mapped,Healthcare & Wellness,Health & Education,,
+Industry Hubspot,Pharmaceuticals,mapped,Healthcare & Wellness,Health & Education,,
+Industry Hubspot,Alternative Medicine,mapped,Healthcare & Wellness,Health & Education,,
+Industry Hubspot,Veterinary,mapped,Healthcare & Wellness,Health & Education,,
+Industry Hubspot,"Health, Wellness and Fitness",mapped,Healthcare & Wellness,Health & Education,"Hospitality, Travel & Leisure",
+Industry Hubspot,Education Management,mapped,Education & Training,Health & Education,,
+Industry Hubspot,E-Learning,mapped,Education & Training,Health & Education,,
+Industry Hubspot,Higher Education,mapped,Education & Training,Health & Education,,
+Industry Hubspot,Primary/Secondary Education,mapped,Education & Training,Health & Education,,
+Industry Hubspot,Professional Training & Coaching,mapped,Education & Training,Health & Education,Professional Services,
+Industry Hubspot,Machinery,mapped,Manufacturing & Industrial,"Industrial, Logistics & Energy",,
+Industry Hubspot,Industrial Automation,mapped,Manufacturing & Industrial,"Industrial, Logistics & Energy",,
+Industry Hubspot,Electrical/Electronic Manufacturing,mapped,Manufacturing & Industrial,"Industrial, Logistics & Energy",,
+Industry Hubspot,Motor Vehicle Manufacturing,mapped,Manufacturing & Industrial,"Industrial, Logistics & Energy",,
+Industry Hubspot,Automotive,mapped,Manufacturing & Industrial,"Industrial, Logistics & Energy",,
+Industry Hubspot,Chemicals,mapped,Manufacturing & Industrial,"Industrial, Logistics & Energy",,
+Industry Hubspot,Packaging and Containers,mapped,Manufacturing & Industrial,"Industrial, Logistics & Energy",,
+Industry Hubspot,Mining & Metals,mapped,Manufacturing & Industrial,"Industrial, Logistics & Energy",,
+Industry Hubspot,Logistics and Supply Chain,mapped,Transport & Logistics,"Industrial, Logistics & Energy",,
+Industry Hubspot,Transportation/Trucking/Railroad,mapped,Transport & Logistics,"Industrial, Logistics & Energy",,
+Industry Hubspot,Package/Freight Delivery,mapped,Transport & Logistics,"Industrial, Logistics & Energy",,
+Industry Hubspot,Maritime,mapped,Transport & Logistics,"Industrial, Logistics & Energy",,
+Industry Hubspot,Airlines/Aviation,mapped,Transport & Logistics,"Industrial, Logistics & Energy",,
+Industry Hubspot,Import and Export,mapped,Transport & Logistics,"Industrial, Logistics & Energy",Retail & Consumer Goods,
+Industry Hubspot,Oil & Energy,mapped,Energy & Environment,"Industrial, Logistics & Energy",,
+Industry Hubspot,Utilities,mapped,Energy & Environment,"Industrial, Logistics & Energy",,
+Industry Hubspot,Renewables & Environment,mapped,Energy & Environment,"Industrial, Logistics & Energy",,
+Industry Hubspot,Environmental Services,mapped,Energy & Environment,"Industrial, Logistics & Energy",,
+Industry Hubspot,-,unclassified,,,,No information
+Industry Hubspot,Other,unclassified,,,,No information
+Industry Hubspot,Outsourcing/Offshoring,unclassified,,,,Cloudstaff's own industry stamped on clients by default (26 of 27 MyStaff clients have Roll Up = CLOUDSTAFF)
+Industry Roll Up,Advanced Technology Services,mapped,Technology,Technology & Media,,Fallback only
+Industry Roll Up,Software & Technology Development,mapped,Technology,Technology & Media,,Fallback only
+Industry Roll Up,Telecommunications & Information Technology,mapped,Technology,Technology & Media,,Fallback only
+Industry Roll Up,Information Technology,mapped,Technology,Technology & Media,,Fallback only
+Industry Roll Up,Internet,mapped,Technology,Technology & Media,,Fallback only
+Industry Roll Up,Digital Marketing & Advertising,mapped,"Marketing, Media & Creative",Technology & Media,,Fallback only
+Industry Roll Up,Marketing & Advertising,mapped,"Marketing, Media & Creative",Technology & Media,,Fallback only
+Industry Roll Up,Marketing Services,mapped,"Marketing, Media & Creative",Technology & Media,,Fallback only
+Industry Roll Up,Creative and Digital Media,mapped,"Marketing, Media & Creative",Technology & Media,,Fallback only
+Industry Roll Up,"Design, Arts & Entertainment",mapped,"Marketing, Media & Creative",Technology & Media,,Fallback only
+Industry Roll Up,Media & Entertainment,mapped,"Marketing, Media & Creative",Technology & Media,,Fallback only
+Industry Roll Up,"Publishing, Editing & Literature",mapped,"Marketing, Media & Creative",Technology & Media,,Fallback only
+Industry Roll Up,Real Estate Services,mapped,Real Estate,Property & Construction,,Fallback only
+Industry Roll Up,Real Estate,mapped,Real Estate,Property & Construction,,Fallback only
+Industry Roll Up,Construction & Infrastructure,mapped,Construction & Engineering,Property & Construction,,Fallback only
+Industry Roll Up,Specialized Engineering & Technical Services,mapped,Construction & Engineering,Property & Construction,,Fallback only
+Industry Roll Up,Accounting Services,mapped,Accounting,Financial & Professional Services,,Fallback only
+Industry Roll Up,Comprehensive Financial Services,mapped,Financial Services,Financial & Professional Services,,Fallback only
+Industry Roll Up,Financial Services,mapped,Financial Services,Financial & Professional Services,,Fallback only
+Industry Roll Up,Legal & Security Services,mapped,Legal,Financial & Professional Services,,Fallback only
+Industry Roll Up,Legal Services,mapped,Legal,Financial & Professional Services,,Fallback only
+Industry Roll Up,Professional Advisory,mapped,Professional Services,Financial & Professional Services,,Fallback only
+Industry Roll Up,Business Operations & Enterprise Solutions,mapped,Professional Services,Financial & Professional Services,,Fallback only
+Industry Roll Up,Professional Services,mapped,Professional Services,Financial & Professional Services,,Fallback only
+Industry Roll Up,"Research, Development & Innovation",mapped,Professional Services,Financial & Professional Services,,Fallback only
+Industry Roll Up,Human Resources,mapped,Professional Services,Financial & Professional Services,,Fallback only
+Industry Roll Up,Retail & Commerce,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,Retail & Consumer Services,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,Retail & Consumer Goods,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,"Apparel, Fashion & Textiles",mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,Consumer Products & Electronics,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,Wholesale & Distribution,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,"Food, Beverage & Agriculture",mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,Food & Beverage,mapped,Retail & Consumer Goods,"Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,"Hospitality, Travel & Leisure",mapped,"Hospitality, Travel & Leisure","Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,Event Management & Services,mapped,"Hospitality, Travel & Leisure","Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,"Sports, Fitness & Recreation",mapped,"Hospitality, Travel & Leisure","Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,"Arts, Entertainment & Recreation",mapped,"Hospitality, Travel & Leisure","Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,Personal Care Products & Services,mapped,Business & Consumer Services,"Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,Consumer Services,mapped,Business & Consumer Services,"Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,Facilities Management,mapped,Business & Consumer Services,"Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,Social & Civic Organizations,mapped,Non-profit & Public Sector,"Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,Non-Profit Organizations,mapped,Non-profit & Public Sector,"Consumer, Hospitality & Services",,Fallback only
+Industry Roll Up,Health & Welfare Services,mapped,Healthcare & Wellness,Health & Education,,Fallback only
+Industry Roll Up,Healthcare & Medical Services,mapped,Healthcare & Wellness,Health & Education,,Fallback only
+Industry Roll Up,Healthcare Services,mapped,Healthcare & Wellness,Health & Education,,Fallback only
+Industry Roll Up,Health & Wellness Services,mapped,Healthcare & Wellness,Health & Education,,Fallback only
+Industry Roll Up,Pharmaceuticals & Life Sciences,mapped,Healthcare & Wellness,Health & Education,,Fallback only
+Industry Roll Up,Health & Safety Products,mapped,Healthcare & Wellness,Health & Education,,Fallback only
+Industry Roll Up,Education & Knowledge Services,mapped,Education & Training,Health & Education,,Fallback only
+Industry Roll Up,Professional Coaching & Development,mapped,Education & Training,Health & Education,,Fallback only
+Industry Roll Up,Manufacturing & Industrial Products,mapped,Manufacturing & Industrial,"Industrial, Logistics & Energy",,Fallback only
+Industry Roll Up,Manufacturing & Industrial Services,mapped,Manufacturing & Industrial,"Industrial, Logistics & Energy",,Fallback only
+Industry Roll Up,Automotive & Motor Vehicles,mapped,Manufacturing & Industrial,"Industrial, Logistics & Energy",,Fallback only
+Industry Roll Up,Raw Material Extraction & Processing,mapped,Manufacturing & Industrial,"Industrial, Logistics & Energy",,Fallback only
+Industry Roll Up,Transportation & Logistics,mapped,Transport & Logistics,"Industrial, Logistics & Energy",,Fallback only
+Industry Roll Up,Transportation & Logistics Services,mapped,Transport & Logistics,"Industrial, Logistics & Energy",,Fallback only
+Industry Roll Up,Energy & Environmental Services,mapped,Energy & Environment,"Industrial, Logistics & Energy",,Fallback only
+Industry Roll Up,Environmental Services,mapped,Energy & Environment,"Industrial, Logistics & Energy",,Fallback only
+Industry Roll Up,-,placeholder,,,,No information
+Industry Roll Up,CLOUDSTAFF,placeholder,,,,"Cloudstaff's own label, not the client's industry"
+Industry Roll Up,Cloudstaff Test Account,placeholder,,,,"Real clients with a test label; kept, industry unknown"
+Industry Roll Up,No Info Available,placeholder,,,,No information
+Industry Roll Up,Others,placeholder,,,,No information
+Industry Roll Up,Test Record - No Category,placeholder,,,,"Real clients with a test label; kept, industry unknown"

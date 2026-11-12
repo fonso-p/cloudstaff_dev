@@ -11,6 +11,9 @@ dependencies = [
     "openpyxl>=3.1.5",
     "pandas>=3.0.6",
     "scikit-learn>=1.9.1",
+    # news scraper (Marketing Intelligence/news_scraper)
+    "requests>=2.32",
+    "beautifulsoup4>=4.12",
 ]
 
 [project.scripts]
@@ -25,3 +28,16 @@ dev = [
     "ipykernel>=7.4.0",
     "jupyterlab>=4.6.4",
 ]
+# client_growth_project: extra modelling, statistics and Excel automation packages
+client-growth = [
+    "statsmodels",
+    "lightgbm",
+    "xgboost",
+    "shap",
+    "xlwings",
+    "pywin32; sys_platform == 'win32'",
+]
+
+[tool.uv]
+# A plain `uv sync` installs every group, so no project's packages get removed
+default-groups = ["dev", "client-growth"]
