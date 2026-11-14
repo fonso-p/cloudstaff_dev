@@ -13,16 +13,10 @@ import config
 from mi_pipeline import mappings
 from mi_pipeline.step1_format import clean_text
 
-REASON_FLAGS = ["voluntary_exit", "involuntary_exit", *config.TYPE_FLAGS.values()]
-KNOWN_FLAGS  = ["vol_inv_known", "type_reason_known"]
-
-
 # ================================================================ timeline
 def build_timeline(engagement, today, log=print):
-    """Returns src (hires that have started), ends (exits with reason flags), timeline."""
+    """Returns src (hires that have started) and timeline (seats per account on every date that changes them)."""
     eng = engagement.copy()
-    missing = [c for c in ["Employment Status", config.VOL_COL, config.TYPE_COL] if c not in eng.columns]
-    assert not missing, f"Missing columns: {missing}"
 
     # Who is still active? (blank, today/future-dated, or the extract's fill date)
     fill_ts = pd.Timestamp(config.ACTIVE_FILL_DATE) if config.ACTIVE_FILL_DATE else today
@@ -39,45 +33,23 @@ def build_timeline(engagement, today, log=print):
             "date. If it is the extract's 'still active' fill date, set config.ACTIVE_FILL_DATE.")
 
     # +1 per start, -1 per exit (still-active hires skipped)
-    starts = src[["Shortcode", "engagement_date"]].rename(columns={"engagement_date": "date"}).copy()
-    starts["Employment Status"] = "Start Employment"
-    starts["delta"] = 1
-    starts["is_attrition"] = 0
-    starts["is_exit"] = 0
-    starts = starts.assign(**{c: 0 for c in REASON_FLAGS + KNOWN_FLAGS})
-
-    ended = src[~src["is_active"]]
-    ends = (ended[["Shortcode", "disengagement_date", "Employment Status", config.VOL_COL, config.TYPE_COL]]
-            .rename(columns={"disengagement_date": "date"}).copy())
-    ends["delta"] = -1
-    ends["is_attrition"] = ends["Employment Status"].isin(config.EXIT_STATUSES).astype(int)
-    ends["is_exit"] = 1
-    vol = ends[config.VOL_COL].astype("string").str.strip().str.lower()
-    typ = ends[config.TYPE_COL].astype("string").str.strip().str.lower()
-    ends["voluntary_exit"]   = vol.eq("voluntary").fillna(False).astype(int)
-    ends["involuntary_exit"] = vol.eq("involuntary").fillna(False).astype(int)
-    for raw, col in config.TYPE_FLAGS.items():
-        ends[col] = typ.eq(raw.lower()).fillna(False).astype(int)
-    ends["vol_inv_known"]     = ends[["voluntary_exit", "involuntary_exit"]].max(axis=1)
-    ends["type_reason_known"] = ends[list(config.TYPE_FLAGS.values())].max(axis=1)
-
-    events = pd.concat([starts, ends.drop(columns=[config.VOL_COL, config.TYPE_COL])], ignore_index=True)
-    timeline = (events.groupby(["Shortcode", "date"], as_index=False)
-                      .agg(delta=("delta", "sum"),
-                           is_attrition=("is_attrition", "max"),
-                           is_exit=("is_exit", "max"),
-                           **{c: (c, "sum") for c in REASON_FLAGS + KNOWN_FLAGS})
-                      .sort_values(["Shortcode", "date"]).reset_index(drop=True))
+    starts = src[["Shortcode", "engagement_date"]].rename(columns={"engagement_date": "date"}).assign(delta=1)
+    ends = (src.loc[~src["is_active"], ["Shortcode", "disengagement_date"]]
+               .rename(columns={"disengagement_date": "date"}).assign(delta=-1))
+    timeline = (pd.concat([starts, ends], ignore_index=True)
+                  .groupby(["Shortcode", "date"], as_index=False)["delta"].sum()
+                  .sort_values(["Shortcode", "date"]).reset_index(drop=True))
     timeline["active_staff"] = timeline.groupby("Shortcode")["delta"].cumsum()
     timeline = timeline.drop(columns="delta")
     log(f"[3 features] hires {len(src)} | exits {len(ends)} | active {int(is_active.sum())} | "
         f"timeline rows {len(timeline)} for {timeline['Shortcode'].nunique()} accounts")
-    return src, ends, timeline
+    return src, timeline
 
 
 # ================================================================ summary
-def _first_held_date(timeline, n, hold, today):
-    """First day of the first run at n+ seats that lasted `hold` days (a run still going counts once it has)."""
+def held_run_starts(timeline, n, hold, today):
+    """Start day of every run at n+ seats that lasted at least `hold` days (a run still going counts once it has).
+    Brief spikes, e.g. a replacement overlapping a leaver, don't count. Returns Shortcode, start."""
     sc = timeline["Shortcode"]
     above = timeline["active_staff"] >= n
     prev_above = above.groupby(sc).shift(fill_value=False).astype(bool)
@@ -85,19 +57,21 @@ def _first_held_date(timeline, n, hold, today):
     run_end = timeline["date"].where(~above & prev_above).groupby(sc).bfill()
     runs = pd.DataFrame({"Shortcode": sc[run_start], "start": timeline.loc[run_start, "date"],
                          "end": run_end[run_start].fillna(today)})
-    runs = runs[(runs["end"] - runs["start"]).dt.days >= hold]
-    return runs.groupby("Shortcode")["start"].min()
+    return runs.loc[(runs["end"] - runs["start"]).dt.days >= hold, ["Shortcode", "start"]].reset_index(drop=True)
 
-def build_summary(timeline, src, ends, mystaff, today, log=print):
-    """One row per account. Returns summary and spells (zero-headcount gaps)."""
+def _first_held_date(timeline, n, hold, today):
+    """First day of the first run at n+ seats that lasted `hold` days (a run still going counts once it has)."""
+    return held_run_starts(timeline, n, hold, today).groupby("Shortcode")["start"].min()
+
+def build_summary(timeline, src, mystaff, today, log=print):
+    """One row per account: dates, whether still a client, current seats, held seat milestones, launch size, and
+    industry / region from MyStaff. Returns summary and spells (zero-headcount gaps)."""
     summary = (timeline.groupby("Shortcode")
-                       .agg(start_date=("date", "first"), employee_count_at_start=("active_staff", "first"),
-                            last_date=("date", "last"), current_headcount=("active_staff", "last"))
+                       .agg(start_date=("date", "first"), last_date=("date", "last"), current_headcount=("active_staff", "last"))
                        .reset_index())
-    summary["start_cohort"]  = summary["start_date"].dt.to_period("Q")
     summary["days_observed"] = (today - summary["start_date"]).dt.days
 
-    # --- Zero-headcount spells: churn (> grace days) vs backfill gap ---
+    # --- Zero-headcount spells: churn (> grace days) vs backfill gap. A short gap still running = still a client ---
     tl = timeline[["Shortcode", "date", "active_staff"]].copy()
     prev = tl.groupby("Shortcode")["active_staff"].shift()
     pos = tl["active_staff"].gt(0).astype(int)
@@ -109,96 +83,23 @@ def build_summary(timeline, src, ends, mystaff, today, log=print):
     spells["ongoing"]  = spells["next_return"].isna()
     spells["gap_days"] = (spells["next_return"].fillna(today) - spells["zero_start"]).dt.days
     spells["is_churn"] = spells["gap_days"] > config.CHURN_GRACE_DAYS
-    by_sc = spells["Shortcode"]
-
-    summary["first_zero_date"]     = pd.to_datetime(summary["Shortcode"].map(spells.groupby("Shortcode")["zero_start"].min().to_dict()))
-    summary["days_to_first_zero"]  = (summary["first_zero_date"] - summary["start_date"]).dt.days
-    summary["first_churn_date"]    = pd.to_datetime(summary["Shortcode"].map(
-        spells[spells["is_churn"]].groupby("Shortcode")["zero_start"].min().to_dict()))
-    summary["days_to_first_churn"] = (summary["first_churn_date"] - summary["start_date"]).dt.days
-    summary["n_backfill_gaps"] = summary["Shortcode"].map((~spells["is_churn"] & ~spells["ongoing"]).groupby(by_sc).sum()).fillna(0).astype(int)
-    summary["n_reactivations"] = summary["Shortcode"].map((spells["is_churn"] & ~spells["ongoing"]).groupby(by_sc).sum()).fillna(0).astype(int)
-    summary["reactivated"]     = summary["n_reactivations"].gt(0)
-    summary["churn_pending"]   = summary["Shortcode"].isin(spells.loc[spells["ongoing"] & ~spells["is_churn"], "Shortcode"]).astype(int)
-    summary["engagement_active"] = (summary["current_headcount"].gt(0) | summary["churn_pending"].eq(1)).astype(int)
+    churn_pending = summary["Shortcode"].isin(spells.loc[spells["ongoing"] & ~spells["is_churn"], "Shortcode"])
+    summary["engagement_active"] = (summary["current_headcount"].gt(0) | churn_pending).astype(int)
     summary["end_date"] = summary["last_date"].where(summary["engagement_active"] == 0, pd.NaT)
-    summary["engagement_timespan_days"] = (summary["end_date"] - summary["start_date"]).dt.days.astype("Int64")
 
-    # --- Peak and held milestones ---
-    peak_idx = timeline.groupby("Shortcode")["active_staff"].idxmax()
-    peak = (timeline.loc[peak_idx, ["Shortcode", "date", "active_staff"]]
-                    .rename(columns={"date": "peak_date", "active_staff": "peak_headcount"}))
-    summary = summary.merge(peak, on="Shortcode", how="left")
-    summary["days_to_peak"] = (summary["peak_date"] - summary["start_date"]).dt.days
+    # --- Held seat milestones ---
     for n in config.HEADCOUNT_MILESTONES:
         held = _first_held_date(timeline, n, config.MILESTONE_HOLD_DAYS, today)
         summary[f"days_till_{n}_headcount"] = (
             (pd.to_datetime(summary["Shortcode"].map(held.to_dict())) - summary["start_date"]).dt.days.astype("Int64"))
+    summary["total_hires"] = summary["Shortcode"].map(src.groupby("Shortcode").size())
 
-    # --- Attrition volume and exit reasons ---
-    summary["total_hires"]     = summary["Shortcode"].map(src.groupby("Shortcode").size())
-    summary["total_exits"]     = summary["Shortcode"].map(ends.groupby("Shortcode").size()).fillna(0).astype(int)
-    summary["attrition_exits"] = summary["Shortcode"].map(ends.groupby("Shortcode")["is_attrition"].sum()).fillna(0).astype(int)
-    summary["attrition_rate"]  = (summary["attrition_exits"] / summary["total_hires"]).round(3)
-    by_type = (ends[ends["is_attrition"] == 1]
-               .pivot_table(index="Shortcode", columns="Employment Status", values="date", aggfunc="count", fill_value=0)
-               .reindex(columns=config.EXIT_STATUSES, fill_value=0).add_prefix("exits_").reset_index())
-    summary = summary.merge(by_type, on="Shortcode", how="left")
-    type_cols = [f"exits_{s}" for s in config.EXIT_STATUSES]
-    summary[type_cols] = summary[type_cols].fillna(0).astype(int)
-
-    reason_counts = ends.groupby("Shortcode")[REASON_FLAGS + KNOWN_FLAGS].sum()
-    reason_cols = []
-    for c in REASON_FLAGS + KNOWN_FLAGS:
-        summary[f"n_{c}"] = summary["Shortcode"].map(reason_counts[c]).fillna(0).astype(int)
-        reason_cols.append(f"n_{c}")
-    summary["pct_voluntary_of_known"] = (summary["n_voluntary_exit"] / summary["n_vol_inv_known"].replace(0, np.nan)).round(3)
-    summary["pct_customer_initiated_of_known"] = (
-        summary["n_customer_initiated_exit"] / summary["n_type_reason_known"].replace(0, np.nan)).round(3)
-    reason_cols += ["pct_voluntary_of_known", "pct_customer_initiated_of_known"]
-
-    # --- Attrition / disengagement timing and windowed exit reasons ---
-    t = timeline.merge(summary[["Shortcode", "start_date"]], on="Shortcode")
-    t["days_since_start"] = (t["date"] - t["start_date"]).dt.days
-    attr, exit_ev = t[t["is_attrition"] > 0], t[t["is_exit"] > 0]
-    summary["days_to_first_attrition"]     = summary["Shortcode"].map(attr.groupby("Shortcode")["days_since_start"].min()).astype("Int64")
-    summary["days_to_first_disengagement"] = summary["Shortcode"].map(exit_ev.groupby("Shortcode")["days_since_start"].min()).astype("Int64")
-    window_cols = []
-    for d in config.ATTR_WINDOWS:
-        summary[f"eligible_{d}d"] = (summary["days_observed"] >= d).astype(int)
-        summary[f"attrition_within_{d}d"]   = summary["Shortcode"].isin(attr.loc[attr["days_since_start"] <= d, "Shortcode"].unique()).astype(int)
-        summary[f"disengaged_within_{d}d"]  = summary["Shortcode"].isin(exit_ev.loc[exit_ev["days_since_start"] <= d, "Shortcode"].unique()).astype(int)
-        counts = t.loc[t["days_since_start"] <= d].groupby("Shortcode")[REASON_FLAGS + KNOWN_FLAGS].sum()
-        for c in REASON_FLAGS + KNOWN_FLAGS:
-            summary[f"n_{c}_{d}d"] = (summary["Shortcode"].map(counts[c]).fillna(0)
-                                      .where(summary[f"eligible_{d}d"] == 1)).astype("float")
-            window_cols.append(f"n_{c}_{d}d")
-        summary[f"pct_voluntary_of_known_{d}d"] = (
-            summary[f"n_voluntary_exit_{d}d"] / summary[f"n_vol_inv_known_{d}d"].replace(0, np.nan)).round(3)
-        summary[f"pct_customer_initiated_of_known_{d}d"] = (
-            summary[f"n_customer_initiated_exit_{d}d"] / summary[f"n_type_reason_known_{d}d"].replace(0, np.nan)).round(3)
-        window_cols += [f"pct_voluntary_of_known_{d}d", f"pct_customer_initiated_of_known_{d}d"]
-
-    summary = summary[[
-        "Shortcode", "start_cohort", "start_date", "end_date", "engagement_active", "engagement_timespan_days",
-        "days_observed", "churn_pending", "first_churn_date", "days_to_first_churn", "reactivated", "n_reactivations",
-        "n_backfill_gaps", "first_zero_date", "days_to_first_zero", "employee_count_at_start", "current_headcount",
-        "peak_headcount", "peak_date", "days_to_peak", *[f"days_till_{n}_headcount" for n in config.HEADCOUNT_MILESTONES],
-        "total_hires", "total_exits", "attrition_exits", "attrition_rate", *type_cols, *reason_cols, *window_cols,
-        "days_to_first_attrition", "days_to_first_disengagement",
-        *[c for d in config.ATTR_WINDOWS for c in (f"eligible_{d}d", f"attrition_within_{d}d", f"disengaged_within_{d}d")]]]
-
-    # --- Region / industry from MyStaff ---
-    ms = mystaff[["Shortcode", "Region", "Industry Roll Up", "Industry Hubspot", "Custom_Division (Hubspot)",
-                  "industry_group", "industry_sector", "industry_source", "region", "country"]]
+    # --- Industry / region from MyStaff ---
+    ms = mystaff[["Shortcode", "Industry Roll Up", "Industry Hubspot", "industry_group", "industry_sector",
+                  "industry_source", "region", "country"]]
     assert summary["Shortcode"].dtype == ms["Shortcode"].dtype, "Shortcode types differ for the MyStaff join"
     assert ms["Shortcode"].is_unique, "duplicate Shortcodes in MyStaff"
-    summary = summary.merge(ms, on="Shortcode", how="left")
-    move = ["Region", "Industry Roll Up", "Industry Hubspot"]
-    summary = summary[["Shortcode"] + move + [c for c in summary.columns if c not in ["Shortcode"] + move]].copy()
-    summary["start_year"] = summary["start_date"].dt.year
-    summary["start_size_bucket"] = pd.cut(summary["employee_count_at_start"], bins=[0, 2, 5, float("inf")],
-                                          labels=["1 to 2", "3 to 5", "6+"])
+    summary = summary.drop(columns="last_date").merge(ms, on="Shortcode", how="left")
 
     # --- Launch size: seats on day LAUNCH_DAYS (staggered onboarding in the first month = one launch) ---
     L = config.LAUNCH_DAYS
@@ -211,17 +112,11 @@ def build_summary(timeline, src, ends, mystaff, today, log=print):
     summary["launch_size"] = (summary["Shortcode"].map(seats_l).astype("float")
                               .where(summary["days_observed"] >= L))
 
-    # --- Checks ---
-    assert summary["n_voluntary_exit"].sum() + summary["n_involuntary_exit"].sum() == summary["n_vol_inv_known"].sum()
-    assert (summary["n_vol_inv_known"] <= summary["total_exits"]).all()
-    assert summary.loc[summary["reactivated"], "first_churn_date"].notna().all()
     log(f"[3 features] summary: {len(summary)} accounts | active {int(summary['engagement_active'].sum())} | "
         f"churn gaps {int(spells['is_churn'].sum())}, backfill gaps {int((~spells['is_churn'] & ~spells['ongoing']).sum())} | "
         f"reached 5 seats (held): {int(summary['days_till_5_headcount'].notna().sum())}")
     return summary, spells
 
-
-# ================================================================ client accounts and department history
 def client_accounts(summary, src, today, log=print):
     """Removes never-client accounts and internal teams (mostly 'Hub' staff). Returns clients, excluded list."""
     hub_share = (src["Category"].astype("string").str.strip().eq("Hub").fillna(False)
@@ -372,11 +267,11 @@ def snapshot_features(snaps, timeline, src, dept_entered, accounts, cat_cols):
 
 def run(merged, today, log=print):
     engagement, mystaff = merged["engagement"], merged["mystaff"]
-    src, ends, timeline = build_timeline(engagement, today, log)
-    summary, spells = build_summary(timeline, src, ends, mystaff, today, log)
+    src, timeline = build_timeline(engagement, today, log)
+    summary, spells = build_summary(timeline, src, mystaff, today, log)
     clients, excluded_accounts = client_accounts(summary, src, today, log)
     branch, dept_entered = build_branching(src, clients)
     accounts, top_starts, fit_map = propensity_accounts(branch, summary, mystaff, log)
-    return dict(src=src, ends=ends, timeline=timeline, summary=summary, spells=spells, clients=clients,
+    return dict(src=src, timeline=timeline, summary=summary, spells=spells, clients=clients,
                 excluded_accounts=excluded_accounts, branch=branch, dept_entered=dept_entered,
                 accounts=accounts, top_starts=top_starts, industry_fit_map=fit_map, mystaff=mystaff)

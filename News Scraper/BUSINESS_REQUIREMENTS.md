@@ -4,7 +4,7 @@
 
 ## 1. Purpose
 
-The scraper finds recent news about a list of companies and turns it into the news input for the Account Priority Score: one `news_signal` (the type of news) and one `news_signal_date` per company. Reps use these to spot accounts with buying triggers such as funding, expansion or leadership change.
+The scraper finds recent news about a list of companies (company mode) and turns it into the news input for the Account Priority Score: one `news_signal` (the type of news) and one `news_signal_date` per company. Reps use these to spot accounts with buying triggers such as funding, expansion or leadership change.
 
 ## 2. What it does
 
@@ -24,7 +24,7 @@ The scraper finds recent news about a list of companies and turns it into the ne
 
 ## 3. Boundaries
 
-- **Inputs:** a company CSV and the read-only `reference materials/data/scoring_settings.json`. It changes nothing else.
+- **Inputs:** a company CSV and the read-only `Marketing Intelligence/reference materials/data/scoring_settings.json`. It changes nothing else.
 - **Outputs:** CSV files in `out/` and a local SQLite database in `data/news.db`. No other system is updated.
 - **Runs:** on one machine, started manually or by Windows Task Scheduler.
 - **Network:** only public news pages and feeds, at about 1 request a second per source. It respects `robots.txt` when reading articles.
@@ -63,3 +63,35 @@ The scraper finds recent news about a list of companies and turns it into the ne
 - **Classification:** at least 80% of articles classified as a specific event are the right category.
 - **Coverage:** at least 70% of target companies have a successful check every day.
 - **Reliability:** the daily run for 1,000 companies finishes overnight without manual help.
+
+## 7. Segment mode: news about an industry sector in a country (added November 2026)
+
+**Purpose:** follow what is happening in an industry in a country, e.g. Healthcare & Wellness × AU, rather than at one company. One scrape serves three uses:
+1. A **market trend digest** for marketing and sales.
+2. A real **`industry_trend`** for the Priority Score, replacing the mock values (BUSINESS_RULES gap A8).
+3. **Prospect discovery:** companies named in the sector news.
+
+| # | Capability | Detail |
+|---|---|---|
+| S1 | **Takes segments** | Industry group × country, from a CSV or `--groups` × `--countries`. The groups are the repo's 18 industry groups (`references/mystaff_industry`). Countries: AU, NZ, UK, US, CA, PH, SG, IE. |
+| S2 | **Searches by theme** | Nine themes in Cloudstaff's terms: offshoring/outsourcing, labour shortage, cost pressure, growth/investment, consolidation/M&A, regulation/compliance, restructuring/layoffs, AI/automation, downturn. Each search is sector words + theme words + region words, on the country's Google News edition, plus Bing. GDELT is opt-in. Queries are kept under Google's ~32-word limit. |
+| S3 | **Decides if an article counts** | The sector must be named in the headline (or twice in the text, if read). The country must be confirmed by a place word, the publisher's domain or a known national outlet. The headline must not be about another country. Everything else goes to a review file with the reason. |
+| S4 | **Recognises the theme** | Keyword rules on the headline (and the text, if read). If the theme isn't visible, the article is "Other sector news" (weight 0). |
+| S5 | **Scores a tailwind** | Each theme has a weight (−0.3 to +1.0, editable). `industry_trend` = 0.5 + 0.5 × recency-weighted average weight, pulled towards 0.5 when there are few articles. 0.5 is neutral (modifier 1.0). Given per group × country and per group overall. |
+| S6 | **Names companies** | Organisation names are taken from the shape of counted headlines and checked against the accounts list (existing account or not). The output can be fed into company mode. |
+| S7 | **Writes CSV outputs** | `segment_summary.csv`, `industry_trend.csv`, `segment_events.csv`, `segment_review.csv`, `segment_companies.csv`. |
+| S8 | **Records every check** | One coverage row per segment × source × theme × query, as in company mode. |
+
+**Boundaries:** the same as company mode (§3). It reads the accounts list (`Marketing Intelligence/reference materials/data/accounts.csv`) read-only and writes only to `out/` and `data/news.db`. Feeding `industry_trend` into the Priority Score notebook is a manual step.
+
+**Known limitations:**
+- About half the counted articles have no visible theme (no summary from Google). `--read-articles` helps.
+- Keyword themes can't read tone ("not expecting job cuts" counts as Restructuring).
+- Company names are candidates, not facts.
+- US publishers can't be placed by domain.
+- A full run (18 groups × 5 countries) takes about 1 hour because of the rate limits, so run it weekly.
+
+**Success measures (to be agreed):**
+- On a hand-labelled sample of 100 counted articles, at least 85% are about the right sector and country.
+- At least 80% of themed articles have the right theme.
+- At least 60% of named companies are real organisations.

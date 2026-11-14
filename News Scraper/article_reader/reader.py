@@ -1,6 +1,6 @@
 """read_article(url) -> ReadResult. Never raises: every failure comes back as a status, so a caller can record it."""
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 
 from . import google_news
 from .extract import extract
@@ -23,6 +23,7 @@ class ReadResult:
     chars: int = 0
     seconds: float = 0.0
     error: str = ""
+    location: dict = field(default_factory=dict)   # locale, content_location, publisher_country (see extract.location)
 
     def to_dict(self):
         return asdict(self)
@@ -40,7 +41,9 @@ def read_article(url, interval=1.0, respect_robots=True):
             raise ReadError("not_html", r.headers.get("content-type", ""))
         r.encoding = r.encoding if r.encoding and r.encoding.lower() != "iso-8859-1" else r.apparent_encoding
         x = extract(r.text)
-        res.title, res.published, res.author, res.method = x["title"], str(x["published"] or ""), x["author"] or "", x["method"]
+        text_of = lambda v: v if isinstance(v, str) else ", ".join(map(str, v)) if isinstance(v, list) else str(v or "")   # JSON-LD can give lists
+        res.title, res.published, res.author, res.method = text_of(x["title"]), text_of(x["published"]), text_of(x["author"]), x["method"]
+        res.location = x.get("location") or {}
         res.text = (x["text"] or "")[:MAX_CHARS]
         res.chars = len(res.text)
         res.status = "ok" if res.chars >= MIN_CHARS else "too_short"

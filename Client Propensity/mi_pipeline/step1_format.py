@@ -1,5 +1,6 @@
 """Step 1: load the raw files and clean them (types, blanks, IDs, dates). No joins here."""
 import pickle
+from pathlib import Path
 
 import pandas as pd
 
@@ -55,16 +56,6 @@ def format_engagement(raw, today):
     df["disengagement_date"] = clean_date(df["Disengagement Date"], fill=today)
     return df
 
-def format_seat_churn(raw, today):
-    """Exit reasons per placement. Columns get a _seat_churn suffix so the join can't clash."""
-    df = raw.copy().add_suffix("_seat_churn")
-    df["Shortcode_seat_churn"]          = clean_id(df["Shortcode_seat_churn"])
-    df["Engagement ID_seat_churn"]      = clean_id(df["Engagement ID_seat_churn"])
-    df["Username_seat_churn"]           = clean_text(df["Username_seat_churn"])
-    df["engagement_date_seat_churn"]    = clean_date(df["Engagement Date_seat_churn"])
-    df["disengagement_date_seat_churn"] = clean_date(df["Disengagement Date_seat_churn"], fill=today)
-    return df.drop_duplicates()   # after cleaning, so 123 vs " 123 " collapse too
-
 def format_mystaff(raw):
     """One row per client account. The sheet has ~1M blank rows; they are dropped."""
     df = raw.copy()
@@ -80,6 +71,7 @@ def format_staffcentral(raw):
     df["Engagement ID"] = clean_id(df["Engagement ID"])
     df["department"]    = clean_text(df["Department (All)"])
     df["jp_category"]   = clean_text(df["JP Category (All)"])
+    df["jp_title"]      = clean_text(df["JP Title (All)"])
     df["designation"]   = clean_text(df["Designation (All)"])
     df["_eng_date"]     = clean_date(df["Engagement Date"])          # '0000-00-00' -> NaT
     df["_engaged"]      = clean_text(df["Engagement Status (All)"]).str.lower().eq("engage").fillna(False).astype(bool)
@@ -91,15 +83,33 @@ def format_staffcentral(raw):
     return df, n_dupe_rows
 
 
+def load_dashboard_seats(log=print):
+    """Current seats per client from the dashboard's processed data: cs_staff_current (MyStaff Total Staff) on the
+    priority_list sheet of the newest config.DASHBOARD_DATA_GLOB file. Returns (Series shortcode -> seats, file name),
+    or (None, None) when CURRENT_SEATS_SOURCE isn't "dashboard" or no file is found."""
+    if config.CURRENT_SEATS_SOURCE != "dashboard" or config.DASHBOARD_FEED_DIR is None:
+        return None, None
+    files = sorted(Path(config.DASHBOARD_FEED_DIR).glob(config.DASHBOARD_DATA_GLOB), key=lambda p: p.stat().st_mtime)
+    if not files:
+        log(f"[1 format] WARNING: no {config.DASHBOARD_DATA_GLOB} in {config.DASHBOARD_FEED_DIR}; current seats come from the engagement list")
+        return None, None
+    df = pd.read_excel(files[-1], sheet_name="priority_list", usecols=["shortcode", "cs_staff_current"], dtype={"shortcode": str})
+    df["shortcode"] = clean_id(df["shortcode"])
+    df = df.dropna(subset=["shortcode"]).drop_duplicates("shortcode")
+    seats = pd.to_numeric(df["cs_staff_current"], errors="coerce").set_axis(df["shortcode"].astype(str)).dropna()
+    return seats, files[-1].name
+
 def run(today, log=print):
     raw = {name: load_raw(name) for name in config.RAW_FILES}
     staff, n_dupe = format_staffcentral(raw["staffcentral"])
     out = {
         "engagement": format_engagement(raw["engagement"], today),
-        "seat_churn": format_seat_churn(raw["seat_churn"], today),
         "mystaff":    format_mystaff(raw["mystaff"]),
         "staff":      staff,
     }
-    log(f"[1 format] engagement rows {len(out['engagement'])} | seat churn rows {len(out['seat_churn'])} | "
-        f"MyStaff accounts {len(out['mystaff'])} | StaffCentral staffers {len(staff)} ({n_dupe} duplicate CSID rows dropped)")
+    out["current_seats"], out["current_seats_file"] = load_dashboard_seats(log)
+    log(f"[1 format] engagement rows {len(out['engagement'])} | "
+        f"MyStaff accounts {len(out['mystaff'])} | StaffCentral staffers {len(staff)} ({n_dupe} duplicate CSID rows dropped) | "
+        + (f"current seats: {len(out['current_seats'])} clients from {out['current_seats_file']}" if out["current_seats"] is not None
+           else "current seats: engagement list"))
     return out

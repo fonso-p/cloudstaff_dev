@@ -24,10 +24,12 @@ def run_all(log=print, write_excel=False, write_extract=False):
     feat      = step3_features.run(merged, today, log)
     res = {"today": today, "formatted": formatted, "merged": merged, "features": feat,
            "branching":  step4_branching.run(feat, log),
-           "propensity": step4_propensity.run(feat, today, log)}
+           "propensity": step4_propensity.run(feat, today, log, current_seats=formatted["current_seats"])}
     if write_excel:
         res["workbook"] = step5_output.write_workbook(res)
         log(f"[5 output] workbook written: {res['workbook']}")
+        res["department_reference"] = step5_output.write_department_reference(res)
+        log(f"[5 output] department groupings written: {res['department_reference']}")
     if write_extract:
         res["extract"], res["extract_sheets"] = step5_extract.write_extract(res)
         log(f"[5b extract] dashboard extract written: {res['extract']} (+ CSVs)")

@@ -1,6 +1,6 @@
 # Priority Score pipeline: technical guide
 
-**Pipeline version:** 0.3 (prototype) · **Code:** [`format_priority_data.ipynb`](format_priority_data.ipynb) (part 1) and
+**Pipeline version:** 0.4 (prototype) · **Code:** [`format_priority_data.ipynb`](format_priority_data.ipynb) (part 1) and
 [`../build_dashboard/`](../build_dashboard/README.md) (part 2)
 
 This guide explains how the code is built and how to run it. **What the pipeline decides, and why** (mappings, thresholds,
@@ -76,9 +76,10 @@ Optional page check (each page should print `errors: []`):
 | `RUN_END_TO_END` | `False` | Run `run_pipeline()` in the last cell |
 | `SOURCE_MODE` | `"excel"` | Where the raw data comes from (see §8) |
 | `ENRICHMENT_MODE` | `"mock"` | `"mock"` = synthetic signals; `"live"` = not built yet, raises an error |
-| `SCORING_PROFILE` | `"dashboard_v2"` | Which scoring settings are live: `"dashboard_v2"` (review of 2026-11-10), `"dashboard"` (live until v0.2) or `"workbook"` (`"dashboard_reference"` exists only for golden test 2) |
+| `SCORING_PROFILE` | `"dashboard_v3"` | Which scoring settings are live: `"dashboard_v3"` (`dashboard_v2` plus Fit points, 2026-11-13), `"dashboard_v2"` (review of 2026-11-10, live in v0.3), `"dashboard"` (live until v0.2) or `"workbook"` (`"dashboard_reference"` exists only for golden test 2) |
 | `ROUTING_MODE` | `"random"` | How teams are assigned: `"random"` (seeded draw, mock) or `"rules"` (deterministic) |
-| `MOCK_SEED` | `42` | Seed for the mock signals |
+| `MOCK_SEED` | `42` | Seed for the mock signals (and the mock propensity values) |
+| `PROPENSITY_MODE` | `"real"` | Fit scores from the Client Propensity extract: `"real"`, `"mock"` (synthetic) or `"off"` (§11.1b) |
 | `SCORING_AS_OF` | run date | Date news recency is measured from |
 
 ## 4. Stages and functions
@@ -95,6 +96,7 @@ so stages can be rerun or tested one at a time.
 | 5 | Conform | `conform_to_output()` | merged | output layout (`OUTPUT_COLS`), placeholders for signals and scoring |
 | 6 | DQ: merge | `run_dq_checks()`, `assert_dq()` | output + staging | check table; stops on a failed `error` |
 | 7 | Signals | `add_signals()` | output | + mock signals and `industry_trend` (`seats_added_6m` already real) |
+| 7b | Propensity | `add_propensity()` (`extract_propensity()` for real, `generate_mock_propensity()` for mock), `run_propensity_checks()` | output | + the `5_propensity` columns, and `(out, info)`: `info` feeds the dashboard meta and `run_info` |
 | 8 | Score | `score()` → `score_accounts()` (`known_mean_fill()` for unknowns, `percentile_tier()` for tiers) → `score_account()` (`_signals()`, `act_now_bonus()`) | output, settings profile | + points, score, tier, Act now triggers and bonus |
 | 9 | Route | `route()` → `route_account()` → `trigger_team()` if there is an Act now trigger, else `route_account_random()` or `route_account_rules()` | scored output | + `assigned_team`, `rank_in_team_list` |
 | 10 | DQ: scoring | `run_scoring_checks()` | output | check table; stops on a failed `error` |
@@ -122,14 +124,15 @@ there and update BUSINESS_RULES.md.
 | `MATCH_RANK`, `AMBIGUOUS` | Match priority and the ambiguous label | 9 |
 | `GOALS` | Goal labels | 10 |
 | `ENRICHMENT_MODE`, `MOCK_SEED`, `INDUSTRY_TREND`, `NEWS_STRENGTH`, `NEWS_UNMAPPED`, `RECENCY` | Signals and their lookups | 11.1 |
-| `SCORING_PROFILES` (`SCORING_WORKBOOK`, `SCORING_DASHBOARD_REFERENCE`, `SCORING_DASHBOARD`, `SCORING_DASHBOARD_V2`), `SCORING_PROFILE` | Scoring settings | 11.2 |
+| `SCORING_PROFILES` (`SCORING_WORKBOOK`, `SCORING_DASHBOARD_REFERENCE`, `SCORING_DASHBOARD`, `SCORING_DASHBOARD_V2`, `SCORING_DASHBOARD_V3`), `SCORING_PROFILE` | Scoring settings | 11.2 |
+| `FIT` (band values, part weights per goal, `chip_band`) and, in `SCORING_DASHBOARD_V3`, `max_points[...]["fit"]` (New Logo 20, Organic Growth 25) and `baseline["fit"]`. A profile without `fit` scores no fit. Code: `_fit_signal()` (stage 8), `fit_chips()` (stage 11) | Fit points and fit chips | 11.2b |
 | In `SCORING_DASHBOARD_V2`: `unknown_fill` (`"known_mean"`), `act_now_bonus.stack_decay` (0.5), `tier` (`method: "percentile"`, `tier1_share` 0.10, `tier2_share` 0.30), `hot_first` (`False`). A profile without these keys keeps the old behaviour (flat `baseline`, first trigger only, fixed-score tiers, +1000 sort) | Unknown values, bonus stacking, tiers, list order | 11.2 |
 | `TRIGGER_FAMILY` | Trigger → family (Website, News, Hiring, Referral): one bonus per family when bonuses stack | 11.2 |
 | `ACT_NOW_TARGET_SHARE` (0.10) | DQ warning when more of a goal's accounts have an Act now trigger | 13 |
 | `_HOT` (workbook / reference triggers), `_HOT_LIVE` (turns on `team_builder_prospect`, `hiring_spike` with `hiring_min_postings` 18, `heavy_visits_min` 10, and `campaign_news` restructuring / leadership change with `campaign_news_days` 60), `_HOT_V2` (the live triggers: `heavy_visits_min` 20, `campaign_news_days` 30), `act_now_bonus` in each profile | Act now triggers and their bonus | 11.2 |
 | `_TIER`, `_MODIFIER` | Fixed-score tier thresholds (older profiles); industry multiplier range | 11.2 |
 | `REF_BANDS`, `REF_REGIONS` | Allowed employee bands; reference region list (used by the DQ checks) | 7, 8, 13 |
-| `TRIGGER_TEAM`, `ROUTING_MODE`, `ROUTING_PROBABILITIES`, `TEAM_GOALS`, `BDM_MIN_SCORE`, `route_account_rules()` | Routing: trigger → team, then the draw or rules | 11.3 |
+| `TRIGGER_TEAM`, `ROUTING_MODE`, `ROUTING_PROBABILITIES`, `TEAM_GOALS`, `BDM_TOP_SHARE` (top 10% of a goal's accounts without a trigger = BDM candidates; `bdm_candidates()`, `bdm_cutoffs()`), `route_account_rules()`. `BDM_MIN_SCORE` (60) is used only by the workbook golden test | Routing: trigger → team, then the draw or rules | 11.3 |
 | `DASH_ROLES`, `DASH_LISTS`, `CHIP_STRONG`, `CHIP_MODERATE`, `GROWING_INDUSTRY`, `MOCK_CHIP_TAG` | Dashboard lists and Why chips | 11.4 |
 | `GOLDEN_PATH`, `DASHBOARD_GOLDEN_PATH`, `GOLDEN_AS_OF`, `GOLDEN_INDUSTRY_TREND` | Golden tests | – |
 

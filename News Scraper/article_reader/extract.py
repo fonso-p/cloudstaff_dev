@@ -51,11 +51,49 @@ def _meta(soup, *names):
     return ""
 
 
+def _names(v):
+    """Place names from a JSON-LD value: 'Sydney', {'name': ...}, {'address': {'addressCountry': 'AU'}}, or a list of these."""
+    out = []
+    for x in (v if isinstance(v, list) else [v]):
+        if isinstance(x, str):
+            out.append(x)
+        elif isinstance(x, dict):
+            for k in ("name", "addressLocality", "addressRegion", "addressCountry"):
+                y = x.get(k)
+                out += [y] if isinstance(y, str) else _names(y) if isinstance(y, (dict, list)) else []
+            if x.get("address"):
+                out += _names(x["address"])
+    return [o.strip() for o in out if o and o.strip()]
+
+
+def location(soup):
+    """Where the page says it is from, for region checks:
+    locale            og:locale or <html lang> (e.g. en_AU, en-GB): the publisher's edition
+    content_location  JSON-LD contentLocation / locationCreated / dateline: where the story happened or was filed
+    publisher_country JSON-LD publisher address country"""
+    html = soup.find("html")
+    loc = {"locale": _meta(soup, "og:locale") or (html.get("lang", "") if html else ""), "content_location": [], "publisher_country": []}
+    for o in _jsonld_objects(soup):
+        for k in ("contentLocation", "locationCreated", "spatialCoverage"):
+            loc["content_location"] += _names(o.get(k))
+        if isinstance(o.get("dateline"), str):
+            loc["content_location"].append(o["dateline"])
+        pub = o.get("publisher") or o.get("sourceOrganization")
+        if isinstance(pub, dict) and pub.get("address"):
+            loc["publisher_country"] += _names(pub["address"])
+        if _types(o) & {"newsmediaorganization", "organization"} and o.get("address"):
+            loc["publisher_country"] += _names(o["address"])
+    loc["content_location"] = list(dict.fromkeys(loc["content_location"]))[:10]
+    loc["publisher_country"] = list(dict.fromkeys(loc["publisher_country"]))[:5]
+    return loc
+
+
 def extract(html):
-    """Returns dict(text, title, published, author, method)."""
+    """Returns dict(text, title, published, author, method, location)."""
     soup = BeautifulSoup(html, "html.parser")
     meta = {"title": _meta(soup, "og:title", "twitter:title") or (soup.title.get_text(strip=True) if soup.title else ""),
-            "published": _meta(soup, "article:published_time", "datePublished", "pubdate", "date"), "author": _meta(soup, "author", "article:author")}
+            "published": _meta(soup, "article:published_time", "datePublished", "pubdate", "date"), "author": _meta(soup, "author", "article:author"),
+            "location": location(soup)}
 
     # 1. JSON-LD
     for o in _jsonld_objects(soup):

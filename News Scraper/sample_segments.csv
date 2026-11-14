@@ -1,0 +1,7 @@
+industry_group,country,extra_terms,exclude_terms,lookback_days
+Accounting,AU;NZ;UK,,,
+Healthcare & Wellness,AU,GP practices;medical practices,,
+Healthcare & Wellness,UK,NHS;care homes;GP practices,,
+Real Estate,AU,,,
+Legal,AU;UK,,,
+Transport & Logistics,AU,,,

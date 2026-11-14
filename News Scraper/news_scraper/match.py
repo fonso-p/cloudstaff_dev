@@ -19,6 +19,32 @@ def core_name(name):
     return re.sub(r"\s+", " ", n).strip(" .-") or name.strip()
 
 
+# social and video posts are not news (Nepali cricket videos matched "Boundaryline")
+SOCIAL = {"instagram", "facebook", "linkedin", "tiktok", "youtube", "x", "x.com", "twitter", "threads", "reddit", "pinterest"}
+NUMBERED = re.compile(r"^\s*(a\.?\s?c\.?\s?n\.?\s*)?[\d\s]{5,}", re.I)     # "12768640 CANADA INC.", "A.C.N. 633 889 433 Pty Ltd"
+# too many articles for a small company, and too few of them confirm it: the name is a common word ("Clutch", clutch.co)
+VOLUME_MIN, VOLUME_CONFIRMED = 15, 0.2
+# the one-word and volume rules are for small companies only: Canva, Xero and Octopus Energy get lots of news whose
+# headlines rarely carry a domain or city. Unknown size or a ticker = treated as not small.
+SMALL_COMPANY = 1000
+
+
+def auto_ambiguous(name, domain):
+    """Why a name should be treated as common when the CSV doesn't say (spot checks on 100 Priority List companies):
+    numbered companies, names of 3 characters or fewer ("ARG"), and one-word names that aren't the website's own name
+    ("Clancy" at clancycorp.com.au, "Array" at arraynetworks.com, "Barga" at caesars.net.au). '' = distinctive."""
+    if NUMBERED.match(name or ""):
+        return "numbered company"
+    core = core_name(name or "")
+    if len(re.sub(r"[\W_]", "", core)) <= 3:
+        return "short name"
+    words = re.findall(r"[A-Za-z0-9&']+", core)
+    label = re.sub(r"[^a-z0-9]", "", root_domain(domain).split(".")[0]) if domain else ""
+    if len(words) == 1 and label and words[0].lower() != label:      # no website: nothing to compare, left as distinctive
+        return "one-word name that is not the website's name"
+    return ""
+
+
 def root_domain(domain):
     if not domain:
         return ""
@@ -64,10 +90,22 @@ class Matcher:
         self.strong = [(n, _pat(n)) for n in dict.fromkeys(strong)]
         t = (company.ticker or card.get("ticker") or "").upper().split(":")[-1].strip()
         self.ticker = re.compile(r"(?<![A-Za-z])" + re.escape(t) + r"(?![A-Za-z])") if len(t) >= 3 else None   # case-sensitive: "TEAM" not "team"
+        self.listed = re.compile(r"(?<![\w])(?:" + "|".join(re.escape(n) for n in {name, *company.aliases} if len(n) >= 2) +
+                                 r")(?: (?:limited|ltd|inc|corp|corporation|co|company|plc|group|holdings)\.?)?\s*\((?:ASX|NZX|LSE|LON|NASDAQ|NYSE|TSX|OTCMKTS|SGX)\s?:\s?[A-Z0-9.]{1,6}\)",
+                                 re.I)
         self.keywords = [(k, _pat(k)) for k in card.get("keywords", []) if not any(p.search(k.lower()) for p in self.names)]
         self.city = [_pat(p) for p in {*company.places, card.get("city", "")} if p and len(p) >= 2]
         # ambiguous name: set in the CSV, else assumed when context words were given (someone saw the name was common)
-        self.ambiguous = company.ambiguous if company.ambiguous is not None else bool(company.context)
+        # or detected (auto_ambiguous), or set at export when a name pulls in many unconfirmed articles (VOLUME_MIN)
+        self.ambiguous_set = company.ambiguous is not None
+        self.ambiguous_reason = ("set in the CSV" if self.ambiguous_set else "context words given" if company.context
+                                 else auto_ambiguous(company.name, company.domain))
+        self.ambiguous = company.ambiguous if self.ambiguous_set else bool(self.ambiguous_reason)
+        # a one-word name, even the website's own ("Accora" at accora.care, "Atkar" at atkar.com.au), is often also a place,
+        # surname or word: at least 1 point of identity evidence is needed (location, keyword, domain…)
+        emp = getattr(company, "employees", None)
+        self.small = emp is not None and emp < SMALL_COMPANY and not (company.ticker or card.get("ticker"))
+        self.one_word = self.small and len(re.findall(r"[A-Za-z0-9&']+", name)) == 1 and not self.ambiguous_set
         # case-sensitive name forms ("Deputy"), to tell the company from the ordinary word ("deputy") or a title ("Deputy Mayor")
         self.cased = [re.compile(r"(?<![\w])" + re.escape(n) + r"(?![\w])") for n in {name, *company.aliases} if len(n) >= 2]
         self.as_title = [re.compile(r"(?<![\w])" + re.escape(n) + r"\s+" + ROLE + r"\b", re.I) for n in {name, *company.aliases} if len(n) >= 2]
@@ -94,6 +132,8 @@ class Matcher:
             pts += sum(" " in k for k in kws) + (1 if any(" " not in k for k in kws) else 0)
         if any(p.search(low) for p in self.city):
             found.append("location"); pts += 1
+        if self.listed.search(raw):                # "Zip Co (ASX:ZIP)": the name itself, then an exchange ticker
+            found.append("listed-company name"); pts += 2
         return pts, found
 
     def company_uses(self, raw, minus_titles=True):
@@ -133,8 +173,29 @@ class Matcher:
                     return True
         return False
 
-    def verdict(self, title, summary, source, text=None):
+    @staticmethod
+    def _solid(pts, found):
+        """Identity points without the one that single website keywords give: for a one-word name a lone generic word
+        is not confirmation ("designed" confirmed Kid Koala, "steam" confirmed immutable Linux)."""
+        return pts - (1 if any(f.startswith("keyword ") and " " not in f[8:] for f in found) else 0)
+
+    def passing_lexical(self, title):
+        """The headline uses the company as a reference point, not as its subject: "Acme-backed start-up", "an Acme veteran",
+        "like Acme", "the Acme tower". Returns the matched phrase or ''."""
+        t = title or ""
+        n = re.escape(self.name)
+        for pat in (rf"{n}[- ]backed\b", rf"\bbacked by (the )?(\w+ ){{0,2}}{n}\b",
+                    rf"\b{n} (veteran|alum|alumni|alumnus|couple|tower|central|williams|stake|account|integration|partner program)\b",
+                    rf"\b(ex|former)[- ]{n} (exec|executive|engineer|employee|staffer|boss|chief)\b.*\b(joins|named|appointed|launches)\b",
+                    rf"\b(like|replace[sd]?|replacing|without|open-source|compete with|alternative to|rival to) {n}\b"):
+            m = re.search(pat, t, re.I)
+            if m:
+                return m.group(0)
+        return ""
+
+    def verdict(self, title, summary, source, text=None, extra=0):
         """(counts, reason if not, evidence found). text = the article text if it was read, else None.
+        extra: identity points found elsewhere (e.g. NLP: the name is tagged as an organisation).
 
         Ambiguous names ("Deputy"): the name must be used as the company (not "Deputy Mayor" or "deputy"), and
         CONFIRM points of identity evidence are needed, from the text if read, else from the headline and summary.
@@ -150,6 +211,7 @@ class Matcher:
             if len(words) >= 60 and sum(w in ENGLISH for w in words) / len(words) < 0.08:
                 return False, "article not in English", []
             pts, found = self.evidence(body)
+            pts += extra
             named = any(p.search(body.lower()) for p in self.names) or (self.domain and self.domain in body.lower())
             if not named:
                 return False, "company not named in the article text", found
@@ -162,9 +224,12 @@ class Matcher:
                 return False, "the name only appears in a different case (e.g. the ticker 'ROKT' or the word 'xero')", found
             elif self.passing_mention(title) and self.company_uses(body, minus_titles=False) < 2 and pts < CONFIRM:
                 return False, "passing mention: listed or compared with others, and barely mentioned in the text", found
+            elif self.one_word and self._solid(pts, found) < 1:
+                return False, "one-word name, and nothing in the article text confirms it is this company", found
             return True, "", found
         # not read (failed, paywalled, or reading switched off): stricter, the headline has to do the work
         pts, found = self.evidence(head)
+        pts += extra
         if self.ambiguous:
             if self.company_uses(title or "") == 0:
                 return False, "text not read: the name is only used as an ordinary word or job title (e.g. 'Deputy Mayor')", found
@@ -175,6 +240,8 @@ class Matcher:
             return False, "text not read: the name only appears in a different case (e.g. the ticker 'ROKT' or the word 'xero')", found
         if self.passing_mention(title) and pts < CONFIRM:
             return False, "text not read: passing mention (listed or compared with others)", found
+        if self.one_word and self._solid(pts, found) < 1:
+            return False, "text not read: one-word name, and the headline does not confirm it is this company", found
         return True, "", found
 
     # ---------------------------------------------------------------- quick score (scrape time)

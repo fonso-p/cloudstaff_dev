@@ -1,0 +1,1357 @@
+step,value (normalised for Designation),most common JP Category,share of its staff,staff with a known category,used to impute,rule
+1. JP Title,Customer Service Representative Level 1,BPO Voice,0.754,517,True,"the most common category, however few staff"
+1. JP Title,Property Management Assistant Level 1,Real Estate,1.0,254,True,"the most common category, however few staff"
+1. JP Title,Executive Assistant Level 2,Virtual Assistant,1.0,253,True,"the most common category, however few staff"
+1. JP Title,Executive Assistant Level 1,Virtual Assistant,1.0,214,True,"the most common category, however few staff"
+1. JP Title,Outbound Sales Specialist Level 2,BPO Voice,0.954,195,True,"the most common category, however few staff"
+1. JP Title,Outbound Sales Specialist Level 1,BPO Voice,0.471,189,True,"the most common category, however few staff"
+1. JP Title,Accounts Receivable Officer Level 1,Accounting,1.0,175,True,"the most common category, however few staff"
+1. JP Title,Customer Service Representative Level 2,BPO Voice,0.847,150,True,"the most common category, however few staff"
+1. JP Title,Senior Accountant (General),Accounting,1.0,148,True,"the most common category, however few staff"
+1. JP Title,Customer Support Specialist Level 1,Accounting,1.0,136,True,"the most common category, however few staff"
+1. JP Title,Accounts Payable Officer Level 1,Accounting,1.0,133,True,"the most common category, however few staff"
+1. JP Title,Technical Support Specialist Level 2,BPO Non-Voice/Back-Office,0.597,124,True,"the most common category, however few staff"
+1. JP Title,Customer Care Specialist Level 1,BPO Voice,1.0,123,True,"the most common category, however few staff"
+1. JP Title,Technical Support Specialist Level 1,BPO Non-Voice/Back-Office,0.634,123,True,"the most common category, however few staff"
+1. JP Title,Back-Office Administrator Level 1,Administrative,1.0,119,True,"the most common category, however few staff"
+1. JP Title,Inbound Sales Representative Level 2,BPO Voice,1.0,114,True,"the most common category, however few staff"
+1. JP Title,Accountant (General) Level 2,Accounting,1.0,114,True,"the most common category, however few staff"
+1. JP Title,Customer Care Specialist Level 2,BPO Voice,1.0,100,True,"the most common category, however few staff"
+1. JP Title,Collections Specialist Level 1,BPO Collections,1.0,99,True,"the most common category, however few staff"
+1. JP Title,Call Center Agent Level 1,BPO Voice,1.0,98,True,"the most common category, however few staff"
+1. JP Title,Accounts Receivable Officer Level 2,Accounting,1.0,94,True,"the most common category, however few staff"
+1. JP Title,Technical Support Trainee Level 1,IT Network Systems/Support,1.0,90,True,"the most common category, however few staff"
+1. JP Title,Property Management Assistant Level 2,Real Estate,1.0,90,True,"the most common category, however few staff"
+1. JP Title,Travel Specialist Level 1,BPO Travel/Hospitality,1.0,89,True,"the most common category, however few staff"
+1. JP Title,Senior Software Engineer,IT Software Development,1.0,89,True,"the most common category, however few staff"
+1. JP Title,Accountant (General) Level 1,Accounting,1.0,87,True,"the most common category, however few staff"
+1. JP Title,Back-Office Administrator Level 2,Administrative,1.0,87,True,"the most common category, however few staff"
+1. JP Title,Senior Accountant (CPA),Accounting,1.0,84,True,"the most common category, however few staff"
+1. JP Title,Senior Executive Assistant,Virtual Assistant,1.0,80,True,"the most common category, however few staff"
+1. JP Title,Inside Sales Agent Level 2,BPO Non-Voice/Back-Office,1.0,79,True,"the most common category, however few staff"
+1. JP Title,Estimator Level 1,Architectural Design,0.974,76,True,"the most common category, however few staff"
+1. JP Title,Collections Specialist Level 2,BPO Collections,1.0,74,True,"the most common category, however few staff"
+1. JP Title,Virtual Assistant Level 2,Virtual Assistant,1.0,71,True,"the most common category, however few staff"
+1. JP Title,Admin Assistant Level 2,Administrative,1.0,70,True,"the most common category, however few staff"
+1. JP Title,Senior Technical Support Specialist,IT Network Systems/Support,0.567,67,True,"the most common category, however few staff"
+1. JP Title,Bookkeeper Level 2,Accounting,1.0,66,True,"the most common category, however few staff"
+1. JP Title,Call Center Agent Level 2,BPO Voice,1.0,65,True,"the most common category, however few staff"
+1. JP Title,Tax Accountant Level 2,Accounting,1.0,63,True,"the most common category, however few staff"
+1. JP Title,Concierge Level 1,Facilities Management,1.0,61,True,"the most common category, however few staff"
+1. JP Title,Account Manager Level 1,BPO Workforce Management,0.983,59,True,"the most common category, however few staff"
+1. JP Title,Appointment Setter Level 1,BPO Voice,1.0,58,True,"the most common category, however few staff"
+1. JP Title,Accounts Payable Officer Level 2,Accounting,1.0,58,True,"the most common category, however few staff"
+1. JP Title,Data Entry Specialist Level 1,Administrative,1.0,57,True,"the most common category, however few staff"
+1. JP Title,Sales Support Specialist Level 1,BPO Voice,1.0,57,True,"the most common category, however few staff"
+1. JP Title,Holiday Administrator Level 1,BPO Travel/Hospitality,1.0,56,True,"the most common category, however few staff"
+1. JP Title,Customer Care Representative Level 1,BPO Voice,1.0,56,True,"the most common category, however few staff"
+1. JP Title,Team Leader Level 1,BPO Voice (Sales) Specialist,0.37,54,True,"the most common category, however few staff"
+1. JP Title,Travel Specialist Level 2,BPO Travel/Hospitality,1.0,53,True,"the most common category, however few staff"
+1. JP Title,Virtual Assistant Level 1,Virtual Assistant,1.0,52,True,"the most common category, however few staff"
+1. JP Title,Senior Graphic Designer,"Creative, Design & Multimedia",1.0,50,True,"the most common category, however few staff"
+1. JP Title,Senior Tax Accountant,Accounting,1.0,49,True,"the most common category, however few staff"
+1. JP Title,Loan Processor Level 2,Accounting,0.761,46,True,"the most common category, however few staff"
+1. JP Title,Sales Administration Assistant Level 1,BPO Non-Voice/Back-Office,1.0,46,True,"the most common category, however few staff"
+1. JP Title,Bookkeeper Level 1,Accounting,1.0,45,True,"the most common category, however few staff"
+1. JP Title,Accounting Assistant Level 1,Virtual Assistant,0.651,43,True,"the most common category, however few staff"
+1. JP Title,Cruise Specialist Level 1,BPO Travel/Hospitality,1.0,42,True,"the most common category, however few staff"
+1. JP Title,Graphic Designer Level 1,"Creative, Design & Multimedia",1.0,42,True,"the most common category, however few staff"
+1. JP Title,Billing Operations Analyst Level 1,Accounting,1.0,41,True,"the most common category, however few staff"
+1. JP Title,Order Processing Specialist Level 2,Administrative,1.0,41,True,"the most common category, however few staff"
+1. JP Title,Financial Accountant Level 1,Accounting,1.0,40,True,"the most common category, however few staff"
+1. JP Title,Business Development Manager Level 1,Sales Professional,1.0,39,True,"the most common category, however few staff"
+1. JP Title,Senior Bookkeeper,Accounting,1.0,39,True,"the most common category, however few staff"
+1. JP Title,Inbound Sales Specialist Level 1,Sales Professional,1.0,38,True,"the most common category, however few staff"
+1. JP Title,Inbound Sales Representative Level 1,BPO Voice,1.0,37,True,"the most common category, however few staff"
+1. JP Title,Data Entry Specialist Level 2,Administrative,1.0,36,True,"the most common category, however few staff"
+1. JP Title,Customer Care Representative Level 2,BPO Voice,1.0,36,True,"the most common category, however few staff"
+1. JP Title,Order Processing Specialist Level 1,Administrative,1.0,36,True,"the most common category, however few staff"
+1. JP Title,Client Services Level 1,BPO Healthcare,1.0,36,True,"the most common category, however few staff"
+1. JP Title,Drafting and Designer Level 1,Engineering Civil,1.0,35,True,"the most common category, however few staff"
+1. JP Title,Graphic Designer Level 2,"Creative, Design & Multimedia",1.0,34,True,"the most common category, however few staff"
+1. JP Title,Purchasing Officer Level 1,Accounting,1.0,32,True,"the most common category, however few staff"
+1. JP Title,Sales Agent Level 1,BPO Voice,1.0,32,True,"the most common category, however few staff"
+1. JP Title,Accountant (CPA) Level 1,Accounting,1.0,32,True,"the most common category, however few staff"
+1. JP Title,Inside Sales Agent Level 1,BPO Non-Voice/Back-Office,1.0,31,True,"the most common category, however few staff"
+1. JP Title,Telemarketer Level 1,BPO Voice,1.0,30,True,"the most common category, however few staff"
+1. JP Title,Data and Reports Analyst Level 1,Data Science / Analytics,1.0,30,True,"the most common category, however few staff"
+1. JP Title,Accounts Officer Level 1,Accounting,1.0,30,True,"the most common category, however few staff"
+1. JP Title,CS Freelancers Level 1,Virtual Assistant,1.0,30,True,"the most common category, however few staff"
+1. JP Title,Estimator Level 2,Architectural Design,0.833,30,True,"the most common category, however few staff"
+1. JP Title,Telesales Specialist Level 1,Sales Professional,1.0,29,True,"the most common category, however few staff"
+1. JP Title,Senior Assistant Audit,Accounting,1.0,29,True,"the most common category, however few staff"
+1. JP Title,Lead Generation Specialist Level 1,BPO Non-Voice/Back-Office,0.862,29,True,"the most common category, however few staff"
+1. JP Title,Admin Assistant Level 1,Administrative,1.0,28,True,"the most common category, however few staff"
+1. JP Title,Payment Processor Level 1,Accounting,1.0,28,True,"the most common category, however few staff"
+1. JP Title,Project Manager Level 1,Data Science / Analytics,0.929,28,True,"the most common category, however few staff"
+1. JP Title,Recruitment Specialist Level 2,Recruitment,1.0,27,True,"the most common category, however few staff"
+1. JP Title,Senior Salesforce Developer,IT Software Development,1.0,27,True,"the most common category, however few staff"
+1. JP Title,Recruitment Specialist Level 1,Recruitment,1.0,27,True,"the most common category, however few staff"
+1. JP Title,Marketing Assistant Level 2,Virtual Assistant,1.0,26,True,"the most common category, however few staff"
+1. JP Title,Team Manager Level 1,BPO Workforce Management,1.0,26,True,"the most common category, however few staff"
+1. JP Title,Operations Administrative Support Level 1,Administrative,1.0,26,True,"the most common category, however few staff"
+1. JP Title,Team Lead Level 1,BPO Voice,1.0,26,True,"the most common category, however few staff"
+1. JP Title,Collections Agent Level 1,BPO Collections,1.0,25,True,"the most common category, however few staff"
+1. JP Title,Tax Accountant Level 1,Accounting,1.0,25,True,"the most common category, however few staff"
+1. JP Title,Inventory Accountant Intern Level 1,Accounting,1.0,25,True,"the most common category, however few staff"
+1. JP Title,Real Estate Administration - Sales & Property Management Level 2,Real Estate,1.0,25,True,"the most common category, however few staff"
+1. JP Title,Marketing Assistant Level 1,Virtual Assistant,1.0,25,True,"the most common category, however few staff"
+1. JP Title,3D Modeler & CAD Designer Level 1,"Creative, Design & Multimedia",1.0,24,True,"the most common category, however few staff"
+1. JP Title,Back Office Specialist Level 1,Virtual Assistant,1.0,24,True,"the most common category, however few staff"
+1. JP Title,Senior Accounts Payable Officer,Accounting,1.0,24,True,"the most common category, however few staff"
+1. JP Title,Financial Accountant Level 2,Accounting,1.0,24,True,"the most common category, however few staff"
+1. JP Title,Lead Generation Associate Level 1,Sales Professional,1.0,23,True,"the most common category, however few staff"
+1. JP Title,Loan Processor Level 1,Accounting,0.87,23,True,"the most common category, however few staff"
+1. JP Title,Senior Financial Accountant,Accounting,1.0,23,True,"the most common category, however few staff"
+1. JP Title,Paraplanner Level 2,Accounting,1.0,23,True,"the most common category, however few staff"
+1. JP Title,Helpdesk Specialist Level 1,IT Network Systems/Support,1.0,23,True,"the most common category, however few staff"
+1. JP Title,Full Stack Developer Level 2,IT Software Development,1.0,22,True,"the most common category, however few staff"
+1. JP Title,Supply Management Level 1,Accounting,1.0,22,True,"the most common category, however few staff"
+1. JP Title,Associate Support Specialist Level 1,IT Information Security,1.0,22,True,"the most common category, however few staff"
+1. JP Title,Logistics & Supply Chain Specialist Level 1,Ecommerce,1.0,22,True,"the most common category, however few staff"
+1. JP Title,Accounting Officer Level 1,Accounting,1.0,22,True,"the most common category, however few staff"
+1. JP Title,Procurement Officer Level 1,Accounting,1.0,21,True,"the most common category, however few staff"
+1. JP Title,Client Relationship Manager Level 1,BPO Workforce Management,1.0,21,True,"the most common category, however few staff"
+1. JP Title,Payroll Assistant Level 2,Accounting,1.0,21,True,"the most common category, however few staff"
+1. JP Title,Purchasing Officer Level 2,Accounting,1.0,21,True,"the most common category, however few staff"
+1. JP Title,HR and Admin Assistant Level 1,Human Resources,1.0,21,True,"the most common category, however few staff"
+1. JP Title,Network Operations Engineer Level 1,IT Network Systems/Support,1.0,21,True,"the most common category, however few staff"
+1. JP Title,Recruitment Officer Level 2,Recruitment,1.0,21,True,"the most common category, however few staff"
+1. JP Title,Sales Support Specialist Level 2,BPO Voice,1.0,21,True,"the most common category, however few staff"
+1. JP Title,Accounts Officer Level 2,Accounting,1.0,20,True,"the most common category, however few staff"
+1. JP Title,Marketing Coordinator Level 1,Marketing/Content,1.0,20,True,"the most common category, however few staff"
+1. JP Title,Financial Planning & Analysis Level 2,Accounting,1.0,20,True,"the most common category, however few staff"
+1. JP Title,Engineer Level 2,Engineering Civil,1.0,20,True,"the most common category, however few staff"
+1. JP Title,Network Engineer Level 1,IT Network Systems/Support,1.0,20,True,"the most common category, however few staff"
+1. JP Title,Senior Auditor,Accounting,1.0,19,True,"the most common category, however few staff"
+1. JP Title,Chat Support Agent Level 1,BPO Non-Voice/Back-Office,1.0,19,True,"the most common category, however few staff"
+1. JP Title,Helpdesk Specialist Level 2,IT Network Systems/Support,1.0,19,True,"the most common category, however few staff"
+1. JP Title,Senior Back-Office Administrator,Administrative,1.0,19,True,"the most common category, however few staff"
+1. JP Title,Recruitment Officer Level 1,Recruitment,1.0,19,True,"the most common category, however few staff"
+1. JP Title,Hotel Reservations Coordinator Level 1,BPO Travel/Hospitality,1.0,18,True,"the most common category, however few staff"
+1. JP Title,Senior Software Quality Assurance Engineer,IT Software QA,1.0,18,True,"the most common category, however few staff"
+1. JP Title,HR Specialist Level 1,Human Resources,1.0,18,True,"the most common category, however few staff"
+1. JP Title,Customer Case Management Level 2,BPO Non-Voice/Back-Office,1.0,18,True,"the most common category, however few staff"
+1. JP Title,Quality Assurance Officer Level 1,BPO Non-Voice/Back-Office,1.0,18,True,"the most common category, however few staff"
+1. JP Title,Salesforce Developer Level 2,IT Software Development,1.0,18,True,"the most common category, however few staff"
+1. JP Title,Property Management Accountant Level 1,Accounting,1.0,17,True,"the most common category, however few staff"
+1. JP Title,Senior Network Engineer,IT Network Systems/Support,1.0,17,True,"the most common category, however few staff"
+1. JP Title,Fullstack Developer Level 2,IT Software Development,1.0,17,True,"the most common category, however few staff"
+1. JP Title,Legal Administrative Assistant Level 2,Legal Specialist,1.0,17,True,"the most common category, however few staff"
+1. JP Title,HR Officer Level 1,Human Resources,1.0,17,True,"the most common category, however few staff"
+1. JP Title,Data and Reports Analyst Level 2,Data Science / Analytics,1.0,17,True,"the most common category, however few staff"
+1. JP Title,Associate Accountant Trainee Level 1,Accounting,1.0,17,True,"the most common category, however few staff"
+1. JP Title,Operations Manager Level 1,BPO Workforce Management,1.0,17,True,"the most common category, however few staff"
+1. JP Title,Team Leader Level 2,BPO Non-Voice/Back-Office,1.0,17,True,"the most common category, however few staff"
+1. JP Title,Sales Development Representative Level 1,Sales Professional,1.0,17,True,"the most common category, however few staff"
+1. JP Title,Senior Content Writer,Marketing/Content,1.0,17,True,"the most common category, however few staff"
+1. JP Title,Service Desk Level 2,BPO Travel/Hospitality,1.0,16,True,"the most common category, however few staff"
+1. JP Title,Senior Full Stack Developer,IT Software Development,1.0,16,True,"the most common category, however few staff"
+1. JP Title,Accounting Clerk Level 1,Accounting,1.0,16,True,"the most common category, however few staff"
+1. JP Title,Site Nurse Level 1,BPO Healthcare,1.0,16,True,"the most common category, however few staff"
+1. JP Title,Quantity Surveyor Level 1,Engineering Civil,1.0,16,True,"the most common category, however few staff"
+1. JP Title,Salesforce Developer Level 1,IT Software Development,1.0,15,True,"the most common category, however few staff"
+1. JP Title,Order Processor Level 1,Ecommerce,1.0,15,True,"the most common category, however few staff"
+1. JP Title,Digital Marketing Manager Level 1,"Creative, Design & Multimedia",1.0,15,True,"the most common category, however few staff"
+1. JP Title,Compliance Specialist Level 2,Legal Specialist,1.0,15,True,"the most common category, however few staff"
+1. JP Title,Software QA and Tester Level 1,IT Software Development,1.0,15,True,"the most common category, however few staff"
+1. JP Title,IT Helpdesk Specialist Level 1,IT Network Systems/Support,1.0,15,True,"the most common category, however few staff"
+1. JP Title,HR and Admin Assistant Level 2,Human Resources,1.0,15,True,"the most common category, however few staff"
+1. JP Title,Payroll Assistant Level 1,Accounting,1.0,14,True,"the most common category, however few staff"
+1. JP Title,Property Management Accountant Level 2,Accounting,1.0,14,True,"the most common category, however few staff"
+1. JP Title,Lead Generation Specialist Level 2,BPO Voice,0.929,14,True,"the most common category, however few staff"
+1. JP Title,Receptionist Level 1,Real Estate,1.0,14,True,"the most common category, however few staff"
+1. JP Title,Software Engineer Level 1,IT Software Development,1.0,14,True,"the most common category, however few staff"
+1. JP Title,Customer Success Manager Level 2,Sales Professional,1.0,14,True,"the most common category, however few staff"
+1. JP Title,Hearing Assistant Level 1,BPO Healthcare,1.0,14,True,"the most common category, however few staff"
+1. JP Title,Senior Customer Care Specialist,BPO Voice,1.0,14,True,"the most common category, however few staff"
+1. JP Title,Senior Structural Designer,Engineering Structural,0.786,14,True,"the most common category, however few staff"
+1. JP Title,Recruitment Assistant Level 2,Recruitment,1.0,14,True,"the most common category, however few staff"
+1. JP Title,NetSuite Developer Level 1,IT Software Development,1.0,14,True,"the most common category, however few staff"
+1. JP Title,Senior Customer Service Representative,BPO Voice,1.0,14,True,"the most common category, however few staff"
+1. JP Title,Drafting and Designer Level 2,Engineering Civil,1.0,14,True,"the most common category, however few staff"
+1. JP Title,Network Engineer Level 2,IT Network Systems/Support,1.0,14,True,"the most common category, however few staff"
+1. JP Title,Software Engineer Level 2,IT Software Development,1.0,13,True,"the most common category, however few staff"
+1. JP Title,Holiday Administrator Level 2,BPO Travel/Hospitality,1.0,13,True,"the most common category, however few staff"
+1. JP Title,Senior Data and Reports Analyst,Data Science / Analytics,1.0,13,True,"the most common category, however few staff"
+1. JP Title,Senior Payroll Assistant,Accounting,1.0,13,True,"the most common category, however few staff"
+1. JP Title,Senior Purchasing Officer,Accounting,1.0,13,True,"the most common category, however few staff"
+1. JP Title,Content Writer Level 2,Marketing/Content,1.0,13,True,"the most common category, however few staff"
+1. JP Title,Software Quality Assurance Engineer Level 1,IT Software QA,1.0,13,True,"the most common category, however few staff"
+1. JP Title,GDS Flight Specialist Level 2,BPO Travel/Hospitality,1.0,13,True,"the most common category, however few staff"
+1. JP Title,Senior Web Developer,IT Software Development,1.0,13,True,"the most common category, however few staff"
+1. JP Title,Recruitment Assistant Level 1,Recruitment,1.0,13,True,"the most common category, however few staff"
+1. JP Title,Business Analyst Level 2,IT Business Analysis,0.923,13,True,"the most common category, however few staff"
+1. JP Title,Ecommerce Virtual Assistant Level 2,Ecommerce,1.0,12,True,"the most common category, however few staff"
+1. JP Title,Collections Agent Level 2,BPO Collections,1.0,12,True,"the most common category, however few staff"
+1. JP Title,Quality Assurance Officer Level 2,BPO Non-Voice/Back-Office,1.0,12,True,"the most common category, however few staff"
+1. JP Title,Paralegal Level 2,Legal Specialist,1.0,12,True,"the most common category, however few staff"
+1. JP Title,Senior Property Management Assistant,Real Estate,1.0,12,True,"the most common category, however few staff"
+1. JP Title,Outbound Calling Specialist Level 1,BPO Voice,1.0,12,True,"the most common category, however few staff"
+1. JP Title,Sales Agent Level 2,BPO Voice,1.0,12,True,"the most common category, however few staff"
+1. JP Title,Accounts Assistant Level 1,Real Estate,1.0,12,True,"the most common category, however few staff"
+1. JP Title,Design Engineer Level 2,Architectural Design,0.545,11,True,"the most common category, however few staff"
+1. JP Title,Accountant (CPA) Level 2,Accounting,1.0,11,True,"the most common category, however few staff"
+1. JP Title,Back Office Specialist Level 2,Virtual Assistant,1.0,11,True,"the most common category, however few staff"
+1. JP Title,Sales PA Level 2,Sales Professional,1.0,11,True,"the most common category, however few staff"
+1. JP Title,Accounting Clerk Level 2,Accounting,1.0,11,True,"the most common category, however few staff"
+1. JP Title,Underwriting Assistant Level 1,Banking & Financial Services,1.0,11,True,"the most common category, however few staff"
+1. JP Title,Logistics Analyst Level 1,Logistics and Supply Chain,1.0,11,True,"the most common category, however few staff"
+1. JP Title,Software Quality Assurance Engineer Level 2,IT Software QA,1.0,11,True,"the most common category, however few staff"
+1. JP Title,Legal Administrative Assistant Level 1,Legal Specialist,1.0,11,True,"the most common category, however few staff"
+1. JP Title,SQA Trainee Level 1,IT Software QA,1.0,11,True,"the most common category, however few staff"
+1. JP Title,Software Security Specialist Level 1,IT Information Security,1.0,11,True,"the most common category, however few staff"
+1. JP Title,Security Analyst Level 1,IT Information Security,1.0,11,True,"the most common category, however few staff"
+1. JP Title,3D Modeler & CAD Designer Level 2,"Creative, Design & Multimedia",1.0,11,True,"the most common category, however few staff"
+1. JP Title,Audit & Assurance Officer Level 1,Accounting,1.0,11,True,"the most common category, however few staff"
+1. JP Title,Senior Team Manager,BPO Workforce Management,1.0,11,True,"the most common category, however few staff"
+1. JP Title,Service Desk Level 1,BPO Travel/Hospitality,1.0,11,True,"the most common category, however few staff"
+1. JP Title,Procurement Officer Level 2,Accounting,1.0,11,True,"the most common category, however few staff"
+1. JP Title,Accounting Manager Level 1,Accounting,0.636,11,True,"the most common category, however few staff"
+1. JP Title,Senior Loan Processor,Accounting,0.727,11,True,"the most common category, however few staff"
+1. JP Title,Senior Business Analyst,IT Business Analysis,0.545,11,True,"the most common category, however few staff"
+1. JP Title,Senior Account Manager,BPO Workforce Management,0.818,11,True,"the most common category, however few staff"
+1. JP Title,Quantity Surveyor Level 2,Engineering Civil,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Ecommerce Marketing Specialist Level 2,Ecommerce,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Marketing Specialist Level 1,"Creative, Design & Multimedia",1.0,10,True,"the most common category, however few staff"
+1. JP Title,Senior Operations Manager,BPO Workforce Management,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Account Manager Level 2,BPO Workforce Management,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Design Engineer Level 1,Architectural Design,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Senior Data Entry Specialist,Administrative,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Client Information Specialist Level 1,Administrative,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Trust Accounting Specialist Level 1,Accounting,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Senior Corporate Accountant,Accounting,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Senior Accounts Receivable Officer,Accounting,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Payment Processor Level 2,Accounting,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Auditor Level 1,Accounting,1.0,10,True,"the most common category, however few staff"
+1. JP Title,IT Helpdesk Specialist Level 2,IT Network Systems/Support,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Associate Software Engineer Trainee Level 1,IT Cloud Computing Systems,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Driver Level 1,Facilities Management,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Senior Network Operations Engineer,IT Network Systems/Support,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Digital Marketer/Web Development Level 1,IT Software Development,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Senior Estimator,Architectural Design,0.9,10,True,"the most common category, however few staff"
+1. JP Title,Finance Manager Level 1,Accounting,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Contract Administrator Level 1,Legal Specialist,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Customer Liaison Officer Level 1,Sales Professional,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Paralegal Level 1,Legal Specialist,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Document Reviewer Level 1,Legal Specialist,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Business Analyst Level 1,IT Business Analysis,0.8,10,True,"the most common category, however few staff"
+1. JP Title,Front-end Developer Level 2,IT Software Development,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Java Developer Level 2,IT Software Development,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Project Coordinator Level 1,Engineering Mechanical,0.7,10,True,"the most common category, however few staff"
+1. JP Title,Fullstack Developer Level 1,IT Software Development,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Leasing Support Level 1,Real Estate,1.0,10,True,"the most common category, however few staff"
+1. JP Title,Senior Client Services,BPO Healthcare,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Chat Support Agent Level 2,BPO Non-Voice/Back-Office,1.0,9,True,"the most common category, however few staff"
+1. JP Title,SEO Specialist Level 2,Marketing/Content,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Compliance Specialist Level 1,Legal Specialist,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Senior Fullstack Developer,IT Software Development,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Senior Software Quality Engineer,IT Software QA,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Associate Software Engineer OJT Level 1,IT Software Development,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Database Administrator Level 2,IT Network Systems/Support,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Supervisor Level 2,Facilities Management,1.0,9,True,"the most common category, however few staff"
+1. JP Title,NetSuite Developer Level 2,IT Software Development,1.0,9,True,"the most common category, however few staff"
+1. JP Title,AC Technician Level 1,Facilities Management,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Senior Sales Support Specialist,BPO Voice,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Appointment Setter Level 2,BPO Voice,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Broker Support/Credit Analyst Level 2,Accounting,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Trust Accounting Specialist Level 2,Accounting,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Business Development Manager Level 2,Sales Professional,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Real Estate Marketing Specialist Level 2,Real Estate,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Research Specialist Level 1,Administrative,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Travel Agent Level 1,BPO Travel/Hospitality,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Senior Lead Generation Specialist,BPO Non-Voice/Back-Office,0.444,9,True,"the most common category, however few staff"
+1. JP Title,Senior Accounting Assistant,Accounting,0.556,9,True,"the most common category, however few staff"
+1. JP Title,Senior Hotel Reservations Coordinator,BPO Travel/Hospitality,1.0,9,True,"the most common category, however few staff"
+1. JP Title,Solutions Architect Level 1,IT Network Systems/Support,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Configuration Analyst Level 1,IT Software Development,1.0,8,True,"the most common category, however few staff"
+1. JP Title,IT Consultant Level 1,IT Software Development,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Database Administrator Level 1,IT Network Systems/Support,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Senior Client Services Manager,BPO Workforce Management,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Digital Artist Level 1,"Creative, Design & Multimedia",1.0,8,True,"the most common category, however few staff"
+1. JP Title,Senior Accounts Officer,Accounting,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Supervisor - OB Cruise Level 1,BPO Travel/Hospitality,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Host Level 1,Event Management,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Logistics & Supply Chain Specialist Level 2,Ecommerce,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Security Analyst Trainee Level 1,IT Information Security,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Electrician Level 1,Facilities Management,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Sales Assistant Level 1,Sales Professional,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Sales Assistant Level 2,Sales Professional,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Assistant Audit Level 1,Accounting,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Payroll Assistant Trainee Level 1,Accounting,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Customer Service Team Leader Level 1,Sales Professional,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Recruitment Team Leader Level 1,Recruitment,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Relationship & Asset Manager Associate Level 1,Real Estate,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Real Estate Marketing Specialist Level 1,Real Estate,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Production and Planning Specialist Level 1,Logistics and Supply Chain,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Consultant Level 1,Marketing/Content,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Copywriter Level 1,Marketing/Content,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Social Media Marketing and Management Level 2,Marketing/Content,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Senior Mulesoft Developer,IT Software Development,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Software Quality Engineer Level 2,IT Software QA,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Senior Paralegal,Legal Specialist,1.0,8,True,"the most common category, however few staff"
+1. JP Title,Structural Designer Level 1,Engineering Civil,0.875,8,True,"the most common category, however few staff"
+1. JP Title,Ecommerce Assistant Level 1,Virtual Assistant,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Senior Design Engineer,Architectural Design,0.857,7,True,"the most common category, however few staff"
+1. JP Title,Senior SMSF Accountant,Accounting,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Customer Operations Management Level 2,Administrative,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Network Operations Engineer Level 2,IT Network Systems/Support,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Draftsman/Engineering Manager Level 1,Engineering Civil,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Senior Client Relationship Manager,BPO Workforce Management,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Report Analyst Level 1,BPO Workforce Management,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Airline Travel Specialist Level 1,BPO Travel/Hospitality,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Management Accountant Level 1,Accounting,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Senior Solutions Architect,IT Network Systems/Support,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Senior .Net Developer,IT Software Development,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Software Development Engineer in Test (SDET) Level 1,IT Software QA,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Mulesoft Developer Level 2,IT Software Development,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Mechanical Designer Drafter Level 1,Engineering Mechanical,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Audit & Assurance Officer Level 2,Accounting,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Salesforce Administrator Level 1,IT Cloud Computing Systems,0.857,7,True,"the most common category, however few staff"
+1. JP Title,Senior Collections Specialist,BPO Collections,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Debt Collector Level 2,BPO Collections,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Full Stack Developer Level 1,IT Software Development,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Senior Quantity Surveyor,Engineering Civil,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Financial Controller Level 2,Accounting,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Sales and Marketing Manager Level 1,Sales Professional,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Real Estate Renewals Specialist Level 2,Real Estate,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Sales Admin Level 2,Sales Professional,1.0,7,True,"the most common category, however few staff"
+1. JP Title,UI / UX Specialist Level 2,IT Software Development,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Software QA and Tester Level 2,IT Software Development,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Senior Team Growth Manager,Sales Professional,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Training Coordinator Level 1,Training,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Sales PA Level 1,Sales Professional,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Real Estate  Sales VA Level 2,Real Estate,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Senior Mechanical Engineer,Engineering Mechanical,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Guest Services Level 1,Facilities Management,1.0,7,True,"the most common category, however few staff"
+1. JP Title,Conveyancing Account Manager Level 1,Legal Specialist,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Document Processing Specialist Level 1,Legal Specialist,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Content Writer Level 1,Marketing/Content,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Software Development Engineer in Test (SDET) Level 2,IT Software QA,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Purchasing Specialist Level 1,Administrative,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Accounting Associate Trainee Level 1,Accounting,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Senior Property Management Accountant,Accounting,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Management Accountant Level 2,Accounting,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Call Quality Analyst Level 1,BPO Voice,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Site Manager Level 1,BPO Workforce Management,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Senior Team Leader,BPO Voice (Sales) Specialist,0.5,6,True,"the most common category, however few staff"
+1. JP Title,Senior Outbound Sales Specialist,BPO Voice,0.5,6,True,"the most common category, however few staff"
+1. JP Title,Training Specialist Level 1,BPO Travel/Hospitality,0.5,6,True,"the most common category, however few staff"
+1. JP Title,Research Specialist Level 2,Administrative,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Email Support Agent Level 1,BPO Non-Voice/Back-Office,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Senior Travel Specialist,BPO Travel/Hospitality,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Project Manager Level 2,Data Science / Analytics,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Senior Digital Marketing Manager,"Creative, Design & Multimedia",1.0,6,True,"the most common category, however few staff"
+1. JP Title,Product Data Specialist Level 2,Ecommerce,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Embedded Software Engineer Level 1,Electronics Communications,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Senior HR Manager,Human Resources,1.0,6,True,"the most common category, however few staff"
+1. JP Title,HR Assistant Trainee Level 1,Human Resources,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Assistant Audit Level 2,Accounting,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Broker Assistant Level 1,Accounting,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Senior Software QA and Tester,IT Software Development,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Senior Front-end Developer,IT Software Development,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Executive Administrative Assistant Level 2,Virtual Assistant,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Social Media Marketing and Management Level 1,Marketing/Content,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Client Success Manager Level 2,Virtual Assistant,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Recruitment Marketing Trainee Level 1,Recruitment,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Real Estate Contracts Administrator Level 2,Real Estate,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Content Writer Trainee Level 1,Marketing/Content,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Senior Back-End Developer,IT Software Development,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Provisioning & Accounts Coordinator Level 1,IT Network Systems/Support,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Senior Marketing Assistant,Virtual Assistant,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Front-end Developer Level 1,IT Software Development,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Customer Success Manager Level 1,Sales Professional,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Associate Graphic Designer Trainee Level 1,"Creative, Design & Multimedia",1.0,6,True,"the most common category, however few staff"
+1. JP Title,Sales Account Manager Level 1,Sales Professional,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Security Analyst Level 2,IT Information Security,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Senior Helpdesk Specialist,IT Network Systems/Support,1.0,6,True,"the most common category, however few staff"
+1. JP Title,Airline Travel Specialist Level 2,BPO Travel/Hospitality,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Senior Email Support Agent,BPO Non-Voice/Back-Office,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Debt Collector Level 1,BPO Collections,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Purchasing Associate Trainee Level 1,Accounting,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Senior Customer Support Specialist,Accounting,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Sourcing Specialist Level 1,Accounting,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Customer Case Management Level 1,BPO Non-Voice/Back-Office,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Support Analyst Level 1,IT Network Systems/Support,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Associate SQA Engineer OJT Level 1,IT Software Development,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Associate Software Engineer Level 1,IT Software Development,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Facility Manager Level 1,Facilities Management,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Process Engineer Level 1,Engineering Chemical,0.8,5,True,"the most common category, however few staff"
+1. JP Title,Senior Drafting and Designer,Engineering Civil,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Document Processing Specialist Level 2,Legal Specialist,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Property Management Support Level 2,Real Estate,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Senior Customer Success Manager,Sales Professional,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Social Media Marketer Level 1,Marketing/Content,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Senior Business Development Manager,Sales Professional,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Digital Marketer/Web Development Level 2,IT Software Development,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Contract Administrator Level 2,Legal Specialist,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Software Quality Engineer Level 1,IT Software QA,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Paralegal Assistant Level 1,Virtual Assistant,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Operations Officer Level 2,Virtual Assistant,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Network Administrator Trainee Level 1,IT Network Systems/Support,1.0,5,True,"the most common category, however few staff"
+1. JP Title,HR Supervisor Level 1,Human Resources,1.0,5,True,"the most common category, however few staff"
+1. JP Title,HR and Admin Specialist Level 1,Human Resources,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Telemarketer Level 2,BPO Voice,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Pioneer Team Leader Level 2,BPO Workforce Management,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Product Data Specialist Level 1,Ecommerce,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Senior Logistics & Supply Chain Specialist,Ecommerce,1.0,5,True,"the most common category, however few staff"
+1. JP Title,HR Specialist Level 2,Human Resources,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Senior Technical Support Manager,IT Network Systems/Support,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Software Security Specialist Level 2,IT Information Security,1.0,5,True,"the most common category, however few staff"
+1. JP Title,HR and Admin Specialist Level 2,Human Resources,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Lead Generation Team Lead Level 1,Sales Professional,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Accounting Assistant Level 2,Virtual Assistant,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Senior Virtual Assistant,Virtual Assistant,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Senior Marketing Coordinator,Marketing/Content,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Legal Document Reviewer Level 2,Legal Specialist,1.0,5,True,"the most common category, however few staff"
+1. JP Title,Pioneer Team Leader Level 1,BPO Travel/Hospitality,0.5,4,True,"the most common category, however few staff"
+1. JP Title,Call Quality Analyst Level 2,BPO Voice,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Supervisor - Travel Level 2,BPO Travel/Hospitality,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Assistant Underwriter Level 2,Banking & Financial Services,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Animator Level 1,"Creative, Design & Multimedia",1.0,4,True,"the most common category, however few staff"
+1. JP Title,Membership Renewals Specialist Level 2,BPO Voice,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Team Manager Level 2,BPO Workforce Management,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Associate Multimedia Trainee Level 1,"Creative, Design & Multimedia",1.0,4,True,"the most common category, however few staff"
+1. JP Title,Digital Artist Level 2,"Creative, Design & Multimedia",1.0,4,True,"the most common category, however few staff"
+1. JP Title,Video Editor Level 1,"Creative, Design & Multimedia",1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior 3D Modeler & CAD Designer,"Creative, Design & Multimedia",1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior Billing Operations Analyst,Accounting,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior Finance Manager,Accounting,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Video Editor Level 2,"Creative, Design & Multimedia",1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior Data Scientist,Data Science / Analytics,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Ecommerce Marketing Specialist Level 1,Ecommerce,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Order Processor Level 2,Ecommerce,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Product Sourcing Specialist Level 1,Ecommerce,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior Power Design Engineer,Electronics Communications,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Event Coordinator Level 1,Event Management,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Maintenance Personnel Level 1,Facilities Management,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Mechanical Designer Drafter Level 2,Engineering Mechanical,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Mechanical Engineer Level 2,Engineering Mechanical,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Site Admin Level 1,Facilities Management,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Supervisor Level 1,Facilities Management,1.0,4,True,"the most common category, however few staff"
+1. JP Title,"HR Manager, HR Business Partner Level 1",Human Resources,1.0,4,True,"the most common category, however few staff"
+1. JP Title,HR Director Level 1,Human Resources,1.0,4,True,"the most common category, however few staff"
+1. JP Title,IMS Specialist Level 1,Integrated Management System (IMS),1.0,4,True,"the most common category, however few staff"
+1. JP Title,Logistics & Shipping Coordinator Level 1,Logistics and Supply Chain,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Salesforce Administrator Level 2,IT Cloud Computing Systems,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior Cloud Engineer,IT Cloud Computing Systems,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Cloud Security Specialst Level 1,IT Information Security,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Provisioning & Porting Coordinator Level 2,IT Network Systems/Support,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior IT Helpdesk Manager,IT Network Systems/Support,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior IT Helpdesk Specialist,IT Network Systems/Support,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Trainer Level 2,BPO Voice (Sales) Specialist,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior Pioneer Team Leader,BPO Workforce Management,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior NetSuite Developer,IT Software Development,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Web Developer Level 1,IT Software Development,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Web Developer Level 2,IT Software Development,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Wordpress Developer Level 2,IT Software Development,1.0,4,True,"the most common category, however few staff"
+1. JP Title,SQA Automation Engineer Trainee Level 1,IT Software QA,1.0,4,True,"the most common category, however few staff"
+1. JP Title,SQA Engineer Level 1,IT Software QA,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Drafting/Engineering Assistant Level 1,Engineering Civil,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Engineer Level 1,Engineering Civil,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Client success - Campaign Coordinator Level 2,Marketing/Content,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Copywriter Level 2,Marketing/Content,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior SEO Specialist,Marketing/Content,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Property Management Support Level 1,Real Estate,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Real Estate  Sales VA Level 1,Real Estate,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Real Estate Receptionist Level 1,Real Estate,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior Recruitment Manager,Recruitment,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Talent Acquisition Manager Level 1,Recruitment,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Recruitment Manager Level 2,Recruitment,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Recruitment Team Leader Level 2,Recruitment,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Business Development Administrator Level 2,Sales Professional,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Customer Liaison Officer Level 2,Sales Professional,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Service Delivery Manager Level 2,Sales Professional,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior Sales Manager,Sales Professional,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Architect Level 2,Architectural Design,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Collections Manager Level 1,BPO Collections,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior Training Officer,Training,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Training Specialist Level 2,Training,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Ecommerce Assistant Level 2,Virtual Assistant,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Executive Administrative Assistant Level 1,Virtual Assistant,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior GIS Developer,IT Software Development,1.0,4,True,"the most common category, however few staff"
+1. JP Title,IT Consultant Level 2,IT Software Development,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior Management Accountant,Accounting,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior Trust Accounting Specialist,Accounting,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Invoice Processing Specialist Level 1,Administrative,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Invoice Processing Specialist Level 2,Administrative,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Cost Accountant Level 1,Accounting,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Cost Accountant Level 2,Accounting,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Revenue Accountant Level 2,Accounting,1.0,4,True,"the most common category, however few staff"
+1. JP Title,SMSF Accountant Level 1,Accounting,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Recruitment Assistant Trainee Level 1,Recruitment,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior Real Estate Marketing Specialist,Real Estate,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior Collections Agent,BPO Collections,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Company Physician Level 1,BPO Healthcare,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Broker Support/Credit Analyst Level 1,Accounting,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior Inside Sales Agent,BPO Non-Voice/Back-Office,1.0,4,True,"the most common category, however few staff"
+1. JP Title,Senior Sales and Marketing Manager,Sales Professional,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior VP of Sales,Sales Professional,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Payment Processor,Accounting,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Accounting Officer,Accounting,1.0,3,True,"the most common category, however few staff"
+1. JP Title,SMSF Accountant Level 2,Accounting,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Revenue Accountant Level 1,Accounting,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Purchasing Level 2,Accounting,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Finance Manager Level 2,Accounting,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Accounting Manager Level 2,Accounting,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Accounting Support Agent Level 1,Accounting,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Sourcing Officer Level 1,Accounting,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Revenue Accountant,Accounting,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Procurement Officer,Accounting,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Payroll Manager,Accounting,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Admin Assistant,Administrative,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Online Teacher Level 1,Administrative,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Sr. Administrative Coordinator Level 1,Administrative,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Order Processing Specialist,Administrative,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Fraud Specialist Level 1,BPO Travel/Hospitality,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Team Lead - Travel,BPO Travel/Hospitality,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Team Lead - Travel Level 1,BPO Travel/Hospitality,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Travel Consultant Level 1,BPO Travel/Hospitality,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Operations Manger,BPO Voice (Sales) Specialist,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Trainer,BPO Voice (Sales) Specialist,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Account Management Assistant Level 1,BPO Workforce Management,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Operations Manager Level 2,BPO Workforce Management,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Project Management Admin Officer Level 1,BPO Workforce Management,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Subject Matter Expert Level 1,BPO Workforce Management,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Workforce Planner Level 2,BPO Workforce Management,1.0,3,True,"the most common category, however few staff"
+1. JP Title,"Accounting, Payroll and HR Coordinator Level 1",Accounting,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Assistant Audit Manager,Accounting,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Financial Management Specialist,Banking & Financial Services,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Chief Compliance Officer Level 1,C Level,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Chief Human Resource Officer Level 2,C Level,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Multimedia Specialist Level 1,"Creative, Design & Multimedia",1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Digital Artist,"Creative, Design & Multimedia",1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Multimedia Specialist,"Creative, Design & Multimedia",1.0,3,True,"the most common category, however few staff"
+1. JP Title,Data Scientist Level 1,Data Science / Analytics,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Data Scientist Level 2,Data Science / Analytics,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Project Coordinator Level 2,Data Science / Analytics,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Project Support Level 1,Data Science / Analytics,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Ecommerce Virtual Assistant Level 1,Ecommerce,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Magento Developer Level 1,Ecommerce,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Ecommerce Marketing Specialist,Ecommerce,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Product Data Specialist,Ecommerce,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Architect Level 1,Architectural Design,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Licensing Coordinator Level 2,BPO Non-Voice/Back-Office,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior BIM Modeler,Engineering Mechanical,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Facility Officer Level 1,Facilities Management,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Supervisor,Facilities Management,1.0,3,True,"the most common category, however few staff"
+1. JP Title,HR Admin Assistant Coordinator Level 2,Human Resources,1.0,3,True,"the most common category, however few staff"
+1. JP Title,HR Business Partner Level 1,Human Resources,1.0,3,True,"the most common category, however few staff"
+1. JP Title,HR and Admin Officer Level 1,Human Resources,1.0,3,True,"the most common category, however few staff"
+1. JP Title,HR and Talent Officer Level 2,Human Resources,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Product Owner Level 1,IT Business Analysis,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Product Owner,IT Business Analysis,1.0,3,True,"the most common category, however few staff"
+1. JP Title,.Net Developer Level 2,IT Software Development,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Back-End Developer Level 2,IT Software Development,1.0,3,True,"the most common category, however few staff"
+1. JP Title,CRM Developer Level 2,IT Software Development,1.0,3,True,"the most common category, however few staff"
+1. JP Title,PHP Developer Level 2,IT Software Development,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Power BI Developer Level 1,IT Software Development,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Customer Analyst Level 1,Banking & Financial Services,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Assistant Underwriter,Banking & Financial Services,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Power BI Developer,IT Software Development,1.0,3,True,"the most common category, however few staff"
+1. JP Title,UI / UX Specialist Level 1,IT Software Development,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Automation Tester,IT Software QA,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Case Manager Level 1,Legal Specialist,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Document Coder Level 1,Legal Specialist,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Ecommerce Logistics Specialist Level 2,Logistics and Supply Chain,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Logistics & Shipping Coordinator Level 2,Logistics and Supply Chain,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Production and Planning Specialist Level 2,Logistics and Supply Chain,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Order Fulfillment Specialist,Logistics and Supply Chain,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Consultant Level 2,Marketing/Content,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Instructional Designer Level 1,Marketing/Content,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Content Curator Specialist,Marketing/Content,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Real Estate Database Administrator Level 1,Real Estate,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Real Estate Listings Specialist Level 1,Real Estate,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Client Operations Assistant Level 1,Engineering Civil,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Energy Specialist Level 2,Engineering Industrial,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Real Estate Renewals Specialist Level 1,Real Estate,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Real Estate Administration - Sales & Property Management,Real Estate,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Recruitment Manager Level 1,Recruitment,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Recruitment Supervisor Level 1,Recruitment,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Recruitment Specialist,Recruitment,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Talent Acquisition Specialist Level 1,Recruitment,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Account Director Level 1,Sales Professional,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Associate Account Manager Level 2,Sales Professional,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Sales Account Manager Level 2,Sales Professional,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Sales Associate Level 1,Sales Professional,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Sales Associate Level 2,Sales Professional,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Sales Director Level 1,Sales Professional,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Sales Marketing Assistant Level 1,Sales Professional,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Sales and Marketing Manager Level 2,Sales Professional,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior CRM Developer,IT Software Development,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior PHP Developer,IT Software Development,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Team Growth Manager Level 1,Sales Professional,1.0,3,True,"the most common category, however few staff"
+1. JP Title,VP of Sales Level 2,Sales Professional,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Training Officer Level 1,Training,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Customer Success Operations Associate Level 2,Virtual Assistant,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Operations Officer Level 1,Virtual Assistant,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Paralegal Assistant Level 2,Virtual Assistant,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Senior Financial Planning and Mortgage Broking Assistant Level 1,Virtual Assistant,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Real Estate Maintenance Specialist Level 1,Real Estate,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Real Estate Maintenance Specialist Level 2,Real Estate,1.0,3,True,"the most common category, however few staff"
+1. JP Title,Business Intelligence Consultant Level 1,Data Science / Analytics,0.667,3,True,"the most common category, however few staff"
+1. JP Title,Structural Designer Level 2,Engineering Civil,0.667,3,True,"the most common category, however few staff"
+1. JP Title,Structural Estimator Level 1,Engineering Civil,0.5,2,True,"the most common category, however few staff"
+1. JP Title,Senior Process Engineer,Engineering Chemical,0.5,2,True,"the most common category, however few staff"
+1. JP Title,Demand Planning Manager Level 1,Logistics and Supply Chain,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Compliance Specialist,Legal Specialist,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Training Coordinator,Training,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Learning & Development Specialist Level 2,Training,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Accounting Trainer US Level 1,Training,1.0,2,True,"the most common category, however few staff"
+1. JP Title,VP of Sales Level 1,Sales Professional,1.0,2,True,"the most common category, however few staff"
+1. JP Title,VP For Sales Level 1,Sales Professional,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Team Growth Manager Level 2,Sales Professional,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Sales Director,Sales Professional,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Sales Admin Support Level 1,Sales Professional,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Talent Acquisition Specialist Level 2,Recruitment,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Talent Acquisition Manager Level 2,Recruitment,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Recruitment Officer,Recruitment,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Recruitment Assistant,Recruitment,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Receptionist,Real Estate,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Real Estate Contracts Administrator,Real Estate,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Interior Designer Level 2,Architectural Design,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Commercial Architect Level 1,Architectural Design,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Customer Coordinator Level 2,Administrative,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Purchasing Specialist Level 2,Administrative,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Franchising Administration Coordinator Level 1,Administrative,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Treasury Officer Level 2,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Treasury Officer Level 1,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Treasury Accountant Level 1,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Tax Manager Level 1,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Supply Management,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Purchasing,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior MYOB Accountant,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Financial Planning & Analysis,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Financial Controller,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Payroll Manager Level 2,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Payroll Manager Level 1,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Service Desk,BPO Travel/Hospitality,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Inbound Cruise Sales Supervisor Level 1,BPO Travel/Hospitality,1.0,2,True,"the most common category, however few staff"
+1. JP Title,GDS Team Leader Level 2,BPO Travel/Hospitality,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Quality Assurance Officer,BPO Non-Voice/Back-Office,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Customer Case Management,BPO Non-Voice/Back-Office,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Data and Quality Manager Level 1,BPO Non-Voice/Back-Office,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Customer Service Analyst Level 1,BPO Non-Voice/Back-Office,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Site Nurse,BPO Healthcare,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Project Support Officer Level 1,BPO Healthcare,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Medical Coder Level 2,BPO Healthcare,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Collections Manager,BPO Collections,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Credit Manager Level 2,BPO Collections,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Credit Manager Level 1,BPO Collections,1.0,2,True,"the most common category, however few staff"
+1. JP Title,senior architect Level 1,Architectural Design,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Residential Architect,Architectural Design,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Director/Office Manager Level 1,C Level,1.0,2,True,"the most common category, however few staff"
+1. JP Title,"Director, Sales Level 2",C Level,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Chief Human Resource Officer Level 1,C Level,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Investment Management Specialist,Banking & Financial Services,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Customer Analyst Team Leader Level 1,Banking & Financial Services,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Assistant Underwriter Level 1,Banking & Financial Services,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Manager Staff Relations,BPO Workforce Management,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Operations Team Leader Level 1,BPO Workforce Management,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Admin Manager Level 1,BPO Workforce Management,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Trainer Level 1,BPO Voice (Sales) Specialist,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Sales Agent,BPO Voice,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Customer Care Representative,BPO Voice,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Call Center Agent,BPO Voice,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Outbound Calling Specialist Level 2,BPO Voice,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Travel Agent Level 2,BPO Travel/Hospitality,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Team Lead - Cruise Level 1,BPO Travel/Hospitality,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Business Intelligence Consultant,Data Science / Analytics,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Web Designer Level 1,"Creative, Design & Multimedia",1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Web Designer,"Creative, Design & Multimedia",1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Motion Graphics Designer,"Creative, Design & Multimedia",1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Marketing Specialist,"Creative, Design & Multimedia",1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior 3D Artist/Renderer,"Creative, Design & Multimedia",1.0,2,True,"the most common category, however few staff"
+1. JP Title,Print Graphic Designer Level 2,"Creative, Design & Multimedia",1.0,2,True,"the most common category, however few staff"
+1. JP Title,Photo Editor Level 2,"Creative, Design & Multimedia",1.0,2,True,"the most common category, however few staff"
+1. JP Title,Multimedia Specialist Level 2,"Creative, Design & Multimedia",1.0,2,True,"the most common category, however few staff"
+1. JP Title,Assistant Producer Level 2,"Creative, Design & Multimedia",1.0,2,True,"the most common category, however few staff"
+1. JP Title,3D Artist/Renderer Level 1,"Creative, Design & Multimedia",1.0,2,True,"the most common category, however few staff"
+1. JP Title,Vertical Lead Level 1,C Level,1.0,2,True,"the most common category, however few staff"
+1. JP Title,VP Growth AU Level 1,C Level,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Fund Accountant Level 2,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Financial Planning Assistant Level 1,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Financial Planning & Analysis Level 1,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Financial Controller Level 1,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Associate Accountant Level 2,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Associate Accountant Level 1,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Accountant (General) Manager,Accounting,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Chief Product Officer,C Level,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Independent Sales Consultant Level 1,C Level,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Body Guard Level 2,Facilities Management,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Body Guard Level 1,Facilities Management,1.0,2,True,"the most common category, however few staff"
+1. JP Title,DJ Level 1,Event Management,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Butler Level 1,Event Management,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Pipes and Pumps Specialist,Engineering Mechanical,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Mechanical Designer Drafter,Engineering Mechanical,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Mechanical Engineer Level 1,Engineering Mechanical,1.0,2,True,"the most common category, however few staff"
+1. JP Title,BIM Modeler Level 2,Engineering Mechanical,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Principal Electrical Engineer Level 2,Engineering Electrical,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Lighting Designer Level 2,Engineering Electrical,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Electrical Design Engineer Level 2,Engineering Electrical,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Process Engineer Level 2,Engineering Chemical,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Embedded Software Engineer Level 2,Electronics Communications,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Ecommerce Store Operations,Ecommerce,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Project Manager,Data Science / Analytics,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Support Analyst Level 2,IT Network Systems/Support,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Server Administrator Level 2,IT Network Systems/Support,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Network Operations Manager,IT Network Systems/Support,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Provisioning & Porting Senior Coordinator Level 1,IT Network Systems/Support,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Provisioning & Accounts Coordinator Level 2,IT Network Systems/Support,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Network Administrator Level 1,IT Network Systems/Support,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Cloud Applications Engineer Level 1,IT Cloud Computing Systems,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Associate CloudOps Engineer Trainee Level 1,IT Cloud Computing Systems,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Product Owner Level 2,IT Business Analysis,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Implementation Consultant Level 2,IT Business Analysis,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Implementation Consultant Level 1,IT Business Analysis,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior HR Specialist,Human Resources,1.0,2,True,"the most common category, however few staff"
+1. JP Title,HR Team Leader Level 1,Human Resources,1.0,2,True,"the most common category, however few staff"
+1. JP Title,HR Manager Level 1,Human Resources,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Transport Coordinator Level 1,Facilities Management,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Driver Level 2,Facilities Management,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Wordpress Developer,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior UI / UX Specialist,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior ServiceNow Developer,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior PHP Laravel Developer,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Mobile Developer,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Java Developer,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Salesforce Consultant Level 2,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Salesforce Consultant Level 1,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,React Developer Level 2,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,PHP Laravel Developer Level 2,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Developer Trainee Level 1,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Back-End Developer Level 1,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Azure Developer Level 2,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,3D Modelling Developer Level 1,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,VOIP Specialist Level 1,IT Network Systems/Support,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Technical Support Manager Level 1,IT Network Systems/Support,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Case Manager,Legal Specialist,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Online Records Clerk Level 1,Legal Specialist,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Legal Executive Assistant Level 1,Legal Specialist,1.0,2,True,"the most common category, however few staff"
+1. JP Title,ISO Consultant Level 1,Legal Specialist,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Case Manager Level 2,Legal Specialist,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior IMS Specialist,Integrated Management System (IMS),1.0,2,True,"the most common category, however few staff"
+1. JP Title,IMS Audit Manager Level 1,Integrated Management System (IMS),1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Software Development Engineer in Test (SDET),IT Software QA,1.0,2,True,"the most common category, however few staff"
+1. JP Title,SQA Engineer Level 2,IT Software QA,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Associate SQA Engineer Level 2,IT Software QA,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Associate SQA Engineer Level 1,IT Software QA,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior IOS Developer,IT Software Mobile Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,IOS Developer Level 2,IT Software Mobile Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Android Developer Level 1,IT Software Mobile Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,UX/UI Specialist Trainee Level 1,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Software Engineer Trainee Level 1,IT Software Development,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Real Estate Applications Specialist Level 2,Real Estate,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Real Estate Applications Specialist Level 1,Real Estate,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Real Estate Administration - Sales & Property Management Level 1,Real Estate,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Bookings Operator Level 1,Real Estate,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Administration Manager Level 1,Real Estate,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Success Operations Associate Level 1,Marketing/Content,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Google Ad Specialist,Marketing/Content,1.0,2,True,"the most common category, however few staff"
+1. JP Title,SEO Specialist Level 1,Marketing/Content,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Instructional Designer Level 2,Marketing/Content,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Director of Demand Generation Level 1,Marketing/Content,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Content Curator Specialist Level 2,Marketing/Content,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Supply Chain Support Level 1,Logistics and Supply Chain,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Logistics Analyst,Logistics and Supply Chain,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Order Fulfillment Specialist Level 2,Logistics and Supply Chain,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Real Estate Listings Specialist Level 2,Real Estate,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Real Estate Contracts Administrator Level 1,Real Estate,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Production Support Level 1,Virtual Assistant,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Payments Lead Level 1,Virtual Assistant,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Data Services Manager Level 1,Virtual Assistant,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Client Information Specialist Senior Level 1,Virtual Assistant,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Campaign Planner Level 1,Virtual Assistant,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Training Coordinator Level 2,Training,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Senior Training Manager,Training,1.0,2,True,"the most common category, however few staff"
+1. JP Title,Producer Level 1,"Creative, Design & Multimedia",0.5,2,True,"the most common category, however few staff"
+1. JP Title,Technical Assistant Level 1,Virtual Assistant,1.0,1,True,"the most common category, however few staff"
+1. JP Title,General Manager Property Services Level 2,Real Estate,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Client Services Team Level 1,Real Estate,1.0,1,True,"the most common category, however few staff"
+1. JP Title,VP Global Marketing UK Level 1,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Technical Writer Level 2,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Technical Writer Level 1,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Success Operations Associate Level 2,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Social Media Marketer Level 2,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior VP Marketing,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Technical Writer,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Social Media Marketer,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Client success - Campaign Coordinator,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Affiliate Marketing,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Regional Marketing Specialist for Demand Generation - EMEA Level 1,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Regional Marketing Manager for Demand Generation - US Level 1,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Regional Marketing Manager for Demand Generation - AU Level 2,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Product Manager Level 1,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Fund Accountant Level 1,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Control State Inventory Manager Level 1,Virtual Assistant,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Client Information Specialist Senior Level 2,Virtual Assistant,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Client Care Team Leader Level 1,Virtual Assistant,1.0,1,True,"the most common category, however few staff"
+1. JP Title,CSR Manager Level 1,Virtual Assistant,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Sales Admin Level 1,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Lead Generation Program Manager Level 1,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Chief Sales & Marketing Officer Level 1,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Business Development Analyst Level 1,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Business Development Administrator Level 1,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Talent Acquisition Trainee Level 1,Recruitment,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Recruitment Team Leader,Recruitment,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Chief Recruitment Officer Level 2,Recruitment,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Chief Recruitment Officer Level 1,Recruitment,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Real Estate Maintenance Specialist,Real Estate,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Real Estate Listings Specialist,Real Estate,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Transaction Advisory Associate Level 1,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Supply Management Officer Level 1,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Supply Management Level 2,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Sourcing Specialist Level 2,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Fund Accountant,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Cost Accountant,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Audit & Assurance Officer,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Accounts Clerk,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,"Senior Accounting, Payroll and HR Coordinator",Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Accounting Support Agent,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Accounting Manager,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Procurement Manager Level 1,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Paraplanner Level 1,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,MYOB Accountant Level 2,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,JP-10061 Accounts Payable Officer Level 2,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Inbound Settlement Operations Manager Level 1,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Credit Manager,BPO Collections,1.0,1,True,"the most common category, however few staff"
+1. JP Title,senior architect Level 2,Architectural Design,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Industrial Designer,Architectural Design,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Landscape Designer Level 1,Architectural Design,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Interior Designer Level 1,Architectural Design,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Industrial Designer Level 2,Architectural Design,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Commercial Architect Level 2,Architectural Design,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Transcription Specialist Level 1,Administrative,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Sr. Administrative Coordinator Level 2,Administrative,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Research Specialist,Administrative,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Purchasing Specialist,Administrative,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Invoice Processing Specialist,Administrative,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Customer Operations Management,Administrative,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Customer Coordinator Level 1,Administrative,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Pre Press & Workflow Operator Level 1,Administrative,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Online Teacher Level 2,Administrative,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Travel Consultant,BPO Travel/Hospitality,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Travel Agent,BPO Travel/Hospitality,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Training Specialist,BPO Travel/Hospitality,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Holiday Administrator,BPO Travel/Hospitality,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Cruise Specialist,BPO Travel/Hospitality,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Airline Travel Specialist,BPO Travel/Hospitality,1.0,1,True,"the most common category, however few staff"
+1. JP Title,QEM Account Liaison Level 1,BPO Travel/Hospitality,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Online Reservation Processor Level 1,BPO Travel/Hospitality,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Hotel Reservations Coordinator Level 2,BPO Travel/Hospitality,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Cruise Specialist Level 2,BPO Travel/Hospitality,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Call Center Manager Level 2,BPO Travel/Hospitality,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Licensing Coordinator,BPO Non-Voice/Back-Office,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Chat Support Agent,BPO Non-Voice/Back-Office,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Outbound Sales Supervisor Level 1,BPO Non-Voice/Back-Office,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Medical Coder Level 1,BPO Healthcare,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Client Information & SS PA Team Leader Level 1,BPO Healthcare,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Team Leader for Receptionists Level 1,BPO Workforce Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Site Admin Officer Level 1,BPO Workforce Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Project Manager Level 1,BPO Workforce Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Office Lease Manager Level 1,BPO Workforce Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Client Experience Manager,BPO Workforce Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Alumni Relations Manager,BPO Workforce Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Report Analyst Level 2,BPO Workforce Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Project Support Level 2,BPO Workforce Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,JP Creater Level 1,BPO Workforce Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Client Services Manager Level 1,BPO Workforce Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Capacity Planner Level 1,BPO Workforce Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Alumni Relations Manager Level 2,BPO Workforce Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Telemarketing Supervisor Level 2,BPO Voice (Sales) Specialist,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Team Lead - Travel Level 2,BPO Travel/Hospitality,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Supervisor - GDS Level 2,BPO Travel/Hospitality,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Supervisor - Cruise Level 1,BPO Travel/Hospitality,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Associate Graphic Designer Trainee Level 2,"Creative, Design & Multimedia",1.0,1,True,"the most common category, however few staff"
+1. JP Title,Assistant Producer Level 1,"Creative, Design & Multimedia",1.0,1,True,"the most common category, however few staff"
+1. JP Title,VP Growth AMER Level 2,C Level,1.0,1,True,"the most common category, however few staff"
+1. JP Title,"Head of Sales, UK. Level 1",C Level,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Head of Marketing Level 1,C Level,1.0,1,True,"the most common category, however few staff"
+1. JP Title,"Director, Sales Level 1",C Level,1.0,1,True,"the most common category, however few staff"
+1. JP Title,"Director, Product Level 1",C Level,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Communications Manager Level 1,C Level,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Chief Finance Officer Level 1,C Level,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Chief Executive Officer Level 1,C Level,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Chief Compliance Officer Level 2,C Level,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Safety & Claims Officer Level 1,Banking & Financial Services,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Loan Packaging Specialist Level 1,Banking & Financial Services,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Investment Management Specialist Level 1,Banking & Financial Services,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Financial Management Specialist Level 2,Banking & Financial Services,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Financial Management Specialist Level 1,Banking & Financial Services,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Accounting Associate Trainee Level 2,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Account Receivable Manager Level 1,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Drop Shipping Specialist Level 1,Ecommerce,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Amazon Specialist Level 2,Ecommerce,1.0,1,True,"the most common category, however few staff"
+1. JP Title,3PL Specialist Level 2,Ecommerce,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Web Designer Level 2,"Creative, Design & Multimedia",1.0,1,True,"the most common category, however few staff"
+1. JP Title,Videographer Level 1,"Creative, Design & Multimedia",1.0,1,True,"the most common category, however few staff"
+1. JP Title,Team Leader - Graphic Designer Level 2,"Creative, Design & Multimedia",1.0,1,True,"the most common category, however few staff"
+1. JP Title,Team Leader - Graphic Designer Level 1,"Creative, Design & Multimedia",1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Video Editor,"Creative, Design & Multimedia",1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Creative,"Creative, Design & Multimedia",1.0,1,True,"the most common category, however few staff"
+1. JP Title,Scriptwriter Level 1,"Creative, Design & Multimedia",1.0,1,True,"the most common category, however few staff"
+1. JP Title,Producer Team Leader Level 1,"Creative, Design & Multimedia",1.0,1,True,"the most common category, however few staff"
+1. JP Title,Print Graphic Designer Level 1,"Creative, Design & Multimedia",1.0,1,True,"the most common category, however few staff"
+1. JP Title,Head Writer Level 1,"Creative, Design & Multimedia",1.0,1,True,"the most common category, however few staff"
+1. JP Title,Director of Photography Level 1,"Creative, Design & Multimedia",1.0,1,True,"the most common category, however few staff"
+1. JP Title,Electronics Engineer Level 1,Electronics Communications,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Shopify Developer Level 1,Ecommerce,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Shopify Administrator Level 1,Ecommerce,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior eBay Specialist,Ecommerce,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Shopify Administrator,Ecommerce,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Marketplace Store Specialist Level 1,Ecommerce,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Ecommerce Store Operations Level 2,Ecommerce,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Ecommerce Store Operations Level 1,Ecommerce,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Ecommerce Developer (General) Level 1,Ecommerce,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Financial Planning and Analysis Manager Level 1,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Finance Director,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Business Information Specialist Level 2,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Auditor Level 2,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Accounts Payable Manager Level 1,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,"Accounting, Payroll and HR Coordinator Level 2",Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Accounting Tech Level 1,Accounting,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Incoming Client Visit Coordinator Level 1,Event Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Event Manager Level 1,Event Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Event Coordinator Level 2,Event Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Structural Estimator,Engineering Structural,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Estimator Manager Level 1,Engineering Structural,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Mechanical Estimator,Engineering Mechanical,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Mechanical Estimator Level 1,Engineering Mechanical,1.0,1,True,"the most common category, however few staff"
+1. JP Title,BIM Modeler Level 1,Engineering Mechanical,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Product Engineer Level 1,Engineering Industrial,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Electrical Design Engineer,Engineering Electrical,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Principal Electrical Engineer Level 1,Engineering Electrical,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Lighting Designer Level 1,Engineering Electrical,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Structural Estimator Level 2,Engineering Civil,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Civil Engineer,Engineering Civil,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Civil Engineer Level 1,Engineering Civil,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Electronics Engineer Level 2,Electronics Communications,1.0,1,True,"the most common category, however few staff"
+1. JP Title,HR and Admin Officer Level 2,Human Resources,1.0,1,True,"the most common category, however few staff"
+1. JP Title,HR Officer Level 2,Human Resources,1.0,1,True,"the most common category, however few staff"
+1. JP Title,"HR Manager, Systems and Reports Level 1",Human Resources,1.0,1,True,"the most common category, however few staff"
+1. JP Title,HR Generalist Level 2,Human Resources,1.0,1,True,"the most common category, however few staff"
+1. JP Title,HR Generalist Level 1,Human Resources,1.0,1,True,"the most common category, however few staff"
+1. JP Title,HR Director Level 2,Human Resources,1.0,1,True,"the most common category, however few staff"
+1. JP Title,HR Admin Assistant Coordinator Level 1,Human Resources,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Transport Coordinator Level 2,Facilities Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Site Admin Level 2,Facilities Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Maid,Facilities Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Facility Manager,Facilities Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Security Consultant Level 1,Facilities Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,"Occupational Safety, Health and Environment Manger Level 1",Facilities Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Maintenance Personnel Level 2,Facilities Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Facility Manager Level 2,Facilities Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,AC Technician Level 2,Facilities Management,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Software Security Specialist,IT Information Security,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Password Manager Level 1,IT Information Security,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Infrastructure Architect,IT Cloud Computing Systems,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Cloud Applications Engineer,IT Cloud Computing Systems,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Infrastructure Architect Level 2,IT Cloud Computing Systems,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Cloud Migration Engineer Level 2,IT Cloud Computing Systems,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Cloud Engineer Level 1,IT Cloud Computing Systems,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Cloud Applications Engineer Level 2,IT Cloud Computing Systems,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Service Desk Analyst Level 1,IT Business Analysis,1.0,1,True,"the most common category, however few staff"
+1. JP Title,AI Speclialist Level 1,IT Business Analysis,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Staff Relations Officer Level 2,Human Resources,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior HR and Admin Specialist,Human Resources,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior HR and Admin Assistant,Human Resources,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior HR Supervisor,Human Resources,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior HR Generalist,Human Resources,1.0,1,True,"the most common category, however few staff"
+1. JP Title,HR and Talent Officer Level 1,Human Resources,1.0,1,True,"the most common category, however few staff"
+1. JP Title,3D Modelling Developer Level 2,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,.Net Developer Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,VOIP Specialist Level 2,IT Network Systems/Support,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Technical Manager Level 1,IT Network Systems/Support,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Software Support Representative Level 1,IT Network Systems/Support,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Server Administrator Level 1,IT Network Systems/Support,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior VOIP Specialist,IT Network Systems/Support,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Linux Administrator,IT Network Systems/Support,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Provisioning & Porting Coordinator Level 1,IT Network Systems/Support,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Network Operations Manager Level 2,IT Network Systems/Support,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Network Operations Manager Level 1,IT Network Systems/Support,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Network Administrator Level 2,IT Network Systems/Support,1.0,1,True,"the most common category, however few staff"
+1. JP Title,IT Service Support Team Lead Level 1,IT Network Systems/Support,1.0,1,True,"the most common category, however few staff"
+1. JP Title,IT Helpdesk Manager Level 1,IT Network Systems/Support,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Configuration SME Team Leader Level 1,IT Network Systems/Support,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Assistant Service Manager Level 2,IT Network Systems/Support,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Power BI Developer Level 2,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,PHP Laravel Developer Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Node JS Developer Level 2,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Node JS Developer Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Mulesoft Developer Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Microsoft Dynamics Developer Level 2,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Microsoft Dynamics Developer Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Laravel Developer Level 2,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,ERP Developer Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,DotNet Developer Level 2,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Development Service Delivery Consultant Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,CRM Developer Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,C# Developer Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Azure Developer Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Associate Software Engineer Level 2,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Angular Developer Level 2,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Android Developer Level 2,IT Software Mobile Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Zoho Developer Level 2,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,ServiceNow Developer Level 2,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Zoho Developer,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Unity Developer,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Salesforce Consultant,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Office 365 Developer,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Laravel Developer,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Azure Developer,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior ASP Developer,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Salesforce Tester Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Ruby On Rails Developer Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,React Developer Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,QA Tool Manager Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Python Developer Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Principal Developer Level 1,IT Software Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Order Fulfillment Specialist Level 1,Logistics and Supply Chain,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Logistics Analyst Level 2,Logistics and Supply Chain,1.0,1,True,"the most common category, however few staff"
+1. JP Title,"Senior Manager, Legal Affairs",Legal Specialist,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Legal Executive Assistant,Legal Specialist,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Document Processing Specialist,Legal Specialist,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Contract Administrator,Legal Specialist,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Legal Executive Assistant Level 2,Legal Specialist,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Legal Assistant Level 2,Legal Specialist,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Legal Assistant Level 1,Legal Specialist,1.0,1,True,"the most common category, however few staff"
+1. JP Title,General Manager Level 2,Legal Specialist,1.0,1,True,"the most common category, however few staff"
+1. JP Title,General Manager Level 1,Legal Specialist,1.0,1,True,"the most common category, however few staff"
+1. JP Title,"Director, Legal Affairs Level 2",Legal Specialist,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior IMS Manager,Integrated Management System (IMS),1.0,1,True,"the most common category, however few staff"
+1. JP Title,IMS Manager Level 1,Integrated Management System (IMS),1.0,1,True,"the most common category, however few staff"
+1. JP Title,Automation Tester Level 1,IT Software QA,1.0,1,True,"the most common category, however few staff"
+1. JP Title,IOS Developer Level 1,IT Software Mobile Development,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Marketing Operations Manager Level 1,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Marketing Associate Trainee Level 1,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Hubspot Administrator Level 2,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Hubspot Administrator Level 1,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Head of Content/Communications Level 1,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Google Ad Specialist Level 1,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Editing & Proofreader Level 2,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Content Curator Specialist Level 1,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Client success - Campaign Coordinator Level 1,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Brand Manager Level 1,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Affiliate Marketing Level 2,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Administration and Marketing Manager Level 1,Marketing/Content,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Supply chain Manager Level 2,Logistics and Supply Chain,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Supply chain Manager,Logistics and Supply Chain,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Production and Planning Specialist,Logistics and Supply Chain,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Logistics Manager,Logistics and Supply Chain,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Sales Admin Support Level 2,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Operation Analyst Level 2,Virtual Assistant,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Operation Analyst Level 1,Virtual Assistant,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Return Officer Operations Level 1,Virtual Assistant,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Production Support Level 2,Virtual Assistant,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Personal Assistant Level 2,Virtual Assistant,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Loan Assessment Consultant Level 2,Virtual Assistant,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Loan Assessment Consultant Level 1,Virtual Assistant,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Executive Services Manager Level 1,Virtual Assistant,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Evaluation Specialist Level 2,Virtual Assistant,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Customer Success Operations Associate Level 1,Virtual Assistant,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Property Management Support,Real Estate,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Rentals Assistant Level 2,Real Estate,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Real Estate Database Administrator Level 2,Real Estate,1.0,1,True,"the most common category, however few staff"
+1. JP Title,New Business Support Level 1,Real Estate,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Head of Go To Market Property Services Level 2,Real Estate,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Real Estate Database Administrator,Real Estate,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Training Officer Level 2,Training,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Learning and Development Coordinator Level 1,Training,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Learning & Development Lead Level 1,Training,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Accounting Trainer US Level 2,Training,1.0,1,True,"the most common category, however few staff"
+1. JP Title,VP For Sales Level 2,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,UK Country Manager Level 1,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Service Delivery Manager,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Senior Sales Executive,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Sales Development Representative,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Senior Leads Administrator,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Sales Operations Manager Level 2,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Sales Operations Manager Level 1,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Sales Marketing Assistant Level 2,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Sales Manager Level 2,Sales Professional,1.0,1,True,"the most common category, however few staff"
+1. JP Title,Sales Manager Level 1,Sales Professional,1.0,1,True,"the most common category, however few staff"
+2. Designation,accountant,Accounting,0.944,797,True,at least 5 staff and 60% in one category
+2. Designation,customer service representative,BPO Voice,0.745,471,True,at least 5 staff and 60% in one category
+2. Designation,software engineer,IT Software Development,0.803,461,True,at least 5 staff and 60% in one category
+2. Designation,technical support,IT Network Systems/Support,0.511,368,False,at least 5 staff and 60% in one category
+2. Designation,executive assistant,Virtual Assistant,0.828,349,True,at least 5 staff and 60% in one category
+2. Designation,accounting officer,Accounting,0.809,267,True,at least 5 staff and 60% in one category
+2. Designation,property management assistant,Real Estate,0.992,256,True,at least 5 staff and 60% in one category
+2. Designation,outbound sales specialist,BPO Voice,0.649,211,True,at least 5 staff and 60% in one category
+2. Designation,cpa,Accounting,0.96,199,True,at least 5 staff and 60% in one category
+2. Designation,engineer,Architectural Design,0.399,168,False,at least 5 staff and 60% in one category
+2. Designation,graphic designer,"Creative, Design & Multimedia",0.905,147,True,at least 5 staff and 60% in one category
+2. Designation,back office administrator,Administrative,0.943,141,True,at least 5 staff and 60% in one category
+2. Designation,customer care specialist,BPO Voice,0.977,131,True,at least 5 staff and 60% in one category
+2. Designation,inbound sales representative,BPO Voice,0.961,128,True,at least 5 staff and 60% in one category
+2. Designation,collections specialist,BPO Collections,0.959,122,True,at least 5 staff and 60% in one category
+2. Designation,accounts receivable officer,Accounting,1.0,104,True,at least 5 staff and 60% in one category
+2. Designation,design engineer,Architectural Design,0.337,89,False,at least 5 staff and 60% in one category
+2. Designation,customer support specialist,Accounting,0.865,89,True,at least 5 staff and 60% in one category
+2. Designation,account manager,BPO Workforce Management,0.862,87,True,at least 5 staff and 60% in one category
+2. Designation,customer care representative,BPO Voice,0.942,86,True,at least 5 staff and 60% in one category
+2. Designation,call center agent,BPO Voice,1.0,83,True,at least 5 staff and 60% in one category
+2. Designation,sqa engineer,IT Software QA,0.711,83,True,at least 5 staff and 60% in one category
+2. Designation,virtual assistant,Virtual Assistant,0.976,82,True,at least 5 staff and 60% in one category
+2. Designation,travel specialist,BPO Travel/Hospitality,0.988,80,True,at least 5 staff and 60% in one category
+2. Designation,admin assistant,Administrative,0.962,79,True,at least 5 staff and 60% in one category
+2. Designation,data entry specialist,Administrative,1.0,68,True,at least 5 staff and 60% in one category
+2. Designation,accountant general,Accounting,1.0,68,True,at least 5 staff and 60% in one category
+2. Designation,order processing specialist,Administrative,0.969,65,True,at least 5 staff and 60% in one category
+2. Designation,purchasing officer,Accounting,0.864,59,True,at least 5 staff and 60% in one category
+2. Designation,technical support specialist,BPO Non-Voice/Back-Office,0.552,58,False,at least 5 staff and 60% in one category
+2. Designation,accounts payable officer,Accounting,1.0,58,True,at least 5 staff and 60% in one category
+2. Designation,concierge,Facilities Management,1.0,58,True,at least 5 staff and 60% in one category
+2. Designation,sales support specialist,BPO Voice,1.0,58,True,at least 5 staff and 60% in one category
+2. Designation,technical support immersion,IT Network Systems/Support,1.0,56,True,at least 5 staff and 60% in one category
+2. Designation,general accountant,Accounting,0.963,54,True,at least 5 staff and 60% in one category
+2. Designation,inside sales agent,BPO Non-Voice/Back-Office,1.0,51,True,at least 5 staff and 60% in one category
+2. Designation,pioneer team leader,BPO Workforce Management,0.294,51,False,at least 5 staff and 60% in one category
+2. Designation,for marketing,Marketing/Content,0.367,49,False,at least 5 staff and 60% in one category
+2. Designation,bookkeeper,Accounting,1.0,48,True,at least 5 staff and 60% in one category
+2. Designation,marketing officer,Marketing/Content,0.208,48,False,at least 5 staff and 60% in one category
+2. Designation,business development manager,Sales Professional,0.935,46,True,at least 5 staff and 60% in one category
+2. Designation,loan processor,Accounting,0.69,42,True,at least 5 staff and 60% in one category
+2. Designation,generation specialist,BPO Voice,0.6,40,True,at least 5 staff and 60% in one category
+2. Designation,draftsman,Engineering Civil,0.541,37,False,at least 5 staff and 60% in one category
+2. Designation,content writer,Marketing/Content,0.838,37,True,at least 5 staff and 60% in one category
+2. Designation,sales administration assistant,BPO Non-Voice/Back-Office,1.0,37,True,at least 5 staff and 60% in one category
+2. Designation,cruise specialist,BPO Travel/Hospitality,1.0,35,True,at least 5 staff and 60% in one category
+2. Designation,appointment setter,BPO Voice,1.0,34,True,at least 5 staff and 60% in one category
+2. Designation,estimator,Architectural Design,1.0,33,True,at least 5 staff and 60% in one category
+2. Designation,back office specialist,Virtual Assistant,0.909,33,True,at least 5 staff and 60% in one category
+2. Designation,telemarketer,BPO Voice,1.0,33,True,at least 5 staff and 60% in one category
+2. Designation,sales agent,BPO Voice,1.0,32,True,at least 5 staff and 60% in one category
+2. Designation,business analyst,Data Science / Analytics,0.419,31,False,at least 5 staff and 60% in one category
+2. Designation,quality assurance officer,BPO Non-Voice/Back-Office,0.613,31,True,at least 5 staff and 60% in one category
+2. Designation,cs freelancer,Virtual Assistant,0.968,31,True,at least 5 staff and 60% in one category
+2. Designation,billing operations analyst,Accounting,1.0,31,True,at least 5 staff and 60% in one category
+2. Designation,marketing assistant,Virtual Assistant,0.968,31,True,at least 5 staff and 60% in one category
+2. Designation,client services,BPO Healthcare,0.967,30,True,at least 5 staff and 60% in one category
+2. Designation,security analyst,IT Information Security,0.933,30,True,at least 5 staff and 60% in one category
+2. Designation,tech support,BPO Travel/Hospitality,0.667,30,True,at least 5 staff and 60% in one category
+2. Designation,team manager,BPO Workforce Management,0.833,30,True,at least 5 staff and 60% in one category
+2. Designation,data and reports analyst,Data Science / Analytics,1.0,29,True,at least 5 staff and 60% in one category
+2. Designation,tax accountant,Accounting,1.0,28,True,at least 5 staff and 60% in one category
+2. Designation,holiday administrator,BPO Travel/Hospitality,1.0,27,True,at least 5 staff and 60% in one category
+2. Designation,hr specialist,Human Resources,1.0,26,True,at least 5 staff and 60% in one category
+2. Designation,hr and admin assistant,Human Resources,0.962,26,True,at least 5 staff and 60% in one category
+2. Designation,inventory accountant,Accounting,1.0,25,True,at least 5 staff and 60% in one category
+2. Designation,logistics & supply chain specialist,Ecommerce,1.0,24,True,at least 5 staff and 60% in one category
+2. Designation,talent operations specialist,Recruitment,0.958,24,True,at least 5 staff and 60% in one category
+2. Designation,helpdesk specialist,IT Network Systems/Support,1.0,24,True,at least 5 staff and 60% in one category
+2. Designation,customer success manager,Sales Professional,0.708,24,True,at least 5 staff and 60% in one category
+2. Designation,operations manager,BPO Workforce Management,0.909,22,True,at least 5 staff and 60% in one category
+2. Designation,project manager,Data Science / Analytics,0.909,22,True,at least 5 staff and 60% in one category
+2. Designation,accounting specialist,Accounting,0.909,22,True,at least 5 staff and 60% in one category
+2. Designation,compliance specialist,Legal Specialist,0.905,21,True,at least 5 staff and 60% in one category
+2. Designation,network engineer,IT Network Systems/Support,1.0,21,True,at least 5 staff and 60% in one category
+2. Designation,paralegal,Legal Specialist,1.0,21,True,at least 5 staff and 60% in one category
+2. Designation,operations administrative support,Administrative,1.0,21,True,at least 5 staff and 60% in one category
+2. Designation,team,BPO Voice,0.65,20,True,at least 5 staff and 60% in one category
+2. Designation,collections agent,BPO Collections,1.0,20,True,at least 5 staff and 60% in one category
+2. Designation,billing and collections analyst,Accounting,1.0,19,True,at least 5 staff and 60% in one category
+2. Designation,customer case management,BPO Non-Voice/Back-Office,0.947,19,True,at least 5 staff and 60% in one category
+2. Designation,sales pa,Sales Professional,1.0,19,True,at least 5 staff and 60% in one category
+2. Designation,generation,Sales Professional,0.778,18,True,at least 5 staff and 60% in one category
+2. Designation,inventory specialist,Accounting,0.944,18,True,at least 5 staff and 60% in one category
+2. Designation,receptionist,Real Estate,0.944,18,True,at least 5 staff and 60% in one category
+2. Designation,salesforce developer,IT Software Development,1.0,18,True,at least 5 staff and 60% in one category
+2. Designation,hearing assistant,BPO Healthcare,0.778,18,True,at least 5 staff and 60% in one category
+2. Designation,sales development representative,Sales Professional,1.0,17,True,at least 5 staff and 60% in one category
+2. Designation,marketing specialist,"Creative, Design & Multimedia",0.294,17,False,at least 5 staff and 60% in one category
+2. Designation,financial accountant,Accounting,0.941,17,True,at least 5 staff and 60% in one category
+2. Designation,legal administrative assistant,Legal Specialist,0.941,17,True,at least 5 staff and 60% in one category
+2. Designation,accounts receivable specialist,Accounting,1.0,17,True,at least 5 staff and 60% in one category
+2. Designation,client services officer,Accounting,0.706,17,True,at least 5 staff and 60% in one category
+2. Designation,real estate administration sales & property management,Real Estate,0.941,17,True,at least 5 staff and 60% in one category
+2. Designation,hotel reservations coordinator,BPO Travel/Hospitality,1.0,16,True,at least 5 staff and 60% in one category
+2. Designation,company nurse,BPO Healthcare,1.0,16,True,at least 5 staff and 60% in one category
+2. Designation,recruitment officer,Recruitment,1.0,16,True,at least 5 staff and 60% in one category
+2. Designation,inbound sales specialist,Sales Professional,1.0,16,True,at least 5 staff and 60% in one category
+2. Designation,multimedia specialist,"Creative, Design & Multimedia",0.75,16,True,at least 5 staff and 60% in one category
+2. Designation,client relationship manager,BPO Workforce Management,0.938,16,True,at least 5 staff and 60% in one category
+2. Designation,recruitment assistant,Recruitment,0.933,15,True,at least 5 staff and 60% in one category
+2. Designation,procurement officer,Accounting,1.0,15,True,at least 5 staff and 60% in one category
+2. Designation,payroll assistant,Accounting,1.0,15,True,at least 5 staff and 60% in one category
+2. Designation,payment processor,Accounting,0.933,15,True,at least 5 staff and 60% in one category
+2. Designation,talent sourcing specialist,Recruitment,0.857,14,True,at least 5 staff and 60% in one category
+2. Designation,accounting assistant,Accounting,0.5,14,False,at least 5 staff and 60% in one category
+2. Designation,architect,Architectural Design,0.385,13,False,at least 5 staff and 60% in one category
+2. Designation,maintenance personnel,Facilities Management,1.0,13,True,at least 5 staff and 60% in one category
+2. Designation,company driver,Facilities Management,1.0,13,True,at least 5 staff and 60% in one category
+2. Designation,customer support intermediate,BPO Voice,1.0,13,True,at least 5 staff and 60% in one category
+2. Designation,contract administrator,Legal Specialist,1.0,13,True,at least 5 staff and 60% in one category
+2. Designation,accounts receivable,Accounting,0.917,12,True,at least 5 staff and 60% in one category
+2. Designation,quantity surveyor,Engineering Civil,1.0,12,True,at least 5 staff and 60% in one category
+2. Designation,ecommerce virtual assistant,Ecommerce,1.0,12,True,at least 5 staff and 60% in one category
+2. Designation,executive services,Accounting,0.333,12,False,at least 5 staff and 60% in one category
+2. Designation,logistics analyst,Logistics and Supply Chain,1.0,12,True,at least 5 staff and 60% in one category
+2. Designation,ecommerce marketing specialist,Ecommerce,0.909,11,True,at least 5 staff and 60% in one category
+2. Designation,marketing coordinator,Marketing/Content,0.818,11,True,at least 5 staff and 60% in one category
+2. Designation,facilities administrator,Facilities Management,1.0,11,True,at least 5 staff and 60% in one category
+2. Designation,client information specialist,Administrative,0.727,11,True,at least 5 staff and 60% in one category
+2. Designation,d modeler & cad designer,"Creative, Design & Multimedia",1.0,11,True,at least 5 staff and 60% in one category
+2. Designation,talent operations officer,Recruitment,0.909,11,True,at least 5 staff and 60% in one category
+2. Designation,research specialist,Administrative,1.0,11,True,at least 5 staff and 60% in one category
+2. Designation,sales support,BPO Voice,1.0,10,True,at least 5 staff and 60% in one category
+2. Designation,property management accountant,Real Estate,0.6,10,True,at least 5 staff and 60% in one category
+2. Designation,data analyst,Data Science / Analytics,0.4,10,False,at least 5 staff and 60% in one category
+2. Designation,solutions architect,IT Network Systems/Support,0.8,10,True,at least 5 staff and 60% in one category
+2. Designation,creative,"Creative, Design & Multimedia",0.7,10,True,at least 5 staff and 60% in one category
+2. Designation,product owner,IT Business Analysis,0.9,10,True,at least 5 staff and 60% in one category
+2. Designation,staff engagement assistant,Event Management,0.9,10,True,at least 5 staff and 60% in one category
+2. Designation,real estate administration,Real Estate,1.0,10,True,at least 5 staff and 60% in one category
+2. Designation,recruiter,Recruitment,1.0,10,True,at least 5 staff and 60% in one category
+2. Designation,drafting and designer,Engineering Civil,1.0,10,True,at least 5 staff and 60% in one category
+2. Designation,product data specialist,Ecommerce,1.0,9,True,at least 5 staff and 60% in one category
+2. Designation,order processor,Ecommerce,1.0,9,True,at least 5 staff and 60% in one category
+2. Designation,payroll specialist,Accounting,1.0,9,True,at least 5 staff and 60% in one category
+2. Designation,cs app support,Accounting,1.0,9,True,at least 5 staff and 60% in one category
+2. Designation,leasing support,Real Estate,1.0,9,True,at least 5 staff and 60% in one category
+2. Designation,project coordinator,Engineering Mechanical,0.667,9,True,at least 5 staff and 60% in one category
+2. Designation,it helpdesk specialist,IT Network Systems/Support,1.0,9,True,at least 5 staff and 60% in one category
+2. Designation,sqa,IT Software QA,1.0,9,True,at least 5 staff and 60% in one category
+2. Designation,training specialist,BPO Travel/Hospitality,0.556,9,False,at least 5 staff and 60% in one category
+2. Designation,hr assistant,Human Resources,0.778,9,True,at least 5 staff and 60% in one category
+2. Designation,assistant underwriter,Banking & Financial Services,1.0,9,True,at least 5 staff and 60% in one category
+2. Designation,sales assistant,Sales Professional,1.0,9,True,at least 5 staff and 60% in one category
+2. Designation,gds flight specialist,BPO Travel/Hospitality,1.0,9,True,at least 5 staff and 60% in one category
+2. Designation,document processing specialist,Legal Specialist,1.0,9,True,at least 5 staff and 60% in one category
+2. Designation,full stack developer,IT Software Development,1.0,9,True,at least 5 staff and 60% in one category
+2. Designation,squad,IT Software Development,0.333,9,False,at least 5 staff and 60% in one category
+2. Designation,database administrator,IT Network Systems/Support,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,netsuite developer,IT Software Development,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,debt collector,BPO Collections,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,customer liaison officer,Sales Professional,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,talent operations,Recruitment,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,accounting manager,Accounting,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,accounting clerk,Accounting,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,accounts officer,Accounting,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,paraplanner,Accounting,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,management accountant,Accounting,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,trust accounting specialist,Accounting,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,seo specialist,Marketing/Content,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,content operations specialist,Marketing/Content,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,technical support level,IT Information Security,0.625,8,True,at least 5 staff and 60% in one category
+2. Designation,service delivery specialist,Virtual Assistant,0.625,8,True,at least 5 staff and 60% in one category
+2. Designation,hr officer,Human Resources,0.875,8,True,at least 5 staff and 60% in one category
+2. Designation,supervisor ob cruise,BPO Travel/Hospitality,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,digital marketing manager,"Creative, Design & Multimedia",1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,training coordinator,Training,0.875,8,True,at least 5 staff and 60% in one category
+2. Designation,front end developer,IT Software Development,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,guest services,Facilities Management,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,endpoint support engineer,BPO Non-Voice/Back-Office,0.5,8,False,at least 5 staff and 60% in one category
+2. Designation,executive administrative assistant,Virtual Assistant,1.0,8,True,at least 5 staff and 60% in one category
+2. Designation,property management support,Real Estate,1.0,7,True,at least 5 staff and 60% in one category
+2. Designation,auditor,Accounting,1.0,7,True,at least 5 staff and 60% in one category
+2. Designation,sales admin,Sales Professional,1.0,7,True,at least 5 staff and 60% in one category
+2. Designation,ecommerce assistant,Virtual Assistant,1.0,7,True,at least 5 staff and 60% in one category
+2. Designation,real estate sales va,Real Estate,1.0,7,True,at least 5 staff and 60% in one category
+2. Designation,customer service team leader,Sales Professional,1.0,7,True,at least 5 staff and 60% in one category
+2. Designation,hybrid maintenance,Facilities Management,1.0,7,True,at least 5 staff and 60% in one category
+2. Designation,paralegal assistant,Virtual Assistant,1.0,7,True,at least 5 staff and 60% in one category
+2. Designation,accounts receivables officer,Accounting,1.0,7,True,at least 5 staff and 60% in one category
+2. Designation,document reviewer,Legal Specialist,1.0,7,True,at least 5 staff and 60% in one category
+2. Designation,hub pulse specialist,BPO Voice,0.571,7,False,at least 5 staff and 60% in one category
+2. Designation,broker support/credit analyst,Accounting,1.0,7,True,at least 5 staff and 60% in one category
+2. Designation,detailer,Engineering Civil,1.0,7,True,at least 5 staff and 60% in one category
+2. Designation,endpoint engineering,IT Network Systems/Support,1.0,7,True,at least 5 staff and 60% in one category
+2. Designation,supervisor,BPO Travel/Hospitality,0.5,6,False,at least 5 staff and 60% in one category
+2. Designation,recruitment specialist,Recruitment,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,invoice processing specialist,Administrative,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,opsec system technician,BPO Non-Voice/Back-Office,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,email support agent,BPO Non-Voice/Back-Office,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,production and planning specialist,Logistics and Supply Chain,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,generation officer,BPO Non-Voice/Back-Office,0.5,6,False,at least 5 staff and 60% in one category
+2. Designation,site admin officer,Administrative,0.5,6,False,at least 5 staff and 60% in one category
+2. Designation,digital marketer/web development,IT Software Development,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,trainer,BPO Voice (Sales) Specialist,0.833,6,True,at least 5 staff and 60% in one category
+2. Designation,credit assessment analyst,Administrative,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,hr and admin specialist,Human Resources,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,hr officer labour relations,Human Resources,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,provisioning & porting coordinator,IT Network Systems/Support,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,site manager,BPO Workforce Management,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,underwriting assistant,Banking & Financial Services,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,call quality analyst,BPO Voice,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,outbound calling specialist,BPO Voice,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,customer support,Accounting,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,customer operations management,Administrative,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,purchasing,Accounting,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,airline travel specialist,BPO Travel/Hospitality,1.0,6,True,at least 5 staff and 60% in one category
+2. Designation,newsroom,Marketing/Content,0.833,6,True,at least 5 staff and 60% in one category
+2. Designation,training officer,Training,0.833,6,True,at least 5 staff and 60% in one category
+2. Designation,creative specialist,"Creative, Design & Multimedia",0.667,6,True,at least 5 staff and 60% in one category
+2. Designation,seo,Marketing/Content,0.667,6,True,at least 5 staff and 60% in one category
+2. Designation,talent sourcing officer,Recruitment,0.667,6,True,at least 5 staff and 60% in one category
+2. Designation,structural engineer,Engineering Structural,0.5,6,False,at least 5 staff and 60% in one category
+2. Designation,campaign planner,Marketing/Content,0.4,5,False,at least 5 staff and 60% in one category
+2. Designation,marketing manager,Marketing/Content,0.4,5,False,at least 5 staff and 60% in one category
+2. Designation,travel agent,BPO Travel/Hospitality,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,travel consultant,BPO Travel/Hospitality,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,business development administrator,Sales Professional,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,technology talent partner,Recruitment,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,real estate contracts administrator,Real Estate,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,pci compliance specialist pds sales,BPO Voice,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,steel detailer,Engineering Civil,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,quality assurance specialist,Administrative,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,technical service representative,BPO Voice,0.6,5,True,at least 5 staff and 60% in one category
+2. Designation,software security specialist,IT Information Security,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,payroll manager,Accounting,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,implementation consultant,IT Business Analysis,0.8,5,True,at least 5 staff and 60% in one category
+2. Designation,software qa and tester,IT Software Development,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,configuration analyst,IT Software Development,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,order fulfillment specialist,Logistics and Supply Chain,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,client success campaign coordinator,Marketing/Content,0.6,5,True,at least 5 staff and 60% in one category
+2. Designation,report analyst,BPO Workforce Management,0.6,5,True,at least 5 staff and 60% in one category
+2. Designation,for data capture services,Data Science / Analytics,0.6,5,True,at least 5 staff and 60% in one category
+2. Designation,provisioning & accounts coordinator,IT Network Systems/Support,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,corporate accountant,Accounting,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,assistant accountant,Accounting,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,operations officer,Virtual Assistant,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,payroll officer,Accounting,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,financial management specialist,Banking & Financial Services,0.8,5,True,at least 5 staff and 60% in one category
+2. Designation,facilities manager,Facilities Management,1.0,5,True,at least 5 staff and 60% in one category
+2. Designation,generation team,Sales Professional,0.8,5,True,at least 5 staff and 60% in one category
+3. Department,Executive Services,BPO Voice,0.27,6348,False,at least 10 staff and 80% in one category
+3. Department,Accounting Support Services,Accounting,0.92,1903,True,at least 10 staff and 80% in one category
+3. Department,Software Development,IT Software Development,0.783,585,False,at least 10 staff and 80% in one category
+3. Department,Technical Support Services,IT Network Systems/Support,0.554,509,False,at least 10 staff and 80% in one category
+3. Department,Engineering,Architectural Design,0.315,422,False,at least 10 staff and 80% in one category
+3. Department,Marketing,Marketing/Content,0.303,188,False,at least 10 staff and 80% in one category
+3. Department,Finance,Accounting,0.941,186,True,at least 10 staff and 80% in one category
+3. Department,Creative and Design Services,"Creative, Design & Multimedia",0.831,183,True,at least 10 staff and 80% in one category
+3. Department,Talent Acquisition,Recruitment,0.869,145,True,at least 10 staff and 80% in one category
+3. Department,Human Resources,Human Resources,0.646,113,False,at least 10 staff and 80% in one category
+3. Department,Sales,Sales Professional,0.762,105,False,at least 10 staff and 80% in one category
+3. Department,Facilities,Facilities Management,0.87,100,True,at least 10 staff and 80% in one category
+3. Department,Endpoint,IT Network Systems/Support,0.531,96,False,at least 10 staff and 80% in one category
+3. Department,SQA Services,IT Software QA,0.722,90,False,at least 10 staff and 80% in one category
+3. Department,Account Management Growth,BPO Workforce Management,0.653,75,False,at least 10 staff and 80% in one category
+3. Department,Product Development,BPO Workforce Management,0.242,66,False,at least 10 staff and 80% in one category
+3. Department,CSX,"Creative, Design & Multimedia",0.338,65,False,at least 10 staff and 80% in one category
+3. Department,Network and Security,IT Information Security,0.519,52,False,at least 10 staff and 80% in one category
+3. Department,Content Writing Services,Marketing/Content,0.795,44,False,at least 10 staff and 80% in one category
+3. Department,Operational Excellence,BPO Workforce Management,0.214,42,False,at least 10 staff and 80% in one category
+3. Department,Business Analyst,Data Science / Analytics,0.364,33,False,at least 10 staff and 80% in one category
+3. Department,Freelance,Virtual Assistant,0.968,31,True,at least 10 staff and 80% in one category
+3. Department,Lead Generation,Sales Professional,0.621,29,False,at least 10 staff and 80% in one category
+3. Department,Concierge,Facilities Management,1.0,20,True,at least 10 staff and 80% in one category
+3. Department,Data Capture Services,Data Science / Analytics,0.6,20,False,at least 10 staff and 80% in one category
+3. Department,Drivers,Facilities Management,1.0,12,True,at least 10 staff and 80% in one category
+3. Department,Newsroom and Events,"Creative, Design & Multimedia",0.417,12,False,at least 10 staff and 80% in one category
+3. Department,Quality Assurance,Administrative,0.417,12,False,at least 10 staff and 80% in one category
+3. Department,Training and Professional Services,Training,0.8,10,True,at least 10 staff and 80% in one category
+3. Department,Legal,Legal Specialist,0.889,9,False,at least 10 staff and 80% in one category
+3. Department,Legal and Compliance,Legal Specialist,0.778,9,False,at least 10 staff and 80% in one category
+3. Department,Compliance,Integrated Management System (IMS),1.0,8,False,at least 10 staff and 80% in one category
+3. Department,Value and Property,BPO Non-Voice/Back-Office,0.5,8,False,at least 10 staff and 80% in one category
+3. Department,Senior Executives,C Level,0.667,6,False,at least 10 staff and 80% in one category
+3. Department,Endpoint Automations,BPO Non-Voice/Back-Office,1.0,5,False,at least 10 staff and 80% in one category
+3. Department,Ecommerce,Ecommerce,1.0,3,False,at least 10 staff and 80% in one category
+3. Department,Guest Services,Facilities Management,1.0,2,False,at least 10 staff and 80% in one category
+3. Department,UEG,IT Cloud Computing Systems,1.0,2,False,at least 10 staff and 80% in one category
+3. Department,Young Presidents' Organization,Marketing/Content,1.0,2,False,at least 10 staff and 80% in one category
+3. Department,Training,BPO Voice (Sales) Specialist,1.0,1,False,at least 10 staff and 80% in one category
+3. Department,Project Management,Data Science / Analytics,1.0,1,False,at least 10 staff and 80% in one category
+3. Department,Real Estate,Sales Professional,1.0,1,False,at least 10 staff and 80% in one category

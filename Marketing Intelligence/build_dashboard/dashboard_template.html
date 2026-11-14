@@ -153,6 +153,29 @@ details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
 .tag{display:inline-block;padding:2px 8px;margin:2px 4px 2px 0;border-radius:var(--radius-pill);font-size:var(--font-size-2xs);font-weight:var(--font-weight-semibold);white-space:nowrap;background:var(--color-surface-secondary);color:var(--color-text-base-primary)}
 .tag-flag{background:var(--color-feature-05-soft);color:var(--color-feature-05-bold)}
 .tag-est{background:var(--color-feature-02-soft);color:var(--color-text-base-primary)}
+/* fit chips (Client Propensity): hover shows the chance, what High means and why */
+.tag-fit{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong);cursor:help;display:inline-flex;align-items:center;gap:5px;padding-right:3px}
+.tag-fit:focus-visible{outline:2px solid var(--color-brand-primary);outline-offset:1px}
+.tag-fit i{font-size:.9em}
+.tag-fit .lift{background:var(--color-surface-primary);border-radius:var(--radius-pill);padding:0 6px;font-weight:var(--font-weight-bold)}
+/* fit hover card */
+#fitTip{position:fixed;z-index:1000;max-width:340px;min-width:250px;background:var(--color-surface-primary);color:var(--color-text-base-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-lg);box-shadow:0 8px 24px rgba(0,0,0,.18);padding:14px 16px;font-size:var(--font-size-xs);line-height:1.5;pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s}
+#fitTip.show{opacity:1;transform:none}
+#fitTip .tip-head{display:flex;align-items:center;gap:8px;font-weight:var(--font-weight-bold);font-size:var(--font-size-sm);margin-bottom:8px}
+#fitTip .tip-head i{color:var(--color-feature-01)}
+#fitTip .tip-band{margin-left:auto;background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong);border-radius:var(--radius-pill);padding:1px 8px;font-size:var(--font-size-2xs)}
+#fitTip .tip-big{display:flex;align-items:baseline;gap:6px}
+#fitTip .tip-big b{font-family:var(--font-family-heading);font-size:var(--font-size-2xl, 1.6rem);line-height:1.1}
+#fitTip .tip-big span{color:var(--color-text-base-secondary)}
+#fitTip .meter{position:relative;height:8px;border-radius:var(--radius-pill);background:var(--color-surface-secondary);margin:10px 0 4px}
+#fitTip .meter .fill{position:absolute;inset:0 auto 0 0;border-radius:inherit;background:var(--color-feature-01)}
+#fitTip .meter .usual{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--color-text-base-primary)}
+#fitTip .tip-lift{color:var(--color-text-base-secondary);margin-bottom:8px}
+#fitTip .tip-lift b{color:var(--color-text-base-primary)}
+#fitTip dl{display:grid;grid-template-columns:7.5rem 1fr;gap:4px 10px;margin:8px 0 0;padding-top:8px;border-top:1px solid var(--border-color-default)}
+#fitTip dt{color:var(--color-text-base-muted);font-weight:var(--font-weight-semibold)}
+#fitTip dd{margin:0}
+#fitTip .tip-note{margin-top:8px;color:var(--color-text-base-secondary);font-size:var(--font-size-2xs)}
 #tGlance td.n{white-space:nowrap}
 #tGlance th{position:static;vertical-align:bottom}
 #tGlance th.lst{text-align:center;border-bottom:1px solid var(--border-color-default)}
@@ -169,7 +192,14 @@ details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
 #tGlance tr.grp-start td{border-top:2px solid var(--color-brand-primary-accent)}
 #tGlance tr.tot td{background:var(--color-surface-secondary);font-weight:var(--font-weight-bold)}
 #tList td{vertical-align:middle}
-#tList td:nth-child(5){white-space:normal;min-width:280px}
+#tList td.why{white-space:normal;min-width:280px}
+/* Organic Growth "With us": seats now, recent change, time as a client */
+#tList td.withus{white-space:nowrap;line-height:1.35}
+.withus .seats{font-family:var(--font-family-heading);font-weight:var(--font-weight-bold);font-size:var(--font-size-md)}
+.withus .seats small{font-family:var(--font-family-body, inherit);font-weight:var(--font-weight-regular, 400);font-size:var(--font-size-2xs);color:var(--color-text-base-secondary);margin-left:3px}
+.withus .delta{font-size:var(--font-size-2xs);font-weight:var(--font-weight-semibold);margin-left:6px;color:var(--color-brand-secondary-strong)}
+.withus .since{display:block;font-size:var(--font-size-2xs);color:var(--color-text-base-secondary)}
+.withus .since i{margin-right:4px;color:var(--color-text-base-muted)}
 /* glossary facts */
 .ins p.lead{margin:0 0 10px;line-height:1.6}
 dl.facts{display:grid;grid-template-columns:8rem 1fr;gap:6px 12px;margin:0;font-size:var(--font-size-xs)}
@@ -380,7 +410,7 @@ function chartData(id, cfg, isPct) {
 function table(el, cols, rows, opts = {}) {
   const sortable = !!opts.sortable;
   let h = '<table><thead><tr>' + cols.map((c, i) => `<th class="${c.n ? 'n' : ''} ${sortable ? 'sort' : ''}" data-i="${i}">${c.label}</th>`).join('') + '</tr></thead><tbody>';
-  h += rows.map(r => `<tr class="${r._small ? 'small' : ''}">` + cols.map(c => `<td class="${c.n ? 'n' : ''}">${c.f ? c.f(r[c.k], r) : esc(r[c.k])}</td>`).join('') + '</tr>').join('');
+  h += rows.map(r => `<tr class="${r._small ? 'small' : ''}">` + cols.map(c => `<td class="${c.n ? 'n' : ''} ${c.cls || ''}">${c.f ? c.f(r[c.k], r) : esc(r[c.k])}</td>`).join('') + '</tr>').join('');
   el.innerHTML = h + '</tbody></table>';
   if (sortable) el.querySelectorAll('th').forEach(th => th.onclick = () => opts.onSort(cols[+th.dataset.i].k));
 }
@@ -416,6 +446,50 @@ const trigFacts = () => ['BDM', 'SDR', 'Marketing'].map(team => {
 });
 const SEAT_BANDS = [['0', 'seat_0'], ['1–5', 'seat_1_5'], ['6–10', 'seat_6_10'], ['11 or more', 'seat_11']];
 const seatBandText = () => SEAT_BANDS.map(([l, k]) => `${l} seats = ${fmtSet(k)}`).join(', ');
+// Fit (Client Propensity, scoring profile dashboard_v3): older data has no fit settings, and the page then leaves Fit out
+const HAS_FIT = 'fit_max_og' in SET;
+const fitBandText = () => `High = ${fmtSet('fit_high')}, Medium = ${fmtSet('fit_medium')}, Low = ${fmtSet('fit_low')}`;
+const isFit = c => c[1] === 'fit';
+const chance = p => blank(p) ? '–' : p < 0.005 ? '<1%' : pct(p, 0);
+// a fit chip's hover in one line (CSV, screen readers); older data has the hover as plain text
+const tipText = (t, tip) => typeof tip === 'string' ? tip : `${chance(tip.chance)} chance ${tip.window}`
+  + (blank(tip.lift) ? '' : `, ${fmt(tip.lift, 1)}× ${tip.usual_label || 'the usual rate'} (${chance(tip.usual)})`) + (tip.why ? `. Why: ${tip.why}` : '')
+  + tip.facts.map(([k, v]) => `. ${k}: ${v}`).join('') + `. ${tip.compare}.` + (tip.note ? ` ${tip.note}` : '');
+const chipHtml = ([t, kind, tip]) => {
+  const cls = kind === 'flag' ? 'tag-flag' : kind === 'est' ? 'tag-est' : kind === 'fit' ? 'tag-fit' : '';
+  if (!tip) return `<span class="tag ${cls}">${esc(t)}</span>`;
+  if (typeof tip === 'string') return `<span class="tag ${cls}" tabindex="0" title="${esc(tip)}">${esc(t)}</span>`;
+  return `<span class="tag ${cls}" tabindex="0" data-tip="${esc(JSON.stringify(tip))}" data-title="${esc(t)}" aria-label="${esc(t + ': ' + tipText(t, tip))}">`
+    + `<i class="fa-solid fa-seedling"></i>${esc(t)}${blank(tip.lift) ? '' : `<span class="lift">${fmt(tip.lift, 1)}×</span>`}</span>`;
+};
+// the fit hover card: one floating box, filled from the chip's data-tip on hover or keyboard focus
+const tipBox = Object.assign(document.createElement('div'), {id: 'fitTip'});
+tipBox.setAttribute('role', 'tooltip'); document.body.appendChild(tipBox);
+function tipCard(title, t) {
+  const usual = blank(t.usual) ? '' : `<span class="usual" style="left:${Math.min(t.usual, 1) * 100}%" title="usual rate"></span>`;
+  return `<div class="tip-head"><i class="fa-solid fa-seedling"></i>${esc(title)}<span class="tip-band">${esc(t.band)} fit</span></div>`
+    + `<div class="tip-big"><b>${chance(t.chance)}</b><span>chance ${esc(t.window)}</span></div>`
+    + `<div class="meter"><span class="fill" style="width:${Math.min(t.chance, 1) * 100}%"></span>${usual}</div>`
+    + (blank(t.lift) ? '' : `<div class="tip-lift"><b>${fmt(t.lift, 1)}×</b> ${esc(t.usual_label || 'the usual rate')} (${chance(t.usual)}, the line on the bar)</div>`)
+    + `<dl>${t.why ? `<dt>Why</dt><dd>${esc(t.why)}</dd>` : '<dt>Why</dt><dd>No single trait stands out</dd>'}`
+    + t.facts.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('') + '</dl>'
+    + `<div class="tip-note">${esc(t.compare)}.${t.note ? ' ' + esc(t.note) : ''}</div>`;
+}
+function showTip(el) {
+  tipBox.innerHTML = tipCard(el.dataset.title, JSON.parse(el.dataset.tip));
+  const r = el.getBoundingClientRect(), w = tipBox.offsetWidth, h = tipBox.offsetHeight;
+  const top = r.bottom + 8 + h > innerHeight && r.top - 8 - h > 0 ? r.top - 8 - h : r.bottom + 8;
+  tipBox.style.left = Math.max(8, Math.min(r.left, innerWidth - w - 8)) + 'px';
+  tipBox.style.top = top + 'px';
+  tipBox.classList.add('show');
+}
+const hideTip = () => tipBox.classList.remove('show');
+document.addEventListener('mouseover', e => { const el = e.target.closest('[data-tip]'); if (el) showTip(el); });
+document.addEventListener('mouseout', e => { const el = e.target.closest('[data-tip]'); if (el && !el.contains(e.relatedTarget)) hideTip(); });
+document.addEventListener('focusin', e => { const el = e.target.closest('[data-tip]'); if (el) showTip(el); else hideTip(); });
+document.addEventListener('focusout', hideTip);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideTip(); });
+addEventListener('scroll', hideTip, true);
 
 // ---- header text: every date comes from the data
 const M = D.meta;
@@ -441,7 +515,7 @@ const tierRule = () => PCT_TIERS
   : `Tier 1 is ${b('tier1')} or more, Tier 2 is ${b('tier2')} or more, and everything below is Tier 3.`;
 const tierCuts = t => ['New Logo', 'Organic Growth'].map(g => `<b>${fmt(cutoff(g, t))}</b> on ${g}`).join(' and ');
 const tier1Sub = goal => PCT_TIERS ? `top ${fmtSet('tier1_share')} of ${goal}: score ${fmt(cutoff(goal, 'Tier 1'))} or more` : `highest band: score ${fmtSet('tier1')} or more`;
-const FILL_KEY = {web: 'base_web', news: 'base_news', seat: 'base_seats'};
+const FILL_KEY = {web: 'base_web', news: 'base_news', seat: 'base_seats', fit: 'base_fit'};
 const KNOWN_MEAN = !!M.unknown_fill && /fallback/.test(SET.base_web.label);   // unknown = average of the accounts with data
 const fillShare = (part, goal) => M.unknown_fill && M.unknown_fill[goal] ? M.unknown_fill[goal][part] : S(FILL_KEY[part]);
 const fillText = (part, goal) => KNOWN_MEAN ? `the average of the accounts that have it (<b>${pct(fillShare(part, goal), 0)}</b>)` : `the typical ${b(FILL_KEY[part])}`;
@@ -538,11 +612,14 @@ $('btnCharts').onclick = () => { showCharts = !showCharts; render(); };
 function rPriorities(f, rows) {
   setChartsUi();
   const hot = rows.filter(r => !blank(r.hot_trigger)).length, t1 = rows.filter(r => r.tier === 'Tier 1').length;
-  $('takeaway').innerHTML = `<i class="fa-solid fa-circle-info"></i> Of <b>${fmt(rows.length)}</b> accounts on the ${esc(teamLabel(f.team))} list, <b>${fmt(hot)}</b> have a trigger event and <b>${fmt(t1)}</b> ${t1 === 1 ? 'is' : 'are'} Tier 1.`;
+  const fitN = rows.filter(r => r.chips.some(isFit)).length;
+  $('takeaway').innerHTML = `<i class="fa-solid fa-circle-info"></i> Of <b>${fmt(rows.length)}</b> accounts on the ${esc(teamLabel(f.team))} list, <b>${fmt(hot)}</b> have a trigger event and <b>${fmt(t1)}</b> ${t1 === 1 ? 'is' : 'are'} Tier 1.`
+    + (HAS_FIT ? ` <b>${fmt(fitN)}</b> ${fitN === 1 ? 'is' : 'are'} likely to grow (a green fit chip; hover it for the reason).` : '');
   $('kpis').innerHTML = kpiTiles([
     ['k-blue', 'fa-list-check', 'Accounts on this list', fmt(rows.length), 'with the filters above'],
     ['k-pink', 'fa-bolt', 'Trigger event', fmt(hot), 'have a recent event that makes now a good time to engage'],
     ['k-teal', 'fa-star', 'Tier 1', fmt(t1), tier1Sub(f.team.split('|')[1])],
+    ...(HAS_FIT ? [['k-purple', 'fa-seedling', 'Likely to grow', fmt(fitN), f.team.endsWith('New Logo') ? 'profiles like these grew to 5+ / 10+ seats or a 2nd department' : 'likely to reach 5+ / 10+ / 20+ seats, or (one-department clients) a 2nd department']] : []),
   ]);
   if (showCharts) rCharts(f, rows);
   rList(f, rows);
@@ -568,26 +645,39 @@ const LIST_COLS = [
   {k: 'company_name', label: 'Company', f: v => `<span class="co">${esc(v)}</span>`},
   {k: 'profile', label: 'Profile', f: v => `<span class="prof">${esc(v)}</span>`},
   {k: 'hot_trigger', label: 'Trigger event', f: (v, r) => blank(v) ? '' : (blank(r.act_now_triggers) ? [v] : r.act_now_triggers.split('; ')).map(t => `<span class="badge b-hot"><i class="fa-solid fa-bolt"></i> ${esc(t)}</span>`).join(' ')},
-  {k: 'chips', label: 'Why', f: v => v.map(([t, kind]) => `<span class="tag ${kind === 'flag' ? 'tag-flag' : kind === 'est' ? 'tag-est' : ''}">${esc(t)}</span>`).join('')},
+  {k: 'chips', label: 'Why', cls: 'why', f: v => v.map(chipHtml).join('')},
 ];
+// Organic Growth lists only: one "With us" column grouping seats now, the 6-month change and time as a client
+const MONTH = d => new Date(d + 'T00:00:00').toLocaleDateString('en-AU', {month: 'short', year: 'numeric'});
+const withUs = (v, r) => {
+  const seats = blank(r.cs_staff_current) ? '<span class="prof">Seats unknown</span>'
+    : `<span class="seats">${fmt(r.cs_staff_current)}<small>${Number(r.cs_staff_current) === 1 ? 'seat' : 'seats'}</small></span>`;
+  const add = Number(r.seats_added_6m) > 0 ? `<span class="delta" title="Seats added in the last 6 months">+${fmt(r.seats_added_6m)} in 6 mo</span>` : '';
+  const since = blank(r.client_tenure_lbl) ? '' : `<span class="since"><i class="fa-regular fa-calendar"></i>Client ${esc(r.client_tenure_lbl)}${blank(r.client_since) ? '' : ` · since ${MONTH(r.client_since)}`}</span>`;
+  return seats + add + since;
+};
+const WITH_US_COL = {k: 'cs_staff_current', label: 'With us', cls: 'withus', f: withUs};
+const listCols = team => team.endsWith('Organic Growth') ? [...LIST_COLS.slice(0, 3), WITH_US_COL, ...LIST_COLS.slice(3)] : LIST_COLS;
 const CSV_COLS = [{k: 'account_id', label: 'Account ID'}, {k: 'company_name', label: 'Company'}, {k: 'list', label: 'List'}, {k: 'priority_score', label: 'Priority score'}, {k: 'tier', label: 'Tier'}, {k: 'workbook_score', label: 'Score before trigger bonus'}, {k: 'workbook_tier', label: 'Tier before trigger bonus'},
-  {k: 'hot_trigger', label: 'Trigger event (first)'}, {k: 'act_now_triggers', label: 'All trigger events'}, {k: 'act_now_bonus', label: 'Trigger bonus'}, {k: 'why', label: 'Why'}, {k: 'industry', label: 'Industry'}, {k: 'employee_band', label: 'Employee band'}, {k: 'region', label: 'Region'}, {k: 'seats_added_6m', label: 'Seats added (6 months)'}, {k: 'estimated_fields', label: 'Estimated'}];
+  {k: 'hot_trigger', label: 'Trigger event (first)'}, {k: 'act_now_triggers', label: 'All trigger events'}, {k: 'act_now_bonus', label: 'Trigger bonus'}, {k: 'why', label: 'Why'}, {k: 'industry', label: 'Industry'}, {k: 'employee_band', label: 'Employee band'}, {k: 'region', label: 'Region'}, {k: 'cs_staff_current', label: 'Current seats'}, {k: 'seats_added_6m', label: 'Seats added (6 months)'}, {k: 'client_since', label: 'Client since (first staff start)'}, {k: 'client_tenure_lbl', label: 'Time as client'}, {k: 'fit_pts', label: 'Fit points'}, {k: 'fit_why', label: 'Fit: why'}, {k: 'estimated_fields', label: 'Estimated'}];
 const listRows = (f, rows) => rows.filter(r => !f.q || r.company_name.toLowerCase().includes(f.q));
 function rList(f, rows) {
   const out = listRows(f, rows);
   $('listSub').textContent = `${fmt(out.length)} accounts`;
   $('listNone').hidden = out.length > 0;
-  table($('tList'), LIST_COLS, out);
+  table($('tList'), listCols(f.team), out);
 }
 $('listSearch').oninput = () => { $('topSearch').value = $('listSearch').value; render(); };
 $('topSearch').oninput = () => { $('listSearch').value = $('topSearch').value; if (page !== 'priorities') go('priorities'); else render(); };
 $('btnCsv').onclick = $('btnCsv2').onclick = () => { const f = filt();
-  download(`priority_list_${f.team.replace('|', '_').replace(/ /g, '_')}.csv`, listRows(f, current).map(r => ({...r, list: teamLabel(r.team), why: r.chips.map(c => c[0]).join(' · ')})), CSV_COLS); };
+  download(`priority_list_${f.team.replace('|', '_').replace(/ /g, '_')}.csv`, listRows(f, current).map(r => ({...r, list: teamLabel(r.team), why: r.chips.map(c => c[0]).join(' · '),
+    fit_why: r.chips.filter(isFit).map(c => `${c[0]}: ${tipText(c[0], c[2] || '').replace(/\n/g, ' ')}`).join(' | ')})), CSV_COLS); };
 
 // ---------------- Data glossary
 const GAP_FIELDS = {industry: r => blank(r.industry), employee_band: r => blank(r.employee_band), website: r => blank(r.web_visits_30d),
-  news_jobs: r => blank(r.news_signal) && blank(r.job_postings_30d), seats: r => blank(r.seats_added_6m), diamond: r => blank(r.diamond_referral), competitor: r => blank(r.competitor_client)};
-const GAP_LABEL = {industry: 'Industry', employee_band: 'Employee band', website: 'Website activity', news_jobs: 'News and jobs', seats: 'Seat growth', diamond: 'Diamond referral', competitor: 'Competitor client'};
+  news_jobs: r => blank(r.news_signal) && blank(r.job_postings_30d), seats: r => blank(r.seats_added_6m), diamond: r => blank(r.diamond_referral), competitor: r => blank(r.competitor_client),
+  ...(HAS_FIT ? {fit: r => blank(r.fit_signal)} : {})};
+const GAP_LABEL = {industry: 'Industry', employee_band: 'Employee band', website: 'Website activity', news_jobs: 'News and jobs', seats: 'Seat growth', diamond: 'Diamond referral', competitor: 'Competitor client', fit: 'Fit'};
 const byGoal = g => D.rows.filter(r => r.goal === g);
 const gap = (field, goal) => { const a = byGoal(goal); return a.filter(GAP_FIELDS[field]).length / a.length; };
 const G = (field, goal) => `<b>${pct(gap(field, goal), 0)}</b>`;
@@ -597,10 +687,17 @@ function glossCard(title, tag, lead, facts) {
 }
 function rGlance() {
   const nl = c => S(c + '_max_nl'), og = c => S(c + '_max_og');
-  const baseNl = nl('web') + nl('news') + S('dia_max') + S('competitor_max'), baseOg = og('web') + og('news') + S('seat_max_og');
+  const fitNl = HAS_FIT ? nl('fit') : 0, fitOg = HAS_FIT ? og('fit') : 0;
+  const baseNl = nl('web') + nl('news') + S('dia_max') + S('competitor_max') + fitNl, baseOg = og('web') + og('news') + S('seat_max_og') + fitOg;
   const lo = 1 - S('mod_min'), hi = S('mod_max') - 1;
   const nudge = `×${fmtSet('mod_min')}–×${fmtSet('mod_max')}`, nudgePct = Math.abs(lo - hi) < 1e-9 ? `±${pct(hi, 0)}` : `−${pct(lo, 0)} to +${pct(hi, 0)}`;
-  const groupMax = {Website: [nl('web'), og('web')], 'News and jobs': [nl('news'), og('news')], 'Seat growth': [null, S('seat_max_og')], Flags: [S('dia_max') + S('competitor_max'), null]};
+  const groupMax = {Website: [nl('web'), og('web')], 'News and jobs': [nl('news'), og('news')], 'Seat growth': [null, S('seat_max_og')], Flags: [S('dia_max') + S('competitor_max'), null], Fit: [fitNl, fitOg]};
+  const fitRows = HAS_FIT ? [
+    ['Next seat milestone', 'Fit', `How likely the client is to reach its next seat milestone within 12 months: 1–4 seats → 5+, 5–9 → 10+, 10–19 → 20+ (${fitBandText()} of this part)`, 'fit_seat_milestone_band', null, fitOg * S('fit_seat_w')],
+    ['Second department', 'Fit', 'One-department clients only: how likely the client is to add a second department within 12 months, compared with other one-department clients. Clients with 2+ departments score 0 on this part, so their fit is at most the seat milestone\'s share', 'fit_second_dept_band, depts_so_far', null, fitOg * S('fit_dept_w_og')],
+    ['Profile growth', 'Fit', 'If we sign them: how often clients with the same industry and country grew to 5+ seats in a year or 10+ in two (the better of the two)', 'fit_growth_band, fit_reach_10_band', fitNl * S('fit_growth_w'), null],
+    ['Profile 2nd department', 'Fit', 'If we sign them: how often clients with the same industry and country added a second department in their first year', 'fit_branch_1y_band', fitNl * S('fit_dept_w_nl'), null],
+  ] : [];
   const rows = [
     ['Team Builder visit', 'Website', 'Visited the Team Builder page in the last 30 days', 'team_builder_visit', nl('web') * S('tb_share'), og('web') * S('tb_share')],
     ['Form fill', 'Website', 'Filled in any form on our website in the last 30 days', 'form_fill_30d', nl('web') * S('ff_share'), og('web') * S('ff_share')],
@@ -610,6 +707,7 @@ function rGlance() {
     ['Seats added', 'Seat growth', `Seats the client added in the last 6 months, in bands (share of the points: ${seatBandText()})`, 'seats_added_6m', null, S('seat_max_og')],
     ['Diamond referral', 'Flags', 'Referred to us through the Diamond referral program', 'diamond_referral', S('dia_max'), null],
     ['Competitor client', 'Flags', 'Has been a client of a competing outsourcing provider (named in Cloudstaffer resumes)', 'competitor_client', S('competitor_max'), null],
+    ...fitRows,
   ].map(([signal, part, what, data, a, b]) => ({signal, part, what, data, nlP: a === null ? null : r1(a), nlS: a === null ? null : a / baseNl, ogP: b === null ? null : r1(b), ogS: b === null ? null : b / baseOg}));
   rows.push({signal: 'Total', part: 'Total', what: 'All signals together, before the adjustments below', data: '', nlP: baseNl, nlS: 1, ogP: baseOg, ogS: 1, _tot: 1});
   rows.push({signal: 'Industry trend', part: 'Adjustments', what: 'How fast the company\'s industry is growing; multiplies the total', data: 'industry_trend', nlP: nudge, nlS: nudgePct, ogP: nudge, ogS: nudgePct});
@@ -628,17 +726,18 @@ function rGlance() {
     if (first) {
       const span = rows.filter(x => x.part === r.part).length, mx = groupMax[r.part];
       const sub = !mx ? 'Change the total after the points are added' : mx[0] === null ? `Organic Growth only: up to ${fmt(mx[1], Number.isInteger(mx[1]) ? 0 : 1)} points`
+        : r.part === 'Fit' ? `Up to ${fmt(mx[0])} points on New Logo and ${fmt(mx[1])} on Organic Growth, from the Client Propensity scores`
         : `Up to ${fmt(mx[0])} points on New Logo` + (mx[1] === null ? ', not used on Organic Growth' : `, ${fmt(mx[1], Number.isInteger(mx[1]) ? 0 : 1)} on Organic Growth`);
       sig = `<td class="sig" rowspan="${span}"><b>${esc(r.part)}</b><small>${sub}</small></td>`;
     }
     let miss = '';
-    if (r.part === 'Website' || r.part === 'News and jobs' || r.part === 'Seat growth') {            // the baseline fills the whole signal, so one merged cell
+    if (r.part === 'Website' || r.part === 'News and jobs' || r.part === 'Seat growth' || r.part === 'Fit') {            // the baseline fills the whole signal, so one merged cell
       if (first) {
-        const w = r.part === 'Website', sg = r.part === 'Seat growth', part = w ? 'web' : sg ? 'seat' : 'news', mx = groupMax[r.part];
+        const w = r.part === 'Website', sg = r.part === 'Seat growth', ft = r.part === 'Fit', part = w ? 'web' : sg ? 'seat' : ft ? 'fit' : 'news', mx = groupMax[r.part];
         const fNl = fillShare(part, 'New Logo'), fOg = fillShare(part, 'Organic Growth');
         const where = mx[0] === null ? `${P(r1(fOg * mx[1]))} points (${pct(fOg, 0)}) on Organic Growth` : `${P(r1(fNl * mx[0]))} points (${pct(fNl, 0)}) on New Logo, ${P(r1(fOg * mx[1]))} (${pct(fOg, 0)}) on Organic Growth`;
         miss = `<td class="miss" rowspan="${rows.filter(x => x.part === r.part).length}"><b>${KNOWN_MEAN ? 'The average of the accounts that have the data' : `Typical value: ${pct(fNl, 0)} of the signal's maximum`}</b>`
-          + `<small>${where}. ${w ? 'Used when we have no website visit data.' : sg ? 'Used when we have no seat history for the client.' : 'Used when we have neither a news item nor job-posting data.'}</small></td>`;
+          + `<small>${where}. ${w ? 'Used when we have no website visit data.' : sg ? 'Used when we have no seat history for the client.' : ft ? 'Used when the account has no fit score (e.g. a client with no current seats). A part that is missing (e.g. no seat milestone at 20+ seats) leaves the other part on its own.' : 'Used when we have neither a news item nor job-posting data.'}</small></td>`;
       }
     } else miss = `<td class="miss">${r.part === 'Flags' ? 'Counts as "No": 0 points' : r.signal === 'Industry trend' ? 'Industry unknown or no trend for it: ×1.0, no effect' : 'No trigger: no bonus'}</td>`;
     h += `<tr class="${first ? 'grp-start' : ''}">${sig}<td class="feat"><b>${esc(r.signal)}</b></td><td class="what">${esc(r.what)}</td>`
@@ -681,11 +780,20 @@ function rGlossary() {
     glossCard('Competitor client', 'Flag', 'The company has been a client of a competing outsourcing provider, because Cloudstaffer resumes name it as a past client. It shows the company is open to outsourcing.', [
       ['Comes from', 'CS Jobs'], ['Applies to', 'New Logo only'], ['In the score', `Adds ${b('competitor_max')} points`],
       ['If unknown', 'Treated as not a competitor client'], ['Unknown today', `${G('competitor', NL)} of prospects`]]),
+    ...(HAS_FIT ? [glossCard('Fit', 'Growth potential', 'How likely an account is to grow with us, learned from five years of client history (the Client Propensity project). It answers "do accounts like this grow?", while the buying signals answer "is now a good time?". A green fit chip shows each likely step; hover it for the chance, what High means and why.', [
+      ['Tracks', 'Organic Growth: reaching the next seat milestone (1–4 seats → 5+, 5–9 → 10+, 10–19 → 20+) within 12 months and, for clients with one department, adding a second one (compared with other one-department clients). Clients that already have several departments score 0 on the department part, so clients growing past one department rank higher. New Logo: how often clients with the same industry and country grew to 5+ seats in a year or 10+ in two, and added a second department in year one'],
+      ['Comes from', 'Client Propensity scores (MyStaff, SC Engagement List, StaffCentral departments)'], ['Applies to', 'Both lists'],
+      ['In the score', `Up to ${b('fit_max_nl')} points on New Logo and ${b('fit_max_og')} on Organic Growth. Organic Growth: seat milestone ${b('fit_seat_w')}, second department ${b('fit_dept_w_og')} (one-department clients only; clients with 2+ departments score 0 on it, so at most ${P(S('fit_max_og') * S('fit_seat_w'))} points). New Logo: seat growth ${b('fit_growth_w')}, second department ${b('fit_dept_w_nl')}. Each part's band: ${fitBandText()}.`],
+      ['Bands', 'High / Medium / Low = top, middle and bottom third of past clients by score, so High means "top third", not a fixed chance'],
+      ['Chips', `A fit chip shows only when the band is High <b>and</b> the chance is at least ${'fit_chip_lift' in SET ? `<b>${fmtSet('fit_chip_lift')}×</b>` : 'well above'} the usual rate, so every chip is well above what a typical account does. New Logo "Likely 5+ seats" compares a prospect with the average prospect on the list (prospects are scored on industry and country only, so they sit below past clients). The pill on the chip is that multiple; hover the chip for the chance, the usual rate, why, and (for departments) which ones`],
+      ['If unknown', `We use ${fillText('fit', OG)} on Organic Growth (${pct(fillShare('fit', NL), 0)} on New Logo) and the yellow "No … data" chip names fit.`],
+      ['Read with care', 'New Logo fit is scored on industry and country only, so every prospect with the same profile gets the same fit. Fit shows what accounts like this did before, not what this account will do.'],
+      ['Unknown today', `${G('fit', NL)} of prospects, ${G('fit', OG)} of clients (mostly clients with no current seats)`]])] : []),
   ].join('');
   $('glossTerms').innerHTML = [
     glossCard('Priority score', '', `One number from 0 to 100 for how worth pursuing an account is right now. ${tierRule()}`),
     glossCard('Trigger event', '', `A recent event that makes now a good time to engage: reach out (BDM, SDR) or target with a campaign (Marketing). The trigger events are: a Diamond referral, form fill, Team Builder visit, funding round or PE buyout (last ${b('hot_days')} days), hiring spike or ${b('hiring_min_postings')} or more job postings (New Logo), ${b('heavy_visits_min')} or more website visits with no form fill, or restructuring or leadership-change news (last ${b('campaign_news_days')} days). They are checked in that order, and the first one that applies is the account's first trigger. A trigger event adds ${b('hot_bonus')} points (${b('hot_bonus_diamond')} for a Diamond referral, which already adds flag points).${stackText()} The bonus moves them up the list, but a strong account without a trigger can still rank above a weak one with a trigger. The account goes to the team of its first trigger:`, trigFacts()),
-    glossCard('Estimated data', '', `When we do not have website, news or seat growth data for an account, its score uses ${KNOWN_MEAN ? 'the average of the accounts of the same type (New Logo or Organic Growth) that have the data' : 'a typical level'} instead. A yellow "No … data" chip shows which part was estimated, so you know the score is based on a partial picture.`),
+    glossCard('Estimated data', '', `When we do not have website, news, seat growth${HAS_FIT ? ' or fit' : ''} data for an account, its score uses ${KNOWN_MEAN ? 'the average of the accounts of the same type (New Logo or Organic Growth) that have the data' : 'a typical level'} instead. A yellow "No … data" chip shows which part was estimated, so you know the score is based on a partial picture.`),
     glossCard('Roles and lists', '', `Each account has one owner role: Marketing, SDR or BDM. Marketing and BDM each have a New Logo list (prospects) and an Organic Growth list (existing clients); SDR works New Logo only. Choose the role and list in the filter bar. A trigger event decides the role (see the Trigger event card); other accounts follow the pipeline's routing mode (see the banner).`),
   ].join('');
 }
@@ -703,6 +811,12 @@ function signalPoints() {
     {component: 'Seat growth', signal: 'Seats added in 6 months', nl: 'Not used', og: S('seat_max_og'), how: `Full credit at 11 or more seats added; fewer seats earn less (table below)`},
     {component: 'Flags', signal: 'Diamond referral', nl: S('dia_max'), og: 'Not used', how: 'Referred through the Diamond referral program'},
     {component: 'Flags', signal: 'Competitor client', nl: S('competitor_max'), og: 'Not used', how: 'Named as a competitor\'s past client in Cloudstaffer resumes'},
+    ...(HAS_FIT ? [
+      {component: 'Fit', signal: 'Next seat milestone', nl: 'Not used', og: r1(og('fit') * S('fit_seat_w')), how: 'High band: top third of past clients of the same size for reaching the next milestone (5+, 10+ or 20+ seats) within 12 months'},
+      {component: 'Fit', signal: 'Second department', nl: 'Not used', og: r1(og('fit') * S('fit_dept_w_og')), how: 'One-department clients: High band for adding a second department within 12 months (ranked among one-department clients). 2+ departments: 0 points here'},
+      {component: 'Fit', signal: 'Profile growth (5+ or 10+ seats)', nl: r1(nl('fit') * S('fit_growth_w')), og: 'Not used', how: 'High band for the industry and country: grew to 5+ seats in a year or 10+ in two, if signed'},
+      {component: 'Fit', signal: 'Profile 2nd department', nl: r1(nl('fit') * S('fit_dept_w_nl')), og: 'Not used', how: 'High band for the industry and country: added a second department in year one, if signed'},
+    ] : []),
   ];
   const tot = k => r1(sum(rows.map(r => typeof r[k] === 'number' ? r[k] : 0)));
   rows.push({component: 'All signals', signal: 'Total', nl: tot('nl'), og: tot('og'), how: 'The most an account can score before the industry nudge', _tot: 1});
@@ -720,9 +834,10 @@ function rMethod() {
     ['Measure each signal', 'Website activity, News and jobs, and Seat growth are each rated from 0% (nothing) to 100% (as strong as it gets).',
       `Website (<b>${P(S('web_max_nl'))}</b> points${nlOnly}): a Team Builder visit is worth <b>${P(S('web_max_nl') * S('tb_share'))}</b>, a form fill <b>${P(S('web_max_nl') * S('ff_share'))}</b>, and visit volume <b>${P(S('web_max_nl') * S('vol_share'))}</b> (full credit at ${b('vol_cap')} visits in 30 days).`,
       `Seat growth (Organic Growth only): seats the client added in the last 6 months, in bands (${seatBandText()}).`,
+      ...(HAS_FIT ? [`Fit (<b>${P(S('fit_max_nl'))}</b> points on New Logo, <b>${P(S('fit_max_og'))}</b> on Organic Growth): the account's Client Propensity bands (${fitBandText()}). Organic Growth: next seat milestone ${b('fit_seat_w')}, second department ${b('fit_dept_w_og')} (one-department clients; 2+ departments score 0 on it). New Logo: profile seat growth ${b('fit_growth_w')}, second department ${b('fit_dept_w_nl')}. If one part has no score, the other part counts on its own.`] : []),
       `News and jobs (<b>${P(S('news_max_nl'))}</b> points${nlOnly}): the strongest news item is worth <b>${P(S('news_max_nl') * S('news_share'))}</b>, weighted by its type and how recent it is (tables below), and hiring <b>${P(S('news_max_nl') * S('jobs_share'))}</b> (full credit for a hiring spike or ${b('jobs_cap')} job postings).`],
-    ['Turn signals into points', `Each signal can add up to a set number of points (table below). On Organic Growth, Website and News and jobs have ${b('web_max_og')} points each and Seat growth has ${b('seat_max_og')}. Partial activity earns part of the points.`],
-    [KNOWN_MEAN ? 'Fill gaps with the average' : 'Fill gaps with a typical value', KNOWN_MEAN ? `If a signal is unknown, we use the average signal of the accounts of the same type that have it: website ${pct(fillShare('web', 'New Logo'), 0)} on New Logo and ${pct(fillShare('web', 'Organic Growth'), 0)} on Organic Growth, news and jobs ${pct(fillShare('news', 'New Logo'), 0)} and ${pct(fillShare('news', 'Organic Growth'), 0)}, seat growth ${pct(fillShare('seat', 'Organic Growth'), 0)}. An account we know little about scores like an average account, so it is not rewarded for missing data, and a signal we checked and found to be zero scores below the average. A missing referral or competitor client record counts as "no".` : `If we have no website data, we assume ${b('base_web')} of the maximum; if we have no news or jobs data, ${b('base_news')}; if we have no seat history for a client, ${b('base_seats')}. An account we know little about lands in the middle rather than at the top or bottom, and only real evidence can push it into Tier 1. A missing referral or competitor client record counts as "no".`],
+    ['Turn signals into points', `Each signal can add up to a set number of points (table below). On Organic Growth, Website and News and jobs have ${b('web_max_og')} points each and Seat growth has ${b('seat_max_og')}${HAS_FIT ? `; Fit has ${b('fit_max_og')} (${b('fit_max_nl')} on New Logo)` : ''}. Partial activity earns part of the points.`],
+    [KNOWN_MEAN ? 'Fill gaps with the average' : 'Fill gaps with a typical value', KNOWN_MEAN ? `If a signal is unknown, we use the average signal of the accounts of the same type that have it: website ${pct(fillShare('web', 'New Logo'), 0)} on New Logo and ${pct(fillShare('web', 'Organic Growth'), 0)} on Organic Growth, news and jobs ${pct(fillShare('news', 'New Logo'), 0)} and ${pct(fillShare('news', 'Organic Growth'), 0)}, seat growth ${pct(fillShare('seat', 'Organic Growth'), 0)}${HAS_FIT ? `, fit ${pct(fillShare('fit', 'New Logo'), 0)} and ${pct(fillShare('fit', 'Organic Growth'), 0)}` : ''}. An account we know little about scores like an average account, so it is not rewarded for missing data, and a signal we checked and found to be zero scores below the average. A missing referral or competitor client record counts as "no".` : `If we have no website data, we assume ${b('base_web')} of the maximum; if we have no news or jobs data, ${b('base_news')}; if we have no seat history for a client, ${b('base_seats')}. An account we know little about lands in the middle rather than at the top or bottom, and only real evidence can push it into Tier 1. A missing referral or competitor client record counts as "no".`],
     ['Add the flags (New Logo only)', `A Diamond referral adds ${b('dia_max')} points and being a competitor client adds ${b('competitor_max')}.`],
     ['Apply the industry nudge', `The total is multiplied by between ${b('mod_min')} (weakest industry) and ${b('mod_max')} (strongest). If the industry is unknown or has no trend value yet, the multiplier is 1.0 (no change).`],
     ['Add the trigger bonus and set the tier', `An account with any trigger event (Diamond referral, form fill, a Team Builder visit, a funding round or PE buyout in the last ${b('hot_days')} days, a hiring spike or ${b('hiring_min_postings')} or more job postings (New Logo), ${b('heavy_visits_min')} or more website visits with no form fill, or restructuring or leadership-change news in the last ${b('campaign_news_days')} days) gets ${b('hot_bonus')} extra points (${b('hot_bonus_diamond')} when the trigger is a Diamond referral, which already adds flag points), with the score capped at 100.${stackText()} ${tierRule()}`,
@@ -757,6 +872,11 @@ function rExample() {
     ['Website activity', blank(a.web_signal) ? `No website data, so ${fillText('web', a.goal)} is used` : `Signal of <b>${pct(a.web_signal, 0)}</b>`, `<b>${p1(a.web_pts)}</b> <span class="prof">of ${fmtSet('web_max_' + sfx)}</span>`],
     ['News and jobs', blank(a.news_jobs_signal) ? `No news or jobs data, so ${fillText('news', a.goal)} is used` : `<b>${esc(blank(a.news_signal) ? 'No news' : a.news_signal)}</b>, signal of <b>${pct(a.news_jobs_signal, 0)}</b>`, `<b>${p1(a.news_jobs_pts)}</b> <span class="prof">of ${fmtSet('news_max_' + sfx)}</span>`],
     ...(og ? [['Seat growth', blank(a.seats_added_6m) ? `No seat data, so ${fillText('seat', a.goal)} is used` : `<b>${fmt(a.seats_added_6m)}</b> seats added in 6 months (band <b>${esc(a.seat_band)}</b>), signal of <b>${pct(a.seat_signal, 0)}</b>`, `<b>${p1(a.seat_pts)}</b> <span class="prof">of ${fmtSet('seat_max_og')}</span>`]] : []),
+    ...(HAS_FIT ? [['Fit', blank(a.fit_signal) ? `No fit score, so ${fillText('fit', a.goal)} is used`
+      : (og ? `Next seat milestone <b>${blank(a.fit_seat_milestone) ? 'none (20+ seats or no seats)' : esc(a.fit_seat_milestone + '+: ' + (a.fit_seat_milestone_band || '–'))}</b>, second department <b>${esc(!blank(a.fit_second_dept_band) ? a.fit_second_dept_band : a.depts_so_far > 1 ? `0 (${a.depts_so_far} departments already)` : '–')}</b>`
+            : `Profile (${esc(a.industry_lbl)}, ${esc(a.region || 'region unknown')}): 5+ seats <b>${esc(a.fit_growth_band || '–')}</b>, 10+ seats <b>${esc(a.fit_reach_10_band || '–')}</b>, 2nd department <b>${esc(a.fit_branch_1y_band || '–')}</b>`)
+        + `, signal of <b>${pct(a.fit_signal, 0)}</b>` + (a.chips.some(isFit) ? ` ${a.chips.filter(isFit).map(chipHtml).join('')}` : ''),
+      `<b>${p1(a.fit_pts)}</b> <span class="prof">of ${fmtSet('fit_max_' + sfx)}</span>`]] : []),
     ['Diamond referral', og ? '<span class="prof">Not used on Organic Growth</span>' : `<b>${esc(a.diamond_referral ?? 'Unknown (counts as No)')}</b>`, og ? '' : `<b>${p1(a.diamond_pts)}</b>`],
     ['Competitor client', og ? '<span class="prof">Not used on Organic Growth</span>' : `<b>${esc(a.competitor_client ?? 'Unknown (counts as No)')}</b>`, og ? '' : `<b>${p1(a.competitor_pts)}</b>`],
     ['Points before nudge', '', `<b>${p1(a.base_points)}</b>`, 'tot'],

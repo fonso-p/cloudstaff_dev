@@ -11,7 +11,7 @@ dependencies = [
     "openpyxl>=3.1.5",
     "pandas>=3.0.6",
     "scikit-learn>=1.9.1",
-    # news scraper (Marketing Intelligence/news_scraper)
+    # news scraper (News Scraper/)
     "requests>=2.32",
     "beautifulsoup4>=4.12",
 ]
@@ -38,6 +38,16 @@ client-growth = [
     "pywin32; sys_platform == 'win32'",
 ]
 
+# News Scraper/news_scraper/nlp.py: entity checks, event extraction, zero-shot and few-shot classification (CPU only)
+nlp = [
+    "spacy>=3.8",
+    "en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl",
+    "torch>=2.4",
+    "transformers>=4.45",
+    "sentence-transformers>=3.0",
+    "setfit>=1.1",
+]
+
 [tool.uv]
 # A plain `uv sync` installs every group, so no project's packages get removed
-default-groups = ["dev", "client-growth"]
+default-groups = ["dev", "client-growth", "nlp"]

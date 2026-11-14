@@ -1,5 +1,4 @@
 """Step 2: merge the formatted tables.
-    - seat churn exit reasons onto each engagement
     - StaffCentral department / role group onto each engagement (joined on CSID)
     - client industry groups onto MyStaff
 """
@@ -13,79 +12,72 @@ from mi_pipeline import mappings
 from mi_pipeline.step1_format import clean_id, clean_text
 
 
-# ---------------------------------------------------------------- exit reasons
-def merge_seat_churn(engagement, seat_churn, log=print):
-    keys_left  = ["Shortcode", "Engagement ID", "Username", "engagement_date", "disengagement_date"]
-    keys_right = [f"{k}_seat_churn" for k in ["Shortcode", "Engagement ID", "Username", "engagement_date",
-                                              "disengagement_date"]]
-    for l, r in zip(keys_left, keys_right):
-        assert engagement[l].dtype == seat_churn[r].dtype, f"Type mismatch: {l} vs {r}"
-    rows_before = len(engagement)
-    out = engagement.merge(seat_churn, how="left", left_on=keys_left, right_on=keys_right)
-    extra = len(out) - rows_before
-    if extra:
-        dupes = seat_churn[seat_churn.duplicated(subset=keys_right, keep=False)]
-        log(f"[2 merge] WARNING: seat churn join added {extra} rows ({len(dupes)} duplicate key rows in seat churn)")
-    return out
-
-
 # ---------------------------------------------------------------- departments
 def _norm_designation(t):
-    """'Senior Customer Service Representative Level 2' -> 'customer service representative'."""
+    """'Senior Customer Service Representative Level 2' -> 'customer service representative';
+    'Associate Accountant OJT' -> 'accountant'. Removes levels, seniority and training words (config.DESIGNATION_DROP_WORDS)."""
     if pd.isna(t):
         return None
     t = str(t).lower()
-    t = re.sub(r"\blevel\s*\d+\b|\b(i{1,3}|iv|v)\b|\b(senior|sr\.?|junior|jr\.?|associate|lead)\b", "", t)
+    t = re.sub(r"\blevel\s*\d+\b|\b(i{1,3}|iv|v)\b", "", t)
+    t = re.sub(r"\b(" + "|".join(config.DESIGNATION_DROP_WORDS) + r")\b", "", t)
     t = re.sub(r"[^a-z&/ ]", " ", t)
     t = re.sub(r"\s+", " ", t).strip()
     return None if not t or t in config.GENERIC_DESIGNATIONS else t
 
-def designation_map(staff):
-    """Normalised designation -> JP Category, learned from Executive Services staff whose category is known."""
-    ex = staff[staff["department"].eq(config.EXEC_SERVICES).fillna(False)].copy()
-    ex["dkey"] = ex["designation"].map(_norm_designation)
-    known = ex[ex["jp_category"].notna() & ex["dkey"].notna()]
-    stats = (known.groupby("dkey")["jp_category"]
-                  .agg(top=lambda s: s.value_counts().index[0],
-                       purity=lambda s: s.value_counts().iloc[0] / len(s),
-                       n="size"))
-    keep = (stats["n"] >= config.DESIGNATION_MIN_STAFF) & (stats["purity"] >= config.DESIGNATION_MIN_PURITY)
-    return stats.loc[keep, "top"]
+def category_map(staff, key, min_staff, min_share):
+    """key value -> the JP Category most staff with that key have, learned from staff whose category is known.
+    Kept only if at least min_staff staff have the key and at least min_share of them share that category.
+    Returns a table: key, category, share, staff."""
+    known = staff[staff["jp_category"].notna() & staff[key].notna()]
+    counts = known.groupby([key, "jp_category"]).size().rename("n").reset_index()
+    counts["staff"] = counts.groupby(key)["n"].transform("sum")
+    top = counts.sort_values(["n", "jp_category"], ascending=[False, True]).drop_duplicates(key)
+    top = top.assign(share=(top["n"] / top["staff"]).round(3)).rename(columns={"jp_category": "category"})
+    top["used"] = (top["staff"] >= min_staff) & (top["share"] >= min_share)
+    return top[[key, "category", "share", "staff", "used"]].sort_values("staff", ascending=False).reset_index(drop=True)
 
 def staff_role_groups(staff, log=print):
-    """role_group = department, with Executive Services split by JP Category (inferred from Designation if blank)."""
+    """role_group = StaffCentral JP Category. A blank category is imputed, in order, from JP Title, Designation and
+    the deprecated Department (config.JP_IMPUTE_STEPS); each imputed row is flagged. Still blank = Unknown: role_group
+    stays blank, so these staff are left out of the department history.
+    Returns (staff, maps): maps holds each step's lookup table, for the workbook."""
     staff = staff.copy()
-    is_exec = staff["department"].eq(config.EXEC_SERVICES).fillna(False).astype(bool)
-    category = staff["jp_category"]
-    source = pd.Series(np.where(staff["department"].isna(), pd.NA,
-                                np.where(~is_exec, "Department", np.where(category.notna(), "JP Category", "none"))),
-                       index=staff.index, dtype="string")
-    if config.FILL_EXEC_FROM_DESIGNATION:
-        inferred = staff["designation"].map(_norm_designation).map(designation_map(staff))
-        fill = is_exec & category.isna() & inferred.notna()
-        category = category.where(~fill, inferred)
-        source = source.where(~fill, "Designation (inferred)")
-        log(f"[2 merge] Exec Services staff with no JP Category: {int((is_exec & staff['jp_category'].isna()).sum())}, "
-            f"of which {int(fill.sum())} inferred from Designation")
-    staff["role_group"] = staff["department"].where(~is_exec, config.EXEC_PREFIX + category.fillna("Other"))
-    staff["role_group"] = staff["role_group"].replace(config.ROLE_GROUP_MAP)
-    staff["role_group_source"] = source
-    return staff
+    staff["jp_category"] = staff["jp_category"].replace(config.JP_CATEGORY_MAP).astype("string")
+    staff["designation_key"] = staff["designation"].map(_norm_designation).astype("string")
+    category = staff["jp_category"].copy()
+    source = pd.Series(np.where(category.notna(), "JP Category", pd.NA), index=staff.index, dtype="string")
+    maps, filled = {}, {}
+    for label, key, min_staff, min_share in config.JP_IMPUTE_STEPS:
+        maps[label] = category_map(staff, key, min_staff, min_share)
+        lookup = maps[label][maps[label]["used"]].set_index(key)["category"]
+        guess = staff[key].map(lookup)
+        fill = category.isna() & guess.notna()
+        category = category.where(~fill, guess)
+        source = source.where(~fill, f"{label} (imputed)")
+        filled[label] = int(fill.sum())
+    staff["role_group"] = category.replace(config.ROLE_GROUP_MAP).astype("string")
+    staff["role_group_source"] = source.fillna("none (Unknown)")
+    staff["role_group_imputed"] = source.str.endswith("(imputed)").fillna(False).astype(int)
+    log(f"[2 merge] department = JP Category: {int(staff['jp_category'].notna().sum())} of {len(staff)} staff | imputed from "
+        + ", ".join(f"{k} {v}" for k, v in filled.items())
+        + f" | Unknown: {int(staff['role_group'].isna().sum())}")
+    return staff, maps
 
 def join_departments(engagement, staff, log=print):
-    """Adds department, jp_category, role_group, role_group_source, dept_certain to every engagement.
+    """Adds department, jp_category, role_group, role_group_source, role_group_imputed, dept_certain to every engagement.
     dept_certain = 1 where StaffCentral's current Engagement ID is this engagement."""
     df = engagement.copy()
     key = clean_id(df["CSID"])
     look = staff.set_index("CSID")
     assert key.dtype == look.index.dtype, f"CSID types differ: {key.dtype} vs {look.index.dtype}"
-    for c in ["department", "jp_category", "role_group", "role_group_source"]:
+    for c in ["department", "jp_category", "role_group", "role_group_source", "role_group_imputed"]:
         df[c] = key.map(look[c])
     df["dept_certain"] = (key.map(look["Engagement ID"]) == df["Engagement ID"]).fillna(False).astype(int)
     assert len(df) == len(engagement)
-    log(f"[2 merge] engagements with a role group: {df['role_group'].notna().mean():.1%} | "
-        f"department certain (Engagement ID matches): {df['dept_certain'].mean():.1%} | "
-        f"'Exec Services - Other' rows: {int(df['role_group'].eq(config.EXEC_PREFIX + 'Other').sum())}")
+    log(f"[2 merge] engagements with a department (JP Category): {df['role_group'].notna().mean():.1%} "
+        f"(imputed {df['role_group_imputed'].eq(1).mean():.1%}) | "
+        f"department certain (Engagement ID matches): {df['dept_certain'].mean():.1%}")
     return df
 
 
@@ -119,8 +111,7 @@ def add_region(mystaff, log=print):
 
 
 def run(formatted, log=print):
-    staff = staff_role_groups(formatted["staff"], log)
-    engagement = merge_seat_churn(formatted["engagement"], formatted["seat_churn"], log)
-    engagement = join_departments(engagement, staff, log)
+    staff, dept_maps = staff_role_groups(formatted["staff"], log)
+    engagement = join_departments(formatted["engagement"], staff, log)
     mystaff = add_region(add_industry_groups(formatted["mystaff"], log), log)
-    return {"engagement": engagement, "mystaff": mystaff, "staff": staff}
+    return {"engagement": engagement, "mystaff": mystaff, "staff": staff, "dept_maps": dept_maps}

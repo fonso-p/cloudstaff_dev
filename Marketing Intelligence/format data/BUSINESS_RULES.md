@@ -1,6 +1,6 @@
 # Priority Score company data pipeline: business rules and assumptions
 
-**Pipeline version:** 0.3 (prototype) · **Implemented in:** [`format_priority_data.ipynb`](format_priority_data.ipynb) · **Last updated:** 2026-11-10
+**Pipeline version:** 0.4 (prototype) · **Implemented in:** [`format_priority_data.ipynb`](format_priority_data.ipynb) · **Last updated:** 2026-11-13
 
 This document lists every rule and assumption the pipeline applies when it merges and formats HubSpot and MyStaff into the
 `Priority List` layout used by the Priority Score model, scores the accounts and routes them to teams, plus a catalogue
@@ -16,12 +16,12 @@ Counts quoted below come from the run of 2026-11-10 (HubSpot export dated 2026-1
 
 ## 1. Scope
 
-| In scope (v0.3) | Out of scope (later stages) |
+| In scope (v0.4) | Out of scope (later stages) |
 |---|---|
 | Company / client identity: `account_id`, `company_name`, `goal`, `industry`, `employee_band`, `region` | **Real** sources for website, news, job postings, referrals, Competitor client, industry trend |
 | Matching and merging HubSpot with MyStaff | Contact-level data |
 | Signals: **real seat growth** (MyStaff); everything else **mock (synthetic)** (§11.1) | Write-back to HubSpot |
-| Scoring with the `dashboard_v2` settings (stacked Act now bonus, average-filled unknowns, percentile tiers), team routing and ranking (§11.2–11.3) | Building the dashboard page (part 2: `../build_dashboard/`); fit scoring and negative signals (later) |
+| Scoring with the `dashboard_v3` settings (`dashboard_v2`'s stacked Act now bonus, average-filled unknowns and percentile tiers, plus Fit points from the Client Propensity scores), team routing and ranking (§11.2–11.3) | Building the dashboard page (part 2: `../build_dashboard/`); fit in routing; negative signals (later) |
 | Saving the processed data the dashboard reads (§11.4) | |
 | Lineage columns for audit | |
 
@@ -43,6 +43,7 @@ EXTRACT → STANDARDIZE → MATCH → MERGE → CONFORM → DQ → SIGNALS → S
 | 5 | Conform | The output columns and their groups | §4 |
 | 6 | DQ: merge | What must hold after the merge | §13 |
 | 7 | Signals | Which signals are real and which are mock | §11.1 |
+| 7b | Propensity | Fit scores from the Client Propensity project: real, mock or off (they feed the Fit points in stage 8) | §11.1b, §11.2b |
 | 8 | Score | Priority score, Act now bonus, tier | §11.2 |
 | 9 | Route | Which team owns each account, and the order within each list | §11.3 |
 | 10 | DQ: scoring | What must hold after scoring and routing | §13 |
@@ -399,6 +400,7 @@ Settings for these rules are listed in [`PIPELINE.md` §5](PIPELINE.md).
 |---|---|
 | Mode switch | `ENRICHMENT_MODE = "mock"`; `"live"` raises "not built" until real sources exist |
 | Generator | Same rules as `reference materials/scripts/generate_mock_workbook.py`: a latent "intent" per account (Beta 1.05, 1.0) drives visits, Team Builder visits, form fills, news category and recency, job postings, hiring spikes, Diamond referral and Competitor client |
+| Trigger rates (`MOCK_RATES`, 2026-11-13) | The workbook's own rates gave about a third of accounts a trigger (Diamond referral 16% of prospects, Team Builder visit and heavy visits 15% of clients). Tuned so about 10% of each list has one: visits = intent × 16 (was 26), Team Builder visit = intent × 0.055 (0.45), form fill = intent × 0.04 (0.28), job postings = intent × 15 (26), Diamond referral = 0.005 + intent × 0.045 (0.02 + intent × 0.25). News is unchanged. Current run: any trigger **8.3% New Logo, 9.5% Organic Growth**. New Logo: hiring spike 2.8%, funding / PE 2.8%, Diamond referral 0.9%, form fill 0.9%, heavy visits 1.4%, leadership change 0.9%. Organic Growth: Team Builder visit 2.1%, PE buyout 1.8%, funding 1.5%, heavy visits 1.4%, form fill 1.3%, restructuring 1.3%, leadership change 0.8%. Lower visit and job numbers also lower the website and news signals, so scores and tier cut-offs drop (Tier 1 from about 60 to 41–43) |
 | Unknown rates | Same as the mock. Website unknown: New Logo 68%, Organic 28%. News/jobs unknown: New Logo 55%, Organic 38%. Diamond / Competitor: Yes / No / blank (New Logo), `N/A` (Organic Growth) |
 | Reproducible | Random seed = `MOCK_SEED` (42) + `account_id`, so an account gets the same values on every run, whatever the row order |
 | News dates | Relative to `SCORING_AS_OF` (the run date) |
@@ -418,24 +420,59 @@ which used made-up seat data.
 | Column(s) | Expected source (to confirm) | Join key |
 |---|---|---|
 | `web_visits_30d`, `team_builder_visit`, `form_fill_30d` | Website analytics / HubSpot activity | `website_domain`, `crm_company_id` |
-| `news_signal`, `news_signal_date` | News scraper (`../news_scraper`, already outputs both fields) | `company_name`, `website_domain` |
+| `news_signal`, `news_signal_date` | News scraper (`News Scraper/` at the repo root, already outputs both fields) | `company_name`, `website_domain` |
 | `job_postings_30d`, `hiring_spike` | Job postings source (TBD) | `company_name`, `website_domain` |
 | `diamond_referral`, `prior_bpo_flag` (Competitor client) | TBD (New Logo only) | `crm_company_id` |
 | `industry_trend` | Industry news | `industry` |
 
+### 11.1b Propensity signals (stage 7b, group `5_propensity`)
+
+Fit scores from the **Client Propensity** project (`Client Propensity/`): how likely clients or prospects *like this one*
+are to add seats or departments. Since v0.4 their **bands** feed the **Fit** points of `priority_score` (live profile
+`dashboard_v3`, §11.2b) and the fit chips on the page (§11.4). Rules for the scores themselves: `Client Propensity/DOCUMENTATION.md`.
+
+| `PROPENSITY_MODE` | Behaviour |
+|---|---|
+| `"real"` (default) | Reads the newest `*_Propensity_Extract_propensity_accounts.csv` and its `_prospect_profiles.csv` in `DATA_DIR` (Client Propensity's `run_pipeline.py` copies them there), plus `run_info` from the `.xlsx` for the model version, as-of date and AUCs |
+| `"mock"` | **Synthetic** values, seeded per `account_id` (`MOCK_SEED`), with the real score bands' cut-offs. Fictional |
+| `"off"` | The columns stay blank |
+
+Independent of `ENRICHMENT_MODE`: either can be real or mock. A mock propensity run adds `_MOCK_SIGNALS` to the saved file
+names, like mock signals do (`is_mock_run()`), and the dashboard's `meta.mock_signals` is true.
+
+| Rows | Join | Columns filled |
+|---|---|---|
+| Organic Growth | `account_id` (`MS-<shortcode>`), left join, one-to-one (a duplicate fails). The extract's `shortcode` and `crm_company_id` are not taken: the dashboard keeps its own | `fit_seat_milestone` (the client's next seat milestone: 1–4 seats → 5, 5–9 → 10, 10–19 → 20; blank = 20+ seats, out of scope), `fit_seat_milestone_p` / `_band` / `_why`, `fit_dept_expand_*`, `fit_dept_vs_peers`, `fit_dept_why`, `depts_so_far` / `depts_so_far_names` (departments the client has had so far), `fit_second_dept_p` / `_band` (one-department clients only: the chance of a second department, banded among one-department clients), `likely_next_dept`, `likely_next_dept_by_lift`, `seats_change_6m_net`; `fit_growth_*` / `fit_reach_10_*` for clients under a year |
+| New Logo | `industry` + `|` + country, from the prospect profiles. Country from `region` (`propensity_country()`): `AU*` Australia, US, UK, NZ, CA, blank = Unknown, anything else = Other. A blank industry = `Unknown` | `fit_growth_*`, `fit_reach_10_*`, `fit_branch_1y_*` (incl. `fit_branch_1y_why`), `likely_first_new_dept`, `fit_outlook` (the extract's `outlook`) |
+
+* `fit_coverage` says why a row has no score. Organic Growth rows the extract doesn't have get `not in propensity extract`
+  (today 24 of 1,110: 2 HubSpot-only rows, and clients newer than the extract's MyStaff file). New Logo rows get `prospect profile: <key>`.
+* `propensity_source` on every row names the extract (date and model version), or the mock / off mode.
+* The extract's own `industry` and `region` columns are not used here, so the dashboard's industry shows beside the fit scores
+  (the scores were fitted on Client Propensity's MyStaff extract; see its DOCUMENTATION §3.2 for the industry mismatch).
+* Checks (§13): `fit_*_p` within 0–1 and valid bands (error); `fit_second_dept_*` only on one-department Organic Growth
+  clients (error); at least 95% of Organic Growth rows found, at least 70% scored, every New Logo row profiled, and the
+  extract's as-of date within 45 days of `SCORING_AS_OF` (warn).
+* The dashboard JSON carries the columns in every row (`DASH_ROW_FIELDS`) and `meta.propensity` (mode, source, as-of,
+  model version, AUCs, band cut-offs, and `definitions`). The page shows them as Fit points and fit chips (§11.2b, §11.4).
+* **What each score means** (`definitions`, from the extract's `score_definitions`): the question, who it applies to, the
+  outcome and time window, the assumptions, the historical average, AUC and band cut-offs. Also saved as the
+  `propensity_definitions` sheet of the output workbook. In mock mode the meanings are kept and the numbers blanked.
+
 ### 11.2 Scoring (stage 8, group `3_scoring`)
 
 The formulas are the original Priority Score model's, the same ones `reference materials/data/accounts.csv` was scored with.
-`workbook` below means those **original settings** (`reference materials/data/scoring_settings.json`). Three settings profiles
-are in use; **`SCORING_PROFILE = "dashboard_v2"` is live**. It is the `dashboard` profile (live until v0.2) with the changes
-agreed in the scoring review of 2026-11-10 (in bold):
+`workbook` below means those **original settings** (`reference materials/data/scoring_settings.json`). Four settings profiles
+are in use; **`SCORING_PROFILE = "dashboard_v3"` is live** (v0.4): `dashboard_v2` plus a **Fit** component and new point
+weights (§11.2b). `dashboard_v2` (live in v0.3) is the `dashboard` profile (live until v0.2) with the changes agreed in the
+scoring review of 2026-11-10 (in bold below); everything in the `dashboard_v2` column still holds in `dashboard_v3` except the points:
 
-| Setting | `workbook` (regression test only) | `dashboard` (until v0.2) | **`dashboard_v2` (live)** |
+| Setting | `workbook` (regression test only) | `dashboard` (until v0.2) | **`dashboard_v2` (v0.3; v0.4 = `dashboard_v3`)** |
 |---|---|---|---|
 | Max points, New Logo | website 35, news/jobs 35, Diamond 15, prior BPO 15 | website 40, news/jobs 40, Diamond 10, Competitor client 10 | same as `dashboard` |
 | Max points, Organic Growth | website 50, news/jobs 50 | website 40, news/jobs 40, seat growth 20 | same as `dashboard` |
 | Website signal | 0.4 × Team Builder visit + 0.3 × form fill + 0.3 × min(visits / 20, 1) | 0.5 / 0.25 / 0.25 | same |
-| News / jobs signal | 0.6 × news strength × recency + 0.4 × hiring | 0.625 / 0.375 | same |
+| News / jobs signal | 0.6 × news strength × recency + 0.4 × hiring | 0.625 / 0.375 | same (**`dashboard_v3`: 0.5 / 0.5**, news 15 and hiring 15 points) |
 | Seat growth signal | n/a | seats added in ~6 months: 0 → 0, 1–5 → 0.25, 6–10 → 0.5, 11+ → 1.0 | same |
 | Unknown component (share of max) | website 35%, news/jobs 30% | 25% for website, news/jobs and seat growth | **the average signal of the same goal's accounts where the component is known** (25% only if none is known) |
 | Signal rounding | each 0–1 signal rounded to 3 decimals | not rounded | not rounded |
@@ -496,13 +533,70 @@ missing values. The test restores it where the dashboard still treats news as kn
 | Lowest Tier 1 / Tier 2 score | 70 / 40 | **58 / 32** | 70 / 40 | **61 / 33** |
 
 Accounts with more than one trigger family: 10 New Logo (bonuses of 18.75–26.25) and 34 Organic Growth (22.5). The top of each list barely
-moves: of the top 50 per goal, 46 (New Logo) and 44 (Organic Growth) are in the top 50 under both profiles. Act now is still
-far above the 10% target (`ACT_NOW_TARGET_SHARE`, a DQ warning): the remaining triggers are mostly form fills and Team Builder
-visits, whose mock rates are much higher than real ones are likely to be (§15).
+moves: of the top 50 per goal, 46 (New Logo) and 44 (Organic Growth) are in the top 50 under both profiles. Act now was still
+far above the 10% target (`ACT_NOW_TARGET_SHARE`, a DQ warning) because the mock generator's website and Diamond rates were
+too high; since 2026-11-13 the mock rates are tuned (§11.1, `MOCK_RATES`) and Act now is 8.3% / 9.5%.
 
 Without the bonus no score can exceed 100 by points alone (each list's points total 100), but the industry nudge (up to ×1.08 with
 today's trend values, ×1.1 at most) can lift a near-perfect account above 100 before the cap. The highest score before the bonus is 82;
 one account reaches 100 with the bonus.
+
+### 11.2b Fit points (`dashboard_v3`, live from v0.4)
+
+Agreed 2026-11-13: the Client Propensity scores (§11.1b) are rolled into `priority_score` like the other signals, as a
+**Fit** component (`fit_signal (0-1)`, `fit_pts`). Fit says whether accounts *like this one* grow; the other signals say
+whether *now* is a good time. Settings: `FIT` and `SCORING_DASHBOARD_V3` (notebook §0b).
+
+| Max points | Website | News / jobs | Seat growth | Diamond | Competitor client | **Fit** |
+|---|---|---|---|---|---|---|
+| New Logo (`dashboard_v2` → **`dashboard_v3`**) | 40 → **30** | 40 → **30** (news 15, hiring 15) | – | 10 | 10 | **20** (profile growth 15, second department 5) |
+| Organic Growth | 40 → **30** | 40 → **30** (news 15, hiring 15) | 20 → **15** | – | – | **25** (seat milestone 15, second department 10) |
+
+News and hiring were 0.625 / 0.375 of the News and jobs points (18.75 / 11.25 of 30); evened out to 15 / 15 on 2026-11-13,
+together with New Logo fit 15 / 5 (was 14 / 6).
+
+Seat growth drops to 15 because the seat-milestone fit already uses recent seat adds (rank correlation 0.53 with
+`seats_added_6m`), so keeping 20 would count recent growth twice.
+
+| Rule | Organic Growth | New Logo |
+|---|---|---|
+| Parts (weight) | **Next seat milestone** (0.6): `fit_seat_milestone_band`, the band of the client's next milestone (1–4 seats → 5+, 5–9 → 10+, 10–19 → 20+) within 12 months. **Second department** (0.4): `fit_second_dept_band`, **one-department clients only** (the goal: clients that start with one department and grow past it). Clients with 2+ departments score **0** on it (`multi_dept_value`) with the weights kept, so their fit is at most 15 of 25 points (2026-11-13) | **Profile growth** (0.75 = 15 points): the better of `fit_growth_band` (5+ seats in 1 year) and `fit_reach_10_band` (10+ in 2 years). **Second department** (0.25 = 5 points): `fit_branch_1y_band`. All for the prospect's industry \| country, *if we sign them* |
+| Band → share of the part | High 1.0 · Medium 0.5 · Low 0 (`FIT["band_value"]`) | same |
+| A part without a score | The other part counts alone (e.g. 1 department with 20+ seats: the second department alone). The 47 clients with 20+ seats and 2+ departments have no seat milestone, so their fit is unknown (average) | same |
+| No fit at all | Unknown component: the average fit of the goal's known accounts (`unknown_fill`), listed in `estimated_fields` as "Fit". Mostly the 260 clients with no current seats, plus 67 with no known starting department, 24 not in the extract, and 47 with 20+ seats and 2+ departments. Current run: 0.414 × 25 = 10.4 points | Every row has a prospect profile. Average (fallback only): 0.498 |
+| Bands | Relative: High = top third of past clients (per seat range for milestones; among one-department clients for the second department) | Top third of past new clients |
+
+**Fit chips** (Why column, kind `fit`): one chip per score whose band is `FIT["chip_band"]` (High) **and** whose chance
+is at least `FIT["chip_min_lift"]` (1.5) × the score's usual rate (its historical base rate, from the extract's score
+definitions). The band alone isn't enough, because bands are relative: the top third of 1–4 seat clients starts at a 5%
+chance, below the usual 7% (44 of 216 High clients were below it), and New Logo profiles barely differ from average (High
+5+ seats: 8.3–10.7% against a usual 9.6%; High 10+: 3.4–5.2% against 4.6%), so no New Logo seat chip clears 1.5× of
+the past-client rate. **New Logo "Likely 5+ seats" therefore compares a prospect with the average prospect on the list**
+(`FIT["New Logo"]["growth_compare"] = "prospects"`; today 5.7%, so the chip needs ≥ 8.6%): a like-for-like comparison,
+since every prospect is scored the same way (unknown role, launch of 1–2 staff). Its card names that comparison, shows the
+prospect's industry · country profile and the past new-client rate (9.6%) for context. 10+ seats and 2nd department still
+compare with past clients.
+The chip shows the multiple (e.g. "2.3×"). Hovering or focusing it opens a card: the chance, a bar with the usual rate
+marked, the multiple, the "why", for departments the departments now / often added next / unusually likely, and the
+comparison group. The chips are built by `fit_chips()` (stage 11, hover data as a dict) and only appear when the profile
+scores fit. **The Fit points still use the bands** (a High New Logo profile earns full fit points at a near-average chance; open item §15.13).
+
+| Chip | Organic Growth | New Logo |
+|---|---|---|
+| Likely 5+ / 10+ / 20+ seats | Next seat milestone band High (1–4 seats → 5+, 5–9 → 10+, 10–19 → 20+) | 10+ in 2 years High, else 5+ in 1 year High (only the larger one) |
+| Likely 2nd department | One department so far and `fit_second_dept_band` High. Hover: the department held, the most common next departments, the unusually likely ones (lift) | `fit_branch_1y_band` High. Which department can't be predicted before the starting role is known |
+| *(no chip)* | Clients with 2+ departments get no department chip (2026-11-13; the earlier "Likely new department" chip was removed) | – |
+
+**Effect** (current run; mock timing signals, so tiers are for illustration only). Tier 1 / 2 / 3: New Logo 22 / 71 / 124
+→ **24 / 65 / 128**; Organic Growth 117 / 330 / 663 → **122 / 326 / 662**. Fit points average 10.0 of 20 (New Logo) and 13.7
+of 25 (Organic Growth). Accounts changing tier: 30 New Logo, 164 Organic Growth. Of the top 50 per goal, 43 (New Logo) and 35
+(Organic Growth) stay in the top 50. Fit chips today (High and ≥ 1.5× usual): Organic Growth 115 "Likely 5+ seats", 22
+"10+", 7 "20+", 84 "2nd department" (after the 180-day department launch rule in Client Propensity v1.2: departments
+first staffed in a client's first 6 months count as its launch, not as a second department; the card says so); New Logo 20 "5+ seats" (vs the average prospect: Technology US, Hospitality AU / US,
+Education AU, Financial Services US) and 8 "2nd department" (High band alone would give 216 / 33 / 10 / 115 and New
+Logo 29 / 22 / 81). With the department part limited to one-department clients (2+ departments score 0 on it), average fit
+points are 11.8 of 25 for one-department clients (max 25) and 9.2 for 2+ department clients (max 15); the unknown-fit
+average is 10.4 (0.414 × 25). Organic Growth tiers: 111 / 345 / 654.
 
 ### 11.3 Routing (stage 9, `assigned_team`, `rank_in_team_list`)
 
@@ -541,17 +635,23 @@ row order. It is a stand-in for real owner assignment, so it is **mock data**, a
 | Account type (no trigger) | BDM | Marketing | SDR |
 |---|---|---|---|
 | Organic Growth | 70% | 30% | – |
-| New Logo with score ≥ 60 (`BDM_MIN_SCORE`) | 80% | 20% | – |
+| New Logo in the **top 10% by score of the prospects without a trigger** (`BDM_TOP_SHARE`; ranked like the tiers, ties share the place; today a score of 36 or more) | 80% | 20% | – |
 | Other New Logo | – | 40% | 60% |
 
 Diamond referrals always have a trigger, so they never take part in the draw (the mock dashboard sent 85% of them to SDR).
+
+**Why the top 10% and not a fixed score** (2026-11-13). The workbook used a fixed 60 (`BDM_MIN_SCORE`, still used by the
+workbook golden test). Once the mock trigger rates were tuned (§11.1), the highest New Logo score without a trigger was 44, so
+no prospect without a trigger could reach BDM and BDM's New Logo list held only the 10 triggered accounts. A relative cut-off
+keeps working as score levels change (mock → real signals). Today it is a score of 36 (`bdm_min` on the page shows it), and
+BDM's New Logo list has 24 accounts: 10 with a trigger and 14 from the draw.
 
 *Deterministic rules (`ROUTING_MODE = "rules"`).* For accounts without a trigger, the first rule that applies. There is **no**
 "no data → Marketing" rule:
 
 | # | Rule | Team |
 |---|---|---|
-| 1 | `priority_score` ≥ 60 (`BDM_MIN_SCORE`) | BDM |
+| 1 | Top 10% by score of the goal's accounts without a trigger (`BDM_TOP_SHARE`) | BDM |
 | 2 | Organic Growth in Tier 3 | Marketing |
 | 3 | Other New Logo | SDR |
 | 4 | Other Organic Growth (Tier 2) | BDM |
@@ -597,8 +697,10 @@ and BDM × (New Logo, Organic Growth). The data format and build are in [`PIPELI
 | Trigger event card (glossary) | Lists every trigger with its window or threshold (from the data), how bonuses stack, and which team owns it (from the pipeline's `TRIGGER_TEAM`). The list's Act now column shows every trigger (`act_now_triggers`) |
 | Unknown values | The page states the average used for each unknown component and goal (`meta.unknown_fill`) |
 | "Why" chips | Website / Team Builder visit, news (or hiring), seat growth, "Growing industry" (trend ≥ 0.7), Diamond referral, Competitor client, and "No … data" for estimated components. Strength dots: ●●● ≥ 66% of the signal, ●●○ ≥ 33%, ●○○ otherwise |
-| Mock marking | While signals are mock, every chip from a mock signal ends in **"· mock"**. Seat growth chips are real, so they don't. The subtitle and the warning banner say the signals are mock |
+| Fit chips | Green chips with a seedling icon and a dashed border: "Likely 5+ / 10+ / 20+ seats", "Likely 2nd department", "Likely new department" (§11.2b). Hovering (or focusing) one shows the chance, what High means and why. A "Likely to grow" KPI counts the list's accounts with any fit chip. The CSV adds `fit_pts` and the fit chips with their hover text. The glossary, the points tables, the method steps and the worked example include Fit |
+| Mock marking | While signals are mock, every chip from a mock signal ends in **"· mock"**. Seat growth and fit chips are real (fit chips get the tag only when `PROPENSITY_MODE = "mock"`), so they don't. The subtitle and the warning banner say the signals are mock |
 | Profile line | "industry · size · region", with "unknown" for blanks |
+| "With us" column (Organic Growth lists only) | One cell grouping the client's relationship with us: **current seats** (MyStaff `Total Staff`, `cs_staff_current`), **seats added in the last 6 months** (`seats_added_6m`, shown when above 0), and **time as a client** (`client_years`: as-of date minus MyStaff `Date of First Staff Engagement`, shown as months under a year, else years, plus "since <month>"). When the date is blank (15 clients, mostly with no staff yet), MyStaff's own `Tenure` band is shown instead, marked "(MyStaff)". Sorts by seats. The CSV adds current seats, client since and time as client |
 | Workbook comparison | The same accounts scored with the **workbook** settings, for the page's "what the rounded points and seat growth change" charts |
 | Organic Growth flags | Diamond / Competitor are not applicable: shown as no flag and 0 points |
 
@@ -619,6 +721,7 @@ The built page contains every account row, so it is handled as confidential data
 | A9 | **Accounts without an Act now trigger get a seeded random team** (BDM / Marketing / SDR), using the mock dashboard's probabilities. Accounts with a trigger go to the trigger's team (§11.3) | Fictional: a stand-in for real owner assignment. Without a trigger the team doesn't depend on the score | `ROUTING_MODE = "rules"` for deterministic rules (no "no data → Marketing" rule), or edit `ROUTING_PROBABILITIES` |
 | A10 | Live scoring uses the **`dashboard_v2`** settings: the dashboard's round points and seat growth (from `work/account_priority_dashboard/score_adjustments.json`), plus the 2026-11-10 review (average fill, stacked bonus, rarer triggers, percentile tiers, no +1000) | Weights, the 0.5 stacking factor and the 10% / 30% tier shares are judgement calls, not yet validated against outcomes | `SCORING_PROFILE = "dashboard"` (previous) or `"workbook"`, or edit `SCORING_DASHBOARD_V2` |
 | A13 | Tiers are **relative** (top 10% / next 30% of each goal) | A tier says how an account ranks, not how strong it is: if every account is weak, the top 10% is still Tier 1. Cut-offs move between runs | Set `tier` in `SCORING_DASHBOARD_V2` back to fixed scores (`_TIER`) |
+| A15 | **Fit** (25 Organic Growth / 20 New Logo points) comes from Client Propensity **bands** (High 1 / Medium 0.5 / Low 0), weighted seat 0.6 / department 0.4 (Organic Growth) and growth 0.75 / department 0.25 (New Logo; 15 / 5 points). News and hiring are 15 / 15 points of News and jobs | The points and weights are agreed judgement calls, not fitted. Bands are relative (top third of past clients). New Logo fit depends on industry and country only, and the dashboard's MyStaff industry is out of line today (Client Propensity DOCUMENTATION §3.2), which affects the "why" text, not the score. The New Logo department band leans High (81 of 217) | `SCORING_PROFILE = "dashboard_v2"` (no fit), or edit `FIT` / `SCORING_DASHBOARD_V3` |
 | A14 | Unknown components are scored at the **average of the known accounts** of the same goal | While website and news signals are mock, so is their average. If data is missing for a reason linked to intent (e.g. untracked visitors are less engaged), the average overstates them | `unknown_fill = "baseline"` in `SCORING_DASHBOARD_V2` |
 | A11 | Seat growth = **gross** staff added (MyStaff `Movement Add`), month to date + 5 previous months | Gross adds include replacements for staff who left, so they can overstate growth. `Movement Net` is the alternative | Change `SEAT_WINDOW` / the sum in `standardize_mystaff()` |
 | A12 | `prior_bpo_flag` = Competitor client (past client of a competing outsourcing provider) | Dashboard definition; no real source yet | Rename / redefine in `SCORING_DASHBOARD` and §11.1 |
@@ -642,17 +745,20 @@ The built page contains every account row, so it is handled as confidential data
 | Act now bonus only on hot accounts, and never lowers the score | 10 | error |
 | Every account with an Act now trigger is on that trigger's team | 10 | error |
 | `hot_trigger` is the first of `act_now_triggers`; no triggers listed without a `hot_trigger` | 10 | error |
-| Act now on at most 10% of each goal's accounts (`ACT_NOW_TARGET_SHARE`) | 10 | warn (currently fails: 32.7% / 33.9% with mock signals) |
+| Act now on at most 10% of each goal's accounts (`ACT_NOW_TARGET_SHARE`) | 10 | warn (passes since the mock rates were tuned: 8.3% / 9.5%; was 32.7% / 33.9%) |
 | Tier 1 share per goal within 5 points of the target (percentile tiers) | 10 | info |
 | Every trigger that fires has an entry in `TRIGGER_TEAM` | 10 | warn |
 | Diamond / Competitor are `N/A` for Organic Growth | 10 | error |
 | Seat growth scored for Organic Growth only | 10 | error |
+| Fit points within 0 and the goal's fit maximum (profiles with fit) | 10 | error |
+| Fit known from the propensity extract (share per goal) | 10 | info (currently New Logo 100%, Organic Growth 67%) |
 | Every team × goal list ranked from 1 | 10 | error |
 | Every row has an `enrichment_source` | 10 | error |
 | Seat growth known for Organic Growth rows (>90%) | 10 | info (currently 1,108 of 1,110: every MyStaff client; the 2 shared-domain HubSpot rows have none) |
 | Enrichment uses real data | 10 | warn (currently fails: signals other than seat growth are mock) |
 | One dashboard row per account; every row on one of the 5 shown lists | 11 | error |
-| Every row has every field the page reads; every setting and `meta` key the page reads is present | 11 | error |
+| Every row has every field the page reads; every setting and `meta` key the page reads is present (incl. the fit settings) | 11 | error |
+| Every fit chip carries its hover text | 11 | error |
 | Worked-example account exists; list sizes add up to all accounts | 11 | error |
 | Dashboard data is strict JSON (no NaN, dates or numpy types) | 11 | error |
 | Required `meta` keys, settings keys and row fields present (checked again by `build_dashboard.py` before building) | part 2 | error (stops the build) |
@@ -683,9 +789,10 @@ A failed **error** check stops the pipeline.
 8. Map `industry_trend` for the 5 industry groups that have no workbook equivalent (A8).
 9. Decide gross vs net seat growth (A11).
 10. Former Cloudstaff clients in the New Logo list (about 130 name matches): add a win-back signal or route them separately. They are not "Competitor client" (A12).
-11. Act now is still about a third of each goal (target 10%). Recheck with real website signals; if it stays high, tighten the
+11. Act now is about 10% of each goal with the tuned mock rates (it was a third). Recheck with real website signals; if it is high, tighten the
     direct triggers too (e.g. Team Builder visit only with a form fill or 2+ visits) or set the heavy-visits threshold by percentile.
 12. Validate the weights, the stacking factor (0.5) and the tier shares (10% / 30%) against outcomes (closed-won deals for New Logo,
     seat adds in the next 90 days for Organic Growth) once real signals are connected.
-13. Later stages agreed in the review: a **fit** score (industry, size, region) as a multiplier, and **negative** signals for
+13. Later stages agreed in the review: **fit** is now in the score as points (§11.2b, v0.4); still open: New Logo Fit points (High profiles earn full points at near-average chances, §11.2b: base points on lift,
+    or shrink New Logo fit), a fit × timing grid for Marketing, fit in routing, a 1–4 seats → 10+ score for existing clients, and **negative** signals for
     clients (seat losses, disengagement risk).

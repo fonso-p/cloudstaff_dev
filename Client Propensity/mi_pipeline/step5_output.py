@@ -20,7 +20,7 @@ def _how_to_read(res):
         "What this is", "New client scorecard", "Organic client list", "Rising (under 10 seats)",
         "Bands", "Growth score", "Seat milestones (new)", "Branching score (new)", "Branching score (existing)",
         "Seat growth (existing)", "vs peers",
-        "Likely next department", "Model checks", "Read with care", "Data as of"], "Explanation": [
+        "Likely next department", "Model checks", "Read with care", "Department imputation", "Data as of"], "Explanation": [
         "Propensity line items for Sales / Marketing (new clients) and Account Managers (existing clients).",
         "One row per client profile seen in the last "
         f"{config.PS_TRAIN_YEARS} years (industry, country, starting department, launch size). Filter to the profile "
@@ -40,15 +40,22 @@ def _how_to_read(res):
         f"AUC {p['branch_auc']:.2f} (weak: a rough guide only).",
         f"Add a department the client never had within the next {config.PS_BRANCH_DAYS} days. AUC {p['organic_auc']:.2f}.",
         f"More seats {config.PS_SEAT_GROWTH_DAYS} days from now than today (net growth, so backfills don't count). "
-        f"AUC {p['seat_auc']:.2f}. Columns p_seat_growth_12m, seat_growth_band, seat_vs_peers, seat_why.",
+        f"AUC {p['seat_auc']:.2f}. Columns p_seat_growth_12m, seat_growth_band, seat_vs_peers, seat_why. Workbook only. "
+        "The dashboard uses the seat MILESTONE instead: each client's next step (1-4 seats -> 5+, 5-9 -> 10+, 10-19 -> 20+; "
+        f"20+ out of scope) and its chance within {config.PS_SEAT_GROWTH_DAYS} days: columns next_seat_milestone, "
+        "p_next_seat_milestone, band_next_seat_milestone (AUC " + ", ".join(
+            f"{n}+: {sm['auc']:.2f}" for n, sm in p["seat_milestones"].items()) + ").",
         "Client's score divided by the average for active clients of a similar size (1.5x = 50% more likely than peers).",
         "What clients with the same departments added next, as a share of the departments this client doesn't have yet, "
         "with lift in brackets (share / that department's usual share; 2.0x = twice as common as for clients overall). "
         "likely_next_dept_by_lift lists the departments that stand out most. Additions are spread across many departments, "
         "so treat it as a lead, not a forecast.",
         "AUC: 0.5 = coin flip, 0.7+ = useful. actual_rate = what really happened to past clients in each band.",
-        "Patterns, not promises. Departments come from StaffCentral's current snapshot; 'Exec Services - Other' means an "
-        "Executive Services role with no recorded or inferable category.",
+        "Patterns, not promises. Departments are StaffCentral JP Categories (current snapshot); a blank category is imputed from JP Title, "
+        "Designation or the old Department where possible, otherwise Unknown (left out of department history).",
+        "For each old Department, JP Title and Designation: the JP Category most of its staff "
+        "have, that share, how many staff it rests on, and whether it is used to fill blanks. The summary rows count staff "
+        "by where their department came from.",
         str(res["today"].date())]})
 
 
@@ -67,6 +74,68 @@ def _style(ws, df):
     ws.auto_filter.ref = ws.dimensions
 
 
+def dept_imputation_table(merged):
+    """How a blank JP Category is imputed: every lookup value per step (JP Title, Designation, old Department), the
+    category most of its staff have, that share, and whether the step uses it. Plus how many staff each source supplied."""
+    parts = []
+    for step, m in merged["dept_maps"].items():
+        parts.append(m.rename(columns={m.columns[0]: "value"}).assign(step=step))
+    t = pd.concat(parts, ignore_index=True)[["step", "value", "category", "share", "staff", "used"]]
+    # staff = staff with a known category behind the lookup (summary rows: staff whose department came from that source)
+    t = t.rename(columns={"category": "imputed JP Category", "share": "share of its staff in that category",
+                          "used": "used for imputation"})
+    order = {"Department": 0, "JP Title": 1, "Designation": 2}
+    t = t.sort_values(["step", "staff"], key=lambda s: s.map(order) if s.name == "step" else -s)
+    src = merged["staff"]["role_group_source"].value_counts().rename_axis("value").rename("staff").reset_index()
+    src = src.assign(step="Summary: staff by source")
+    return pd.concat([src, t], ignore_index=True)[t.columns.tolist()]
+
+
+def write_department_reference(res, folder=None):
+    """Writes the department groupings to the repo's references folder (config.DEPARTMENT_REFERENCE_DIR), as
+    documentation: the JP Category merges, every lookup used to impute a blank category, and where staff departments
+    came from. Only names and counts, no staff or client data. Designations are listed only if at least
+    DESIGNATION_MIN_LISTED staff share them, so one-off free-text designations stay out of git."""
+    folder = folder or config.DEPARTMENT_REFERENCE_DIR
+    if folder is None:
+        return None
+    folder.mkdir(parents=True, exist_ok=True)
+    merged = res["merged"]
+    merges = pd.DataFrame([(k, v if v is not None else "(blank, then imputed)") for k, v in config.JP_CATEGORY_MAP.items()],
+                          columns=["JP Category (as in StaffCentral)", "grouped into"])
+    merges.to_csv(folder / "jp_category_merges.csv", index=False, encoding="utf-8")
+
+    min_listed = 5
+    rules = {label: (key, n, s) for label, key, n, s in config.JP_IMPUTE_STEPS}
+    parts = []
+    for order, (label, m) in enumerate(merged["dept_maps"].items(), start=1):
+        t = m.rename(columns={m.columns[0]: "value"})
+        if label == "Designation":
+            t = t[t["staff"] >= min_listed]
+        key, n, s = rules[label]
+        rule = (f"at least {n} staff and {s:.0%} in one category" if s > 0
+                else "the most common category, however few staff")
+        parts.append(t.assign(step=f"{order}. {label}", rule=rule))
+    look = pd.concat(parts, ignore_index=True)[["step", "value", "category", "share", "staff", "used", "rule"]]
+    look = look.rename(columns={"value": "value (normalised for Designation)", "category": "most common JP Category",
+                                "share": "share of its staff", "staff": "staff with a known category",
+                                "used": "used to impute"})
+    look.to_csv(folder / "jp_category_imputation_lookup.csv", index=False, encoding="utf-8")
+
+    staff = merged["staff"]
+    src = staff["role_group_source"].value_counts().rename("staff").rename_axis("department source").reset_index()
+    src["share"] = (src["staff"] / len(staff)).round(3)
+    depts = staff["role_group"].value_counts().rename("staff").rename_axis("department (JP Category, after imputation)").reset_index()
+    src.to_csv(folder / "department_sources.csv", index=False, encoding="utf-8")
+    depts.to_csv(folder / "departments.csv", index=False, encoding="utf-8")
+    (folder / "run_info.txt").write_text(
+        f"Generated by Client Propensity/run_pipeline.py on {res['today'].date()} from {config.RAW_FILES['staffcentral'][0]} "
+        f"(extract {config.EXTRACT_SOURCE_DATES.get('staffcentral', '?')}).\n"
+        f"Staff: {len(staff)} | with a department: {int(staff['role_group'].notna().sum())} | Unknown: {int(staff['role_group'].isna().sum())}\n",
+        encoding="utf-8")
+    return folder
+
+
 def write_workbook(res, path=None):
     p, b = res["propensity"], res["branching"]
     path = path or config.OUTPUT_DIR / f"{res['today'].date()}_Client_Propensity_Scorecards.xlsx"
@@ -75,7 +144,11 @@ def write_workbook(res, path=None):
               **p["milestone_checks"],
               "New client adds a department in year 1": (p["branch_check"], p["branch_auc"]),
               "Existing client adds a department in 12m": (p["organic_check"], p["organic_auc"]),
-              "Existing client has more seats in 12m": (p["seat_check"], p["seat_auc"])}
+              "One-department client adds a second department in 12m (bands among one-department clients)":
+                  (p["one_dept_check"], p["one_dept_auc"]),
+              "Existing client has more seats in 12m": (p["seat_check"], p["seat_auc"]),
+              **{f"Existing client, {sm['seats_from']}-{sm['seats_to']} seats, reaches {n}+ in 12m": (sm["check"], sm["auc"])
+                 for n, sm in p["seat_milestones"].items()}}
     checks = pd.concat({k: c for k, (c, _) in models.items()}, names=["model", "band"]).reset_index()
     checks["AUC"] = checks["model"].map({k: a for k, (_, a) in models.items()}).round(2)
     sheets = {
@@ -92,6 +165,7 @@ def write_workbook(res, path=None):
         "Branching by industry":    b["branch_by_industry"].reset_index(),
         "Time to branch":           b["time_to_branch"].reset_index(),
         "Related departments":      b["related_pairs"],
+        "Department imputation":    dept_imputation_table(res["merged"]),
     }
     with pd.ExcelWriter(path, engine="openpyxl") as xw:
         for name, df in sheets.items():
@@ -181,7 +255,7 @@ def plot_time_to_branch(b):
 POS, NEG, GRID = "#2a78d6", "#e34948", "#e6e5e0"
 
 def _short(dept):
-    return str(dept).replace("Exec Services - ", "Exec: ").replace(" Services", "")
+    return str(dept).replace(" Services", "")
 
 def _exec_axes(ax, title, subtitle):
     ax.set_title(title, loc="left", fontsize=13, color=INK, pad=14 + 13 * (subtitle.count("\n") + 1), fontweight="bold")
@@ -193,9 +267,9 @@ def _exec_axes(ax, title, subtitle):
 
 def plot_exec_expansion_paths(feat, top_industries=10, min_expanders=10):
     """Per industry: share of clients that expanded into a new department, where they usually start, and what
-    they most often add first. 'Exec Services - Other' (role not recorded) is left out of the labels."""
+    they most often add first. Staff with an Unknown department are left out."""
     import matplotlib.pyplot as plt
-    other = "Exec Services - Other"
+    other = EXEC_OTHER
     b = feat["branch"]
     b = b[b["start_dept"].notna() & b["industry_group"].notna()]
     rows = []
@@ -227,7 +301,7 @@ def plot_exec_expansion_paths(feat, top_industries=10, min_expanders=10):
     _exec_axes(ax, "How clients expand into new departments, by industry",
                "Bar = share of clients that have added a new department  \u2022  label = most common starting department and "
                "most common first addition\n(%) = share of the industry's clients / of those that expanded  \u2022  (n) = clients  "
-               "\u2022  'Exec Services - Other' (role not recorded) left out")
+               "\u2022  Unknown departments left out")
     fig.patch.set_facecolor(SURFACE)
     plt.tight_layout()
     return fig
@@ -258,7 +332,7 @@ def plot_exec_growth_drivers(prop, top=6):
     import matplotlib.pyplot as plt
     f = prop["new_factors"]
     label = {"industry_fit": "Industry", "country": "Country", "start_dept_grp": "Starts in"}
-    d = f[f["factor"].isin(label) & ~f["level"].isin(["Other", "Unknown", "Exec Services - Other"])
+    d = f[f["factor"].isin(label) & ~f["level"].isin(["Other", "Unknown"])
           & (f["rows_growth"] >= 15)].copy()
     lvl = [(_short(v) if f == "start_dept_grp" else v) for f, v in zip(d["factor"], d["level"])]   # shorten departments only
     d["name"] = d["factor"].map(label) + ": " + pd.Series(lvl, index=d.index)
@@ -288,7 +362,7 @@ def plot_exec_growth_drivers(prop, top=6):
 
 
 # ---------------------------------------------------------------- executive charts: splits by department and industry x country
-EXEC_OTHER = "Exec Services - Other"     # role not recorded: never shown as a label
+EXEC_OTHER = "Unknown"   # department not recorded or imputable: never shown as a label
 SEAT_WINDOW_DAYS = 730                   # seat-growth charts: milestones reached within this many days of the first hire
 
 def _exec_frame(feat):
@@ -342,8 +416,8 @@ def plot_exec_dept_paths(feat, top=10, min_expanders=10):
     return _exec_rate_chart(t, "rate", "label", "clients",
                             "Department expansion: what clients add after their first department",
                             "Bar = share of clients starting in that department that have added another one  •  label = most "
-                            "common first additions (% of those that expanded)\n(n) = clients  •  'Exec Services - Other' "
-                            "(role not recorded) left out", d["branched"].mean(), "all clients", short_rows=True)
+                            "common first additions (% of those that expanded)\n(n) = clients  •  Unknown departments "
+                            "left out", d["branched"].mean(), "all clients", short_rows=True)
 
 def plot_exec_profile_paths(feat, top=12, min_clients=40, min_expanders=10):
     """Industry x country: share that expanded, usual starting department and most common first addition."""
@@ -363,7 +437,7 @@ def plot_exec_profile_paths(feat, top=12, min_clients=40, min_expanders=10):
                             "Department expansion by industry and country",
                             f"Bar = share of clients that have added a new department  •  label = most common starting department "
                             f"and first addition\nIndustry · country groups with {min_clients}+ clients  •  (n) = clients  "
-                            "•  'Exec Services - Other' left out", d["branched"].mean(), "all clients")
+                            "•  Unknown departments left out", d["branched"].mean(), "all clients")
 
 def _seat_frame(feat):
     """Clients that launched with 1-4 staff and have been observed long enough for the 2-year milestones."""
@@ -391,7 +465,7 @@ def plot_exec_dept_seat_growth(feat, top=10, min_clients=30):
                             "Seat growth by starting department: who grows past 4 seats",
                             "Bar = share of clients launching with 1-4 staff that reached (and held) 5+ seats within 2 years  "
                             "•  label = share reaching 10+, and typical months to 5\n(n) = clients observed 2+ years  •  "
-                            "'Exec Services - Other' left out", d["reach5"].mean(), "all clients", short_rows=True)
+                            "Unknown departments left out", d["reach5"].mean(), "all clients", short_rows=True)
 
 def plot_exec_profile_seat_growth(feat, top=12, min_clients=30):
     """Seat growth by industry x country, same measure."""

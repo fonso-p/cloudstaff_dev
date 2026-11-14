@@ -1,13 +1,13 @@
 # Client Propensity: business rules, code guide and dashboard handoff
 
-**Model version:** `propensity-v1 (dashboard 18-group taxonomy)` · **Code:** this folder · **Last updated:** 2026-11-12
+**Model version:** `propensity-v1.2 (dashboard 18-group taxonomy; second-department bands; 180-day department launch)` · **Code:** this folder · **Last updated:** 2026-11-13
 
 This project estimates, from five years of real client history:
 
 * **New clients and prospects:** how likely a client with a given profile is to reach 5 seats within a year and 10 seats within two years, and to add a second department in its first year.
-* **Existing clients:** how likely each active client is to have more seats in 12 months, and to add a department it has never had. Each client also gets the department it is most likely to add next.
+* **Existing clients:** how likely each active client under 20 seats is to reach its next seat milestone (1–4 seats → 5+, 5–9 → 10+, 10–19 → 20+) within 12 months, and how likely every active client is to add a department it has never had. Clients with 20+ seats are out of scope for seat growth. Each client also gets the department it is most likely to add next.
 
-The scores measure **fit**: whether clients like this have tended to grow or expand. They complement the Account Priority Dashboard's `priority_score`, which measures **timing**: whether now is a good moment to engage.
+The scores measure **fit**: whether clients like this have tended to grow or expand. The Account Priority Dashboard's other signals measure **timing**: whether now is a good moment to engage. Since dashboard v0.4 the fit bands are rolled into its `priority_score` as **Fit** points (25 of 100 on Organic Growth, 20 on New Logo) and shown as fit chips (§3.6).
 
 Contents:
 1. [Business rules](#part-1-business-rules)
@@ -27,9 +27,9 @@ All settings live in `config.py`. A rule change means changing `config.py` (or `
 | Key | File | Grain | Used for |
 |---|---|---|---|
 | `engagement` | SC Engagement List (extract 2026-10-07) | one row per placement (staffer × client) | start and end dates of every hire: the base of all headcount history |
-| `seat_churn` | Seats Churn (OPERATIONAL) (2026-10-05) | one row per placement | exit reasons (voluntary / involuntary, customer / Cloudstaff initiated) |
 | `mystaff` | CONFIDENTIAL Mystaff, sheet MyStaff (2026-10-05) | one row per client | industry, office address, Active flag, Internal flag, CRM Company ID (= HubSpot company Record ID) |
-| `staffcentral` | StaffCentral (2026-09-14) | one row per staffer (current snapshot) | department, JP Category, designation |
+| Dashboard data | `priority_company_info_combined*.xlsx`, sheet `priority_list` (in the dashboard's data folder) | one row per account | **current seats** (`cs_staff_current` = MyStaff Total Staff) when scoring clients today (`CURRENT_SEATS_SOURCE`, §1.5) |
+| `staffcentral` | StaffCentral (2026-09-14) | one row per staffer (current snapshot) | JP Category (the department), JP Title, designation, and the deprecated Department (imputation only) |
 
 The raw files are confidential and stay outside the repo (`config.DATA_DIR`, or the `MIA_DATA_DIR` environment variable). Only the columns listed in `config.RAW_FILES` are read, so personal fields such as addresses and birthdays are never loaded.
 
@@ -41,17 +41,23 @@ The raw files are confidential and stay outside the repo (`config.DATA_DIR`, or 
 * **Future starts** (engagement date after today) are left out of every count.
 * **StaffCentral duplicates:** where a CSID appears more than once, the row currently engaged is kept, then the one with the latest engagement.
 * **MyStaff** has about a million blank rows. They are dropped.
+* Exit reasons (the Seats Churn file), attrition counts and other summary columns that fed no output were removed on 2026-11-12. Every score was checked to be unchanged.
 
 ## 1.3 Departments (role groups)
 
 | Rule | Detail |
 |---|---|
-| Department | StaffCentral `Department (All)`, joined to each engagement on **CSID** |
-| Executive Services split | Executive Services is about 54% of staff, so it is split by `JP Category`, for example `Exec Services - BPO Voice` |
-| Blank JP Category | Inferred from **Designation** when at least 5 staff with the same normalised designation have a known category and at least 60% of them share it. Generic titles such as "Executive Services Specialist I" are never used. Held-out accuracy is about 90%. This fills 2,169 of 4,893 blanks |
-| Still blank | `Exec Services - Other` |
-| Flags | `role_group_source` = Department / JP Category / Designation (inferred) / none. `dept_certain` = 1 where StaffCentral's current Engagement ID is this engagement |
-| Assumption | StaffCentral shows each person's **current** department, assumed unchanged when they move between clients. A check that rebuilds the main table using only rows where the department is certain correlates 0.84 with the full table |
+| Department | StaffCentral **`JP Category (All)`**, joined to each engagement on **CSID**. `Department (All)` is deprecated: it is an org unit (55% of staff are in "Executive Services", across 36 job categories), and is used only to impute a blank category |
+| Merged categories | `Design & Multimedia` → Creative, Design & Multimedia · `Technical Support Services` → IT Network Systems/Support · `Ecommerce IT` → Ecommerce · `Coworker` → blank (`JP_CATEGORY_MAP`; together 9 staff). 41 departments remain |
+| Blank JP Category | 45% of staff (mostly disengaged staff hired before 2021; currently engaged staff are 98% filled). Imputed in this order, each step learned from staff whose category is known (`JP_IMPUTE_STEPS`) |
+| 1. JP Title | The category most staff with the same JP Title have. Held-out accuracy 96%. JP Title is blank on almost the same rows as JP Category, so this fills only 80 staff |
+| 2. Designation | Normalised designation ("Level N", Roman numerals, seniority and training words removed: senior, junior, associate, lead, OJT, trainee, intern, apprentice; `DESIGNATION_DROP_WORDS`), when at least 5 staff share it and at least 60% of them share one category. Generic titles such as "Executive Services Specialist I" are never used. Held-out accuracy 91%. Fills 4,821 |
+| 3. Department (old) | Only departments that map cleanly: at least 10 staff and at least 80% in one category (e.g. Accounting Support Services → Accounting 92%, Talent Acquisition → Recruitment 87%, Freelance → Virtual Assistant 97%). Held-out accuracy 92%. Fills 210. Executive Services (27% in its main category), Engineering, Marketing and other mixed departments are not used |
+| Still blank | **Unknown** (4,101 staff, 20%). Their `role_group` stays blank, so they are left out of the department history: they don't set a starting department and don't count as entering a department |
+| Flags | `role_group_source` = JP Category / JP Title (imputed) / Designation (imputed) / Department (imputed) / none (Unknown). `role_group_imputed` = 1 for imputed rows. `dept_certain` = 1 where StaffCentral's current Engagement ID is this engagement |
+| Documented in | **`references/staffcentral_jp_category/`** at the repo root: the rules, why the Unknowns stay Unknown, and CSVs of the merges, every imputation lookup (category, share, staff, used), the resulting departments and their sources. The pipeline rewrites the CSVs on every full run. The workbook's **Department imputation** sheet has the same lookups |
+| Coverage | Client engagements: 81% have a department (24% imputed). Active client engagements: 97% (2% imputed) |
+| Assumption | StaffCentral shows each person's **current** category, assumed unchanged when they move between clients. A check that rebuilds the main table using only rows where the department is certain correlates 0.92 with the full table |
 
 ## 1.4 Industry and region (Account Priority Dashboard rules)
 
@@ -85,6 +91,7 @@ Brand (Cloudstaff / OptiBPO) is deliberately **not** used anywhere.
 | Starting department | The department with the most hires in the first 30 days. Ties go to whichever was hired first, then by name |
 | Department entered | Its first hire (`BRANCH_MIN_HIRES = 1`; set it to 2 to ignore one-off hires) |
 | Branch | Entering a department that was not in the launch team |
+| Department launch (existing-client models) | A department first staffed within **180 days** of the client's first hire (`ORG_DEPT_LAUNCH_DAYS`) is part of a staggered launch and **never counts as added** in the existing-client department models (`p_new_dept_12m`, `p_second_dept`). The new-client model keeps the 30-day launch team. Added 2026-11-13 (A9) |
 | Starting department in models | The 12 most common starting departments by name, the rest grouped as "Other", and "Unknown" |
 
 ## 1.7 Propensity models
@@ -100,25 +107,30 @@ Brand (Cloudstaff / OptiBPO) is deliberately **not** used anywhere.
 
 | Score | Outcome | Training clients | Who gets scored | AUC | Actual rate Low / Med / High | Average |
 |---|---|---|---|---|---|---|
-| `p_growth` | Reach and hold **5 seats within 365 days** of the first hire | launched with 1–4 staff, observed 395+ days (1,030) | profiles that launch with 1–4 staff | 0.72 | 4% / 6% / 18% | 10% |
-| `p_reach_10_730d` | Reach and hold **10 seats within 730 days** | launched below 10, observed 760+ days (773) | profiles that launch below 10 | **0.83** | 1% / 2% / 11% | 5% |
+| `p_growth` | Reach and hold **5 seats within 365 days** of the first hire | launched with 1–4 staff, observed 395+ days (1,030) | profiles that launch with 1–4 staff | 0.71 | 6% / 6% / 17% | 10% |
+| `p_reach_10_730d` | Reach and hold **10 seats within 730 days** | launched below 10, observed 760+ days (773) | profiles that launch below 10 | **0.81** | 2% / 2% / 10% | 5% |
 | (20 seats in 1,095 days) | – | only 12 reached it | not fitted (`PS_MIN_POSITIVES = 15`) | – | – | – |
-| `p_branch` | Add a department not in the launch team **within 365 days**. Leaving earlier counts as "no" | known starting department, observed 365+ days (1,087) | all profiles | 0.62 (weak) | 22% / 26% / 38% | 29% |
+| `p_branch` | Add a department not in the launch team **within 365 days**. Leaving earlier counts as "no" | known starting department, observed 365+ days (1,014) | all profiles | 0.63 (weak) | 18% / 25% / 39% | 27% |
 
-**Existing clients:** a **snapshot** of every client every 90 days of account age, starting at day 90. Each snapshot records what the account looked like on that day (inputs: account age, log of seats, seat change in the last 180 days, hires in the last 180 days, departments so far, `industry_fit`, `country`, starting department group). Training uses snapshots in the training window with a full year of follow-up and at least one seat (11,231 snapshots).
+**Existing clients:** a **snapshot** of every client every 90 days of account age, starting at day 90. Each snapshot records what the account looked like on that day (inputs: account age, log of seats, seat change in the last 180 days, hires in the last 180 days, departments so far, `industry_fit`, `country`, starting department group). Training uses snapshots in the training window with a full year of follow-up and at least one seat (10,160 snapshots).
 
 | Score | Outcome over the next 365 days | AUC | Actual rate Low / Med / High | Average |
 |---|---|---|---|---|
-| `p_seat_growth_12m` | More seats 365 days later than on the snapshot day (**net**, so backfills don't count) | 0.69 | 13% / 20% / 41% | 25% |
-| `p_new_dept_12m` | Enters a department it has **never** had | 0.70 | 9% / 20% / 36% | 22% |
+| **Seat milestone** `p_next_seat_milestone` (dashboard: `fit_seat_milestone*`) | Reaches its **next** milestone and holds it 30 days: from 1–4 seats → 5+ (7,487 snapshots) · 5–9 → 10+ (1,375) · 10–19 → 20+ (637). One model per milestone, trained only on snapshots in that seat range, so the bands compare like with like. Clients with 20+ seats are out of scope (`ORG_SEAT_MILESTONES`) | 5+: **0.87** · 10+: 0.75 · 20+: 0.71 | 5+: 1% / 2% / 19% · 10+: 4% / 16% / 34% · 20+: 9% / 20% / 37% | 7% · 18% · 22% |
+| `p_seat_growth_12m` (workbook only) | More seats 365 days later than on the snapshot day (**net**; +1 is enough at any size, so it leans towards large clients) | 0.69 | 14% / 21% / 42% | 25% |
+| `p_new_dept_12m` | Enters a department it has **never** had (departments first staffed in the client's first 180 days don't count) | 0.70 | 8% / 17% / 34% | 19.5% |
+| **Second department** `p_second_dept` (dashboard: `fit_second_dept*`) | One-department clients only: the same score, **banded among one-department snapshots** (4,602). More departments raise the score, so on the all-client bands only 75 of 431 one-department clients were High; on these bands about 145 are | 0.67 (within one-department clients; 0.65 before the 180-day launch rule) | 6% / 10% / 21% | 12.4% |
 
-Active clients (engagement active and at least one seat today) are scored on today's snapshot: 1,002 clients.
+Active clients (engagement active and at least one seat today) are scored on today's snapshot: 969 clients.
+
+The switch to JP Category departments (2026-11-12) moved the AUCs by at most 0.02: seat growth 0.69 → 0.69, new department 0.70 → 0.70, new-client growth 0.72 → 0.71, 10 seats 0.83 → 0.81, new-client branching 0.62 → 0.63.
 
 ## 1.8 Explanations and suggestions
 
 | Output | Rule |
 |---|---|
 | `*_why` | For each trait, how much the score changes if that trait is set to a typical client's value (the median, or the most common category). Shows the top two traits that raise the score by more than 0.05 on the log-odds scale. "Other", "Unknown" and non-positive seat changes are never shown. Blank means no trait stands out |
+| Existing clients' `why` / `why_to_N` (extract: `fit_dept_why`, `fit_seat_milestone_why`) | **Context traits** (`ORG_CONTEXT`: seats, seat change and hires in 180 days, years with us, departments so far) are what the dashboard already shows on the row, so they are summarised, not listed: the top two *other* traits are listed, and when a context trait is the strongest driver (or the only one) the text leads with a phrase, e.g. "Mostly its size and recent growth; also industry: Technology". "Having one department" is never used (it is true of every client the second-department chip can show), and neither is time with us (a stage, not a reason, and partly onboarding, see A9); when it is the only driver the text is "In line with clients at this stage" (`ORG_CONTEXT_FALLBACK`). The full trait list is kept in the workbook (`why_all`, `why_to_N_all`) |
 | `vs_peers` | The client's score ÷ the average score of active clients in the same seat band (1–2, 3–4, 5–9, 10–29, 30+) |
 | Likely next department (existing clients) | Learned from snapshots where a department was added, each "client added X" counted once. For each department held, the share of additions that were X. Averaged over the departments the client holds, excluding those, and rescaled to 100%. Needs at least 10 events per held department, otherwise the overall pattern is used, marked "(overall)" |
 | Lift | Share ÷ that department's share of all additions (over the same options). 1.0x is average |
@@ -130,14 +142,15 @@ Active clients (engagement active and at least one seat today) are scored on tod
 
 | # | Assumption | Effect |
 |---|---|---|
-| A1 | StaffCentral's current department applies to past engagements | The department-join check correlates 0.84; some older history may be mislabelled |
-| A2 | Designation can stand in for a blank JP Category | About 10% of inferred categories may be wrong |
+| A1 | StaffCentral's current category applies to past engagements | The department-join check correlates 0.92; some older history may be mislabelled |
+| A2 | JP Title, Designation and clean old Departments can stand in for a blank JP Category | About 9% of imputed categories may be wrong; 20% of staff stay Unknown, mostly pre-2021 history, so older clients' department history is incomplete |
 | A3 | Prospects launch with 1–2 staff, starting department unknown | Prospect scores use only industry and country, so they separate clients less well (growth AUC about 0.62) |
 | A4 | Past five years reflect today's sales motion | Rerun when the offer changes |
 | A5 | Scores show association, not cause | A High band means "clients like this did this before", not "this will happen" |
 | A6 | Likely next department is spread thin | The top share is usually 8–11%. Treat it as a lead |
 | A7 | "Unknown" industry raises the seat-growth score | Untagged clients are mostly recent, so this reflects timing, not a real effect of having no industry |
-| A8 | Raw files have different extract dates (2026-09-14 to 2026-10-07) | Align them when refreshing |
+| A9 | **Fixed 2026-11-13** (`ORG_DEPT_LAUNCH_DAYS = 180`, existing-client models only). Before: a department first staffed after the 30-day launch window counted as "added", even if it was part of a staggered launch. After the fix: base rate of a new department 20.2% → 19.5%, AUC 0.70 → 0.70; second department 13.3% → 12.4%, AUC within one-department clients 0.65 → 0.67, High band delivered 21% against 6% for Low. Clients in their first year still score higher, because they still branch more after their launch (6–12 months 14.9% against 9.4% for 2+ years). The finding that led to it | Check of 2026-11-13: one-department clients 3–6 months old add a second department 18.8% of the time, but only 12.8% if departments first staffed before day 180 are treated as launch (1–2 years: 12.8%, 2+ years: 9.4%). So the very-new bump is mostly onboarding; a real, smaller "younger clients branch more" effect remains. Excluding those entries keeps the department model's AUC at 0.70 and cuts its age effect by about a fifth. 40 of the 82 dashboard "Likely 2nd department" chips are on clients under 6 months |
+| A8 | Raw files have different extract dates (2026-09-14 to 2026-10-07), and current seats come from the dashboard's MyStaff (2026-11-09) | Align them when refreshing. A client the engagement list shows with staff but the dashboard shows with 0 seats isn't scored |
 
 ---
 
@@ -152,8 +165,8 @@ Client Propensity/
   Client Propensity.ipynb   thin notebook: runs the pipeline, shows tables and charts
   mi_pipeline/
     mappings.py                industry (18 groups / 6 sectors) and region rules: the dashboard's
-    step1_format.py            load (with cache) and clean the 4 raw files
-    step2_merge.py             exit reasons, departments (+ designation inference), industry, region
+    step1_format.py            load (with cache) and clean the 3 raw files; read the dashboard's current seats
+    step2_merge.py             departments (JP Category + imputation), industry, region
     step3_features.py          timeline, account summary, client accounts, branching history,
                                propensity inputs, seat measures, snapshot features
     step4_branching.py         descriptive branching analysis (transitions, time to branch, related depts)
@@ -184,8 +197,8 @@ res["propensity"]["scorer"].score("Technology", region="US", start_dept="Softwar
 
 | Step | Function | Returns |
 |---|---|---|
-| 1 | `step1_format.run(today)` | `engagement`, `seat_churn`, `mystaff`, `staff` (cleaned) |
-| 2 | `step2_merge.run(formatted)` | `engagement` (+ exit reasons, `role_group`, `dept_certain`), `mystaff` (+ `industry_group`, `industry_sector`, `region`, `country`), `staff` |
+| 1 | `step1_format.run(today)` | `engagement`, `mystaff`, `staff` (cleaned), `current_seats` (from the dashboard data, or None) |
+| 2 | `step2_merge.run(formatted)` | `engagement` (+ `role_group`, `role_group_source`, `role_group_imputed`, `dept_certain`), `mystaff` (+ `industry_group`, `industry_sector`, `region`, `country`), `staff`, `dept_maps` (the imputation lookups) |
 | 3 | `step3_features.run(merged, today)` | `src`, `ends`, `timeline`, `summary`, `spells`, `clients`, `excluded_accounts`, `branch`, `dept_entered`, `accounts`, `top_starts`, `industry_fit_map`, `mystaff` |
 | 4a | `step4_branching.run(feat)` | `start_dept_summary`, `transitions`, `top_paths`, `branch_by_industry`, `time_to_branch`, `related_pairs`, `growth_by_branch`, `sensitivity` (+ chart data) |
 | 4b | `step4_propensity.run(feat, today)` | `new_client_scorecard`, `scorer`, `organic_client_list`, `organic_rising`, `prospect_profiles`, model checks and AUCs, driver tables (`new_factors`, `organic_factors`, `seat_factors`) |
@@ -198,7 +211,7 @@ Every step is a set of functions that take DataFrames and return DataFrames, so 
 
 | Function | What it does |
 |---|---|
-| `step2_merge.designation_map / staff_role_groups` | Learn designation → JP Category; build `role_group` and `role_group_source` |
+| `step2_merge.category_map / staff_role_groups` | Learn JP Title / Designation / old Department → JP Category; build `role_group` (= JP Category, imputed where blank), `role_group_source` and `role_group_imputed` |
 | `step3_features._first_held_date` | First day of the first run at N or more seats that lasted at least the hold period |
 | `step3_features.build_branching(rows, clients)` | Starting department, entry order and timing of new departments. Also used by the sensitivity check |
 | `step3_features.snapshot_features` | Point-in-time features for any (client, date) list, using as-of joins on the timeline and cumulative hires |
@@ -213,17 +226,18 @@ Every step is a set of functions that take DataFrames and return DataFrames, so 
 | To change | Edit |
 |---|---|
 | A threshold or window | `config.py` |
+| How a blank JP Category is imputed, or which categories are merged | `JP_IMPUTE_STEPS`, `JP_CATEGORY_MAP` in `config.py`. Check the workbook's Department imputation sheet |
 | Which industry a raw value maps to | `mappings.py`, the same change in the dashboard's notebook §0b, and both rule docs |
 | Add a seat milestone | `PS_MILESTONES`, e.g. `(20, 1460)`. It is fitted only if at least 15 training clients reached it |
 | Model inputs | `PROFILE` / `ORG_NUM` / `ORG_CAT` in `step4_propensity.py`. Then check the AUCs and band tables in the workbook's "Model checks" sheet |
 | New raw extracts | Drop them in `DATA_DIR`, update the file names in `config.RAW_FILES` and the dates in `EXTRACT_SOURCE_DATES` |
 | Pin a run date | `config.AS_OF_DATE = "2026-11-12"` |
+| Where current seats come from | `CURRENT_SEATS_SOURCE` (`"dashboard"` or `"engagement"`), `DASHBOARD_DATA_GLOB` |
 | Where the dashboard extract is copied | `config.DASHBOARD_FEED_DIR` (or the `MIA_DASHBOARD_DIR` environment variable); `None` = no copy |
 
 ## 2.6 Checks built in
 
-* **Joins:** the seat-churn join reports any rows it duplicates; the department join can't change the row count (asserted); the MyStaff join asserts unique Shortcodes and matching key types.
-* **Reconciliation:** voluntary + involuntary exits = exits with a known reason; reactivated accounts must have churned first.
+* **Joins:** the department join can't change the row count (asserted); the MyStaff join asserts unique Shortcodes and matching key types.
 * **Model quality:** each model logs its AUC and band cut-offs. The workbook's "Model checks" sheet shows the actual rate per band.
 * **Regression baseline:** when the pipeline was moved out of the notebook, with designation inference switched off it reproduced all 22 reference tables exactly.
 
@@ -235,32 +249,32 @@ The repo's shared `.venv` (Python 3.12, pandas 3, scikit-learn, lifelines, openp
 
 # Part 3: Handoff: adding the scores to the Account Priority Dashboard
 
-**Status: proof of concept.** The two pipelines read MyStaff extracts from different dates (§3.8). That's accepted for now.
+**Status: proof of concept, connected.** The dashboard notebook (`Marketing Intelligence/format data/format_priority_data.ipynb`, stage 7b) now reads this extract: `PROPENSITY_MODE = "real"` uses it, `"mock"` generates synthetic values, `"off"` skips it. The two pipelines read MyStaff extracts from different dates (§3.8). That's accepted for now.
 
 ## 3.1 What is ready
 
-Step 5b writes `<date>_Propensity_Extract.xlsx` and two CSVs to `config.OUTPUT_DIR`, then copies all three to the dashboard's local data folder (`config.DASHBOARD_FEED_DIR`, default `Desktop\Projects\Marketing Intelligence Priority\Data`; override with `MIA_DASHBOARD_DIR`, or set it to `None` to skip the copy). The dashboard reads them from its own folder. The dashboard pipeline doesn't read them yet.
+Step 5b writes `<date>_Propensity_Extract.xlsx` and two CSVs to `config.OUTPUT_DIR`, then copies all three to the dashboard's local data folder (`config.DASHBOARD_FEED_DIR`, default `Desktop\Projects\Marketing Intelligence Priority\Data`; override with `MIA_DASHBOARD_DIR`, or set it to `None` to skip the copy). The dashboard reads them from its own folder. The dashboard notebook reads them from there (stage 7b; rules in its `BUSINESS_RULES.md` §11.1b).
 
-`propensity_accounts` is deliberately narrow: the dashboard's key (`account_id`), `shortcode`, and the seat and department metrics. It carries no other company identifiers or descriptive columns (no CRM ID, industry or region): the dashboard keeps its own. The model version and as-of date are in `run_info`.
+`propensity_accounts` is deliberately narrow: the client keys (`account_id`, `shortcode`, `crm_company_id`) and the seat and department metrics. It carries no descriptive columns (no industry or region): the dashboard keeps its own. The model version and as-of date are in `run_info`.
 
 | Sheet / CSV | Rows | Join to the dashboard's `priority_list` |
 |---|---|---|
-| `propensity_accounts` (+ `_propensity_accounts.csv`) | 1,428 active MyStaff clients (Active = Yes, not a test account): the dashboard's Organic Growth set. 22 columns: `account_id`, `shortcode`, seat metrics, department metrics, new-client growth scores, `fit_coverage` (§3.3) | `account_id` (`MS-<shortcode>`), see §3.2 |
+| `propensity_accounts` (+ `_propensity_accounts.csv`) | 1,428 active MyStaff clients (Active = Yes, not a test account): the dashboard's Organic Growth set. 23 columns: `account_id`, `shortcode`, `crm_company_id`, seat metrics, department metrics, new-client growth scores, `fit_coverage` (§3.3) | `account_id` (`MS-<shortcode>`), see §3.2 |
 | `prospect_profiles` (+ `_prospect_profiles.csv`) | 133 = 19 industries (18 + Unknown) × 7 countries | `profile_key` = `industry|country`, after mapping the dashboard's `region` to country with `region_to_country` (`AU-*` → Australia, `US` → United States, …) |
+| `score_definitions` (+ `_score_definitions.csv`) | 1 per score | – : what each score means: the question it answers, who it applies to, the exact outcome and time window, the assumptions (New Logo: *if we sign them*, profile-level), the historical average, AUC and band cut-offs. Built from `config.py`, so it always matches the models. The dashboard notebook carries it into its JSON (`meta.propensity.definitions`) and workbook (`propensity_definitions` sheet) |
 | `column_dictionary` | 1 per column | – |
 | `run_info` | model version, as-of date, source files, AUCs, band cut-offs | – |
 
-**Reading the files.** Read the CSV with `dtype={"shortcode": str}` so a shortcode is never parsed as a number.
+**Reading the files.** Read the CSV with `dtype={"shortcode": str, "crm_company_id": str}`. The IDs are written as text, but without `dtype` the blank CRM IDs turn the column into floats (`7162872743.0`) and a join to HubSpot fails. `pd.read_excel` converts them too, so pass the same `dtype` there.
 
-Coverage in `propensity_accounts` (`fit_coverage`): scored 1,001 · no current seats 286 · internal / non-client 98 · no engagement history 28 · no known starting department 15.
+Coverage in `propensity_accounts` (`fit_coverage`): scored 968 · no current seats 254 · internal / non-client 98 · no known starting department 80 · no engagement history 28. Departments are JP Categories (§1.3): `likely_next_dept` and the `fit_dept_*` scores use them.
 
 ## 3.2 Joining to the dashboard
 
 | Key | Dashboard Organic Growth rows matched (of 1,110) | Use |
 |---|---|---|
 | `account_id` (= `MS-` + `shortcode`) | 1,086 | **The key.** Unique on both sides. Joining on `shortcode` gives the same result |
-
-The CRM / HubSpot company ID isn't in the extract. It would be a weaker key (1,048 matches: some clients have none, a few IDs are shared by more than one client, and 30 differ between the two sides). For a HubSpot write-back, use the dashboard's own `crm_company_id`.
+| `crm_company_id` (= MyStaff `CRM Company ID` = HubSpot company Record ID) | 1,048 | **Alternative key, and the link to HubSpot.** Weaker than `account_id`: 78 extract rows have none, 5 IDs are shared by more than one client, and on 30 shortcode-matched rows the two sides carry a different ID (different MyStaff extracts). Use it to join to HubSpot directly or for a write-back; join to the dashboard on `account_id` |
 
 The 24 dashboard rows without a match get no `fit_*` values and should show as "not scored":
 
@@ -290,11 +304,14 @@ Until the dashboard's MyStaff file is re-exported, the dashboard shows the wrong
 | Extract column | Dashboard column | Notes |
 |---|---|---|
 | `account_id`, `shortcode` | same | Organic Growth only. Join key, see §3.2 |
+| `crm_company_id` | `crm_company_id` (= `hubspot_record_id` on matched rows) | MyStaff `CRM Company ID`, the HubSpot company Record ID, as text. Link to HubSpot (§3.2) |
 | `seats_current` | `cs_staff_current` | Engagement-list headcount vs MyStaff Total Staff (correlation 0.99) |
 | `seats_added_6m_gross` | `seats_added_6m` | Same idea, older source. Not needed on the dashboard (§3.4) |
 | `seats_change_6m_net` | – | Net change, for reference (§3.4) |
-| `fit_seat_growth_p` / `_band`, `fit_seat_vs_peers`, `fit_seat_why` | – (new) | Seat growth: more seats in 12 months (§1.7, §3.5) |
+| `fit_seat_milestone`, `fit_seat_milestone_p` / `_band` / `_why` | – (new) | Seat growth: the client's next seat milestone (5, 10 or 20; blank = 20+ seats, out of scope) and the chance of reaching it within 12 months (§1.7) |
 | `fit_dept_expand_p` / `_band`, `fit_dept_vs_peers`, `fit_dept_why` | – (new) | Department expansion: enters a department it has never had, in 12 months (§1.7, §3.5) |
+| `depts_so_far`, `depts_so_far_names` | – (new) | Departments the client has had so far (count, and the names separated by `; `, since some names contain a comma) |
+| `fit_second_dept_p` / `_band` | – (new) | One-department clients only: the chance of a second department in 12 months, banded among one-department clients (§1.7) |
 | `likely_next_dept`, `likely_next_dept_by_lift` | – (new) | Which department is most likely next (§1.8) |
 | `fit_growth_*`, `fit_reach_10_*` | – (new) | New clients only: 5 seats in 1 year, 10 seats in 2 years |
 | `fit_coverage` | – (new) | Why a client has no score |
@@ -302,7 +319,7 @@ Until the dashboard's MyStaff file is re-exported, the dashboard shows the wrong
 Add the new columns as a column group, e.g. `5_propensity`, flagged as a dashboard extension. **Keep them separate from `priority_score`**.
 
 **Organic Growth rows:** every column above, from `propensity_accounts`.
-**New Logo rows:** `fit_growth_*`, `fit_reach_10_*`, `fit_branch_1y_*`, `likely_first_new_dept` from `prospect_profiles`.
+**New Logo rows:** `fit_growth_*`, `fit_reach_10_*`, `fit_branch_1y_*` (including `fit_branch_1y_why`, added in v1.1), `likely_first_new_dept` from `prospect_profiles`.
 
 ## 3.4 Seat growth: which figure to use
 
@@ -317,7 +334,7 @@ Four candidates, each covering about the last 6 months:
 
 **Source vs definition.** Across the 1,086 joined clients, the source barely matters. MyStaff gross and engagement-list gross fall in the same dashboard band (0 / 1–5 / 6–10 / 11+) for 96% of clients (correlation 0.93); the two net figures agree on 95%. Gross vs net matters more: 88 of the 340 clients with MyStaff adds had a net change of zero or less, because they only replaced leavers.
 
-**Backtest.** On the 11,231 historical client snapshots (§1.7), how well each figure ranks clients by "more seats 365 days later" (AUC):
+**Backtest.** On the 11,231 historical client snapshots of the run before the department change (§1.7; the seat measures don't depend on departments), how well each figure ranks clients by "more seats 365 days later" (AUC):
 
 | Signal | AUC |
 |---|---|
@@ -334,7 +351,7 @@ Share that grew over the next year: adds and positive net change 40% · adds but
 
 1. **Keep the dashboard's `seats_added_6m` (MyStaff gross) as the scored seat signal.** Gross predicts slightly better than net. MyStaff is fresher than the engagement list and is already wired in. Don't replace it with `seats_added_6m_gross`: that measures the same thing (96% same band) from an older extract.
 2. **Optional:** halve the seat signal when MyStaff net (`Movement Net`, same months) is zero or less. This discounts clients that only replaced leavers (88 today) and lifts the AUC from 0.645 to 0.653. It's a dashboard-side change (`SEAT_WINDOW`, `standardize_mystaff()`).
-3. **Bring over `fit_seat_growth_*`** as the forward-looking companion. It combines size, recent adds, net change, tenure and profile, and is the best single predictor (0.69). It is a fit score, so keep it out of `priority_score` (§3.7).
+3. **Bring over the seat milestone (`fit_seat_milestone*`)** as the forward-looking companion: each client's next step (1–4 → 5+, 5–9 → 10+, 10–19 → 20+; 20+ seats out of scope) and its chance within a year. It replaced the earlier "any net increase" score (`fit_seat_growth_*`, AUC 0.69), which leaned towards large clients. It is a fit score, so keep it out of `priority_score` (§3.7).
 
 Caveats: the backtest uses the engagement-list measures. MyStaff gross shares 96% of its bands with them, so the ranking should carry over. The engagement extract ends 2026-10-07 while the as-of date is 2026-11-12, so today's engagement-list figures miss the last five weeks.
 
@@ -343,7 +360,7 @@ Caveats: the backtest uses the engagement-list measures. MyStaff gross shares 96
 | Column | Explains |
 |---|---|
 | `fit_dept_why` | `fit_dept_expand_p` (department expansion): chance of entering a department the client has never had, in the next 12 months |
-| `fit_seat_why` | `fit_seat_growth_p` (seat growth): chance of having more seats 12 months from now (net) |
+| `fit_seat_milestone_why` | `fit_seat_milestone_p` (seat growth): chance of reaching the client's next seat milestone (5, 10 or 20) within 12 months |
 
 Both are built the same way (`step4_propensity.reasons`, §1.8), each from its own model:
 
@@ -354,9 +371,17 @@ Both are built the same way (`step4_propensity.reasons`, §1.8), each from its o
 
 Labels: `134 seats` · `+6 seats in last 6m` · `12 hires in last 6m` · `4 depts already` · `0.8 yrs with us` · `industry: Real Estate` · `country: United States` · `started in: Accounting Support Services`.
 
-Today, across 1,001 scored clients: `fit_dept_why` is blank for 100 and `fit_seat_why` for 72, and the two are identical for 168. The most common reasons are seats and years with us (both columns), the starting department (`fit_dept_why`), and departments already and country (`fit_seat_why`). A reason explains the score, not the cause (A5).
+The counts below are from the earlier "any net increase" seat score (`fit_seat_why`, now `fit_seat_milestone_why`): across 968 scored clients, `fit_dept_why` was blank for 34 and `fit_seat_why` for 59, and the two were identical for 356. The most common reasons are seats and years with us, the starting department (`fit_dept_why`), and departments already and country (seat growth). A reason explains the score, not the cause (A5).
 
 ## 3.6 Integration steps (in the dashboard pipeline)
+
+**Done:** the Organic Growth and New Logo joins, the `5_propensity` column group, the checks and the JSON (stage 7b of the dashboard notebook), and, from dashboard v0.4 (2026-11-13), **Fit points in `priority_score`** and **fit chips** on the page (the dashboard's BUSINESS_RULES §11.2b):
+
+* Fit = 25 points on Organic Growth (website 30, news/jobs 30, seat growth 15) and 20 on New Logo (website 30, news/jobs 30, Diamond 10, Competitor client 10), scoring profile `dashboard_v3`.
+* Each part is its band (High 1, Medium 0.5, Low 0). Organic Growth: next seat milestone 0.6 + second department 0.4 (`fit_second_dept_band`, one-department clients only; clients with 2+ departments score 0 on the department part, so at most 15 of 25 points; `fit_dept_expand_*` is not used by the dashboard). New Logo: the better of `fit_growth_band` / `fit_reach_10_band` 0.75 (15 points) + `fit_branch_1y_band` 0.25 (5 points). No fit = the goal's average fit.
+* Chips for High bands at 1.5× the usual rate or more: "Likely 5+ / 10+ / 20+ seats", "Likely 2nd department" (one-department clients and prospects only). Hovering one shows the chance, what High means, the `*_why`, and for departments the departments so far and `likely_next_dept*`.
+
+Still open: fit in routing, and a fit × timing grid for Marketing (§3.7). The steps below are the original plan.
 
 1. **Extract:** add `extract_propensity()` to stage 1. It reads the newest `*_Propensity_Extract_propensity_accounts.csv` and `*_prospect_profiles.csv` from the dashboard's own data folder (with `dtype=str` for `shortcode`, §3.1), plus `run_info` from the xlsx for the model version and as-of date.
 2. **Merge:** after stage 4 or 5, left-join `propensity_accounts` on `account_id` (§3.2). For New Logo, derive `country` from `region`, build `profile_key = industry + "|" + country`, and left-join `prospect_profiles`. Unknown industry or country falls back to the `Unknown` rows, which exist for every combination.
@@ -398,8 +423,8 @@ Combinations with `priority_score` can't be judged until the dashboard's signals
 
 ## 3.9 Open decisions
 
-1. Fit grid, multiplier, or both (§3.7)? This needs agreement with Sales and Marketing.
-2. Should clients with no current seats (286) get a separate win-back score?
+1. ~~Fit grid, multiplier, or both (§3.7)?~~ Decided 2026-11-13: fit is rolled into `priority_score` as points (§3.6). A fit × timing grid for Marketing is still possible on top.
+2. Should clients with no current seats (254) get a separate win-back score?
 3. Score 20 seats with a longer window, e.g. 4 years, once more history exists?
 4. Seat signal: keep MyStaff gross `seats_added_6m` (recommended, §3.4). Add the net discount?
 5. Should prospect scores use more than industry and country (e.g. Team Builder role or requested headcount) once captured?
