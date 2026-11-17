@@ -53,8 +53,8 @@ def _session():
     return _local.s
 
 
-def get(url, params=None, key=None, interval=1.0, timeout=25, retries=3, serial=False):
-    """GET with a per-key rate limit. Retries 429/5xx and network errors with exponential backoff.
+def get(url, params=None, key=None, interval=1.0, timeout=25, retries=3, serial=False, method="GET", json=None):
+    """GET (or `method`, with a `json` body) with a per-key rate limit. Retries 429/5xx and network errors with exponential backoff.
     serial=True: one request in flight for the key, and `interval` counts from when the last one finished."""
     key = key or urlparse(url).netloc
     err = None
@@ -64,12 +64,12 @@ def get(url, params=None, key=None, interval=1.0, timeout=25, retries=3, serial=
                 with _serial_lock(key):
                     LIMITER.wait(key, 0)                   # wait until `interval` after the previous request finished
                     try:
-                        r = _session().get(url, params=params, timeout=timeout)
+                        r = _session().request(method, url, params=params, json=json, timeout=timeout)
                     finally:
                         LIMITER.push(key, interval * random.uniform(1.0, 1.2))
             else:
                 LIMITER.wait(key, interval * random.uniform(1.0, 1.3))
-                r = _session().get(url, params=params, timeout=timeout)
+                r = _session().request(method, url, params=params, json=json, timeout=timeout)
         except requests.RequestException as e:
             err = e
         else:
@@ -81,3 +81,8 @@ def get(url, params=None, key=None, interval=1.0, timeout=25, retries=3, serial=
         if attempt < retries:
             time.sleep(min(90, interval * 2 * 2 ** attempt))
     raise FetchError(str(err))
+
+
+def post(url, json=None, **kw):
+    """POST a JSON body, with the same rate limit and retries as get()."""
+    return get(url, method="POST", json=json, **kw)

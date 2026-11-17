@@ -47,7 +47,11 @@ nlp = [
     "sentence-transformers>=3.0",
     "setfit>=1.1",
 ]
+browser = [
+    "playwright>=1.47",
+]
 
 [tool.uv]
-# A plain `uv sync` installs every group, so no project's packages get removed
-default-groups = ["dev", "client-growth", "nlp"]
+# A plain `uv sync` installs every group, so no project's packages get removed.
+# browser (News Scraper jobs, JavaScript careers pages) also needs: .venv/Scripts/python -m playwright install chromium
+default-groups = ["dev", "client-growth", "nlp", "browser"]

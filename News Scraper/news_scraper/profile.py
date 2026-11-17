@@ -17,7 +17,7 @@ from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 
 from . import http
-from .match import core_name, root_domain
+from .names import core_name, root_domain
 
 REFRESH_DAYS = 30
 ABOUT_PATHS = ["/about", "/about-us", "/company", "/about/", "/en/about", "/company/about"]

@@ -17,7 +17,8 @@ from dataclasses import dataclass, field
 
 from . import http, jobs, nlp, profile, registers
 from .classify import OTHER, classify, load_settings, recency_factor
-from .match import CONFIRM, MATCH, POSSIBLE, SOCIAL, VOLUME_CONFIRMED, VOLUME_MIN, Matcher, root_domain
+from .identity import MATCH, POSSIBLE, Identity, NlpSignals, common_name_flips, judge, longer_entity
+from .names import SOCIAL, root_domain
 from .sources import GDELT_MAX_DAYS, SOURCES, SkipSource, find_feed
 from .store import Store, dedupe_key, is_direct, real_url
 
@@ -39,7 +40,7 @@ class Company:
     lookback_days: int | None = None
     ticker: str = ""                                 # e.g. XRO or ASX:XRO; strong identity evidence when an article mentions it
     ambiguous: bool | None = None                    # name is a common word? None = assume yes when context words are given
-    employees: int | None = None                     # headcount; small companies (< match.SMALL_COMPANY) get stricter name checks
+    employees: int | None = None                     # headcount; small companies (< identity.SMALL_COMPANY) get stricter name checks
 
     def __post_init__(self):
         self.domain = root_domain(self.domain)
@@ -97,7 +98,7 @@ def window(store, c, src, lookback, mode, today):
 def process(store, c, sources, lookback_default, mode, today, read=None):
     store.upsert_company(c)
     card = profile.ensure(store, c)                        # company card from its website (rebuilt every 30 days)
-    matcher, stats = Matcher(c, card), Counter()
+    matcher, stats = Identity(c, card), Counter()
     stats[f"profile:{card['status'].split(':')[0]}"] += 1
     lookback = c.lookback_days or lookback_default
     for src in sources:
@@ -181,8 +182,7 @@ def build_profiles(companies, db_path, refresh=False, workers=6, log=print):
     with ThreadPoolExecutor(workers) as ex:
         cards = list(ex.map(lambda c: profile.ensure(store, c, refresh), companies))
     for c, card in zip(companies, cards):
-        m = Matcher(c, card)
-        log(f"\n{c.name}  [{card['status']}]  name: {'ambiguous' if m.ambiguous else 'distinctive'}")
+        log(f"\n{c.name}  [{card['status']}]  name: {Identity(c, card).name_type}")
         for k in ("site_name", "legal_name", "ticker", "city"):
             if card.get(k):
                 log(f"  {k:<10} {card[k]}")
@@ -242,7 +242,7 @@ def _prepare(db_path, settings_path=None, min_match=MATCH, lookback_days=180):
         reg = registers.identity_names(store, cid)
         if reg:
             cards[cid] = {**card, "alt_names": list(dict.fromkeys(card.get("alt_names", []) + reg))}
-    matchers = {r[0]: Matcher(Company(name=r[1], company_id=r[0], domain=r[2] or "", location=r[3] or "", country=r[4] or "",
+    matchers = {r[0]: Identity(Company(name=r[1], company_id=r[0], domain=r[2] or "", location=r[3] or "", country=r[4] or "",
                                       aliases=[a for a in (r[5] or "").split(";") if a], context=[a for a in (r[6] or "").split(";") if a],
                                       ticker=r[7] or "", ambiguous={"yes": True, "no": False}.get(r[8] or ""), employees=_int(r[9])),
                              cards[r[0]])
@@ -263,7 +263,7 @@ def _prepare(db_path, settings_path=None, min_match=MATCH, lookback_days=180):
     for cid, _, title, _, _, _, _, _, key in arts:
         r = nlp_res.get(key)
         if r:
-            le = nlp.longer_entity(matchers[cid].names, title, r["entities"])
+            le = longer_entity(matchers[cid].names, title, r["entities"])
             if le:
                 recurring[cid][le] += 1
     ctx = {"store": store, "today": today, "strength": strength, "recency": recency, "companies": companies, "cards": cards, "matchers": matchers,
@@ -276,24 +276,13 @@ def _prepare(db_path, settings_path=None, min_match=MATCH, lookback_days=180):
     for e in events:
         if e["source"] != "newsroom":
             news[e["company_id"]].append(e)
-    flipped = {cid for cid, evs in news.items() if matchers[cid].small and not matchers[cid].ambiguous and not matchers[cid].ambiguous_set
-               and len(matchers[cid].name.split()) <= 2          # "Bank of Sydney" is specific; "Clutch", "Big Post" are not
-               and len(evs) >= VOLUME_MIN and _unconfirmed(evs)}
-    for cid in flipped:
-        matchers[cid].ambiguous, matchers[cid].ambiguous_reason = True, f"{len(news[cid])} matches, few confirm the company"
-    if flipped:
+    flips = common_name_flips(matchers, news)
+    for cid, reason in flips.items():
+        matchers[cid] = matchers[cid].with_name_type(True, reason)
+    if flips:
         events, review = _judge(ctx)
     ctx["events"], ctx["review"] = events, review
     return ctx
-
-
-def _unconfirmed(evs):
-    """Many matches and almost none confirmed, judged on the articles whose text was read: a headline alone rarely carries a
-    domain or a city, so unread articles say nothing either way (Tyro Payments was flagged when no text had been read)."""
-    read = [e for e in evs if e["text_status"] == "ok"]
-    if len(read) < 5:
-        return False
-    return sum(bool(e["evidence"]) for e in read) / len(read) < VOLUME_CONFIRMED
 
 
 def export(db_path, out_dir, settings_path=None, min_match=MATCH, lookback_days=180):
@@ -330,56 +319,30 @@ def _judge(ctx):
         text = text if text_status == "ok" else ""
         lead = text[:600]
         if lead and cat == OTHER:                    # headline says nothing specific: let the opening paragraphs decide
-            cat = classify("", lead) or OTHER
+            cat = classify("", nlp.mask_name(lead, m.names)) or OTHER   # masked: "Supply Partners" is not a new partner
         basis = "rules" if cat != OTHER else ""
         # ---- NLP
         res = nlp_res.get(key)
         n = {"nlp_entity_check": "", "nlp_event": "", "nlp_role": "", "nlp_certainty": "", "zs_label": "", "zs_score": "", "zs_category": "",
              "fit": "", "mentions": ""}
-        verdict, note, primary, role, zs_cat, fit, extra = "", "", None, "", None, None, 0
+        primary, zs_cat, signals = None, None, None
         if res:
-            names = m.names + [p for _, p in m.strong]
-            roles = [(ev, nlp.role_of(names, ev)) for ev in res["events"]]
-            known = [m.name, *[p.pattern for p in m.cased], *ctx["cards"][cid].get("alt_names", []), ctx["cards"][cid].get("legal_name", "")]
-            verdict, note = nlp.entity_check(names, title, f"{summary_text or ''} {lead}".strip(), res["entities"], known,
-                                             ctx["recurring"].get(cid, set()), one_word=len(m.name.split()) == 1, is_actor=any(r for _, r in roles),
-                                             strict=m.small)
+            roles = [(ev, nlp.role_of(m.names + [p for _, p in m.strong], ev)) for ev in res["events"]]
             primary = next(((ev, r) for ev, r in roles if r), None) or next(((ev, r) for ev, r in roles if ev["where"] == "title"), None) \
                 or (roles[0] if roles else None)
             zs_cat, zs_detail, zs_label, zs_score = nlp.zs_best(res["zeroshot"], "company")
             fit = nlp.cosine(res["embedding"], ctx["company_vec"].get(cid))
-            extra = 0      # an ORG tag is not identity evidence: spaCy tags "Clutch" (a hockey team, a game) as an organisation too
-            n.update({"nlp_entity_check": f"{verdict}: {note}" if note else verdict, "zs_label": zs_label, "zs_score": zs_score if zs_label else "",
-                      "zs_category": zs_cat or "", "fit": round(fit, 3) if fit is not None else ""})
+            signals = NlpSignals(res["entities"], is_actor=any(r for _, r in roles), fit=fit, zs_any=bool(zs_cat and zs_cat != OTHER))
+            n.update({"zs_label": zs_label, "zs_score": zs_score if zs_label else "", "zs_category": zs_cat or "",
+                      "fit": round(fit, 3) if fit is not None else ""})
             if primary:
                 ev, role = primary
                 n.update({"nlp_event": f"{ev['category']}: {nlp.describe(ev, role)}", "nlp_role": role, "nlp_certainty": ev["certainty"]})
-        mentions = m.company_uses(f"{title} {summary_text or ''} {text}", minus_titles=False)
-        n["mentions"] = mentions
-        # ---- does it count?
-        ok, check, found = m.verdict(title, summary_text, src, text or None, extra=extra)
-        pts, _ = m.evidence(f"{title} {text or summary_text or ''}")
-        pts += extra
-        if src != "newsroom":
-            if ok and verdict in ("compound", "longer name"):
-                ok, check = False, note
-            elif ok and verdict == "wrong type" and pts < CONFIRM:
-                ok, check = False, note
-            lex = m.passing_lexical(title)
-            if ok and lex and mentions < 3:                              # unless the article text keeps naming the company
-                ok, check = False, f"passing mention: '{lex}'"
-        if score < min_match:
-            ok, check = False, check or f"low match score ({score})"
-        feats = nlp.features(pts, verdict, mentions, bool(any(p.search((title or "").lower()) for p in m.names)), fit, m.ambiguous, m.one_word,
-                             bool(text), bool(zs_cat and zs_cat != OTHER), m.passing_mention(title)) if res else None
-        about_p = ""
-        if ctx["combiner"] and feats and src != "newsroom":   # a trained combiner (nlp train) overrides the rules when it is confident
-            about_p = round(float(ctx["combiner"]["model"].predict_proba([feats])[0][1]), 3)
-            if about_p >= 0.7 and not ok and not check.startswith("low match"):
-                ok, check = True, ""
-                found.append(f"combiner p={about_p}")
-            elif about_p <= 0.3 and ok:
-                ok, check = False, f"combiner says not this company (p={about_p})"
+        # ---- does it count? (identity.judge: every identity rule, in order)
+        idr = judge(m, title=title, summary=summary_text, source=src, score=score, text=text, nlp=signals,
+                    recurring=ctx["recurring"].get(cid, set()), min_match=min_match, combiner=ctx["combiner"])
+        ok, check, found, feats = idr.counts, idr.reason, idr.evidence, idr.features
+        n.update({"nlp_entity_check": idr.entity_check, "mentions": idr.mentions})
         # ---- what happened: rules, else the dependency event, else zero-shot, else SetFit (trained)
         if primary and primary[0]["certainty"] == "denied" and primary[0]["category"] == cat:
             cat, basis = OTHER, "denied"
@@ -388,19 +351,27 @@ def _judge(ctx):
         elif (cat == OTHER and zs_cat and zs_cat != OTHER and zs_score >= 0.75 and src != "newsroom"
               and any(p.search((title or "").lower()) for p in m.names)):      # zero-shot alone is noisy: the company must be in the headline
             cat, basis = zs_cat, "zero-shot"
+        # The company's own website: always kept, but a blog post or guide ("Buying out your ex", a charity fundraiser) is
+        # not an event. It counts as one only when the headline names the company, as an announcement does.
+        # Applied even when the rules found nothing, so the later classifier/SetFit steps (basis set here) cannot add an event.
+        if src == "newsroom" and not any(p.search((title or "").lower()) for p in m.names):
+            cat, basis = OTHER, "company website: headline doesn't name the company"
         row = {"company_id": cid, "published_at": published[:10], "age_days": age, "category": cat, "category_basis": basis,
                "strength": strength.get(cat, strength.get(OTHER, 0.3)),
                "recency_factor": recency_factor(age, recency), "match_score": score, "title": title, "publisher": pub, "url": real_url(final_url, url),
-               "google_url": url if not is_direct(url) else "", "source": src, "text_status": text_status, "evidence": "; ".join(found),
-               "check": check, "lead": re.sub(r"\s+", " ", lead[:300]), **n, "about_p": about_p, "_key": key, "_features": feats}
+               "google_url": url if not is_direct(url) else "", "source": src,
+               "origin": "company website" if src == "newsroom" else "news", "text_status": text_status, "evidence": "; ".join(found),
+               "check": check, "identity_rule": idr.rule, "lead": re.sub(r"\s+", " ", lead[:300]), **n, "about_p": idr.about_p,
+               "_key": key, "_features": feats}
         row["weighted"] = round(row["strength"] * row["recency_factor"], 3)
         row["_rule_cat"], row["_masked"] = (cat if basis in ("rules", "") else OTHER), nlp.mask_name(title, m.names)
         row["event_confidence"] = "high" if basis == "rules" else "medium" if cat != OTHER else ""
         (events if ok else review).append(row)
-        if cat == OTHER and ctx["setfit"]:
+        if cat == OTHER and ctx["setfit"] and not basis.startswith("company website"):
             other_rows.append(row)
     # ---- headline event classifier (trained on event_examples.py) for the counted news articles: veto, add, confidence
-    cand = [r for r in events if r["source"] != "newsroom" and r["category_basis"] in ("rules", "")]
+    # company-website announcements get the same check (they used to skip it, so every keyword match was "high")
+    cand = [r for r in events if r["category_basis"] in ("rules", "")]
     if cand and ctx.get("use_event_clf", True):
         try:
             probs = nlp.event_probs(ctx["store"], [(r["company_id"], r["_key"], r["_masked"]) for r in cand])
@@ -466,8 +437,9 @@ def _export_rest(out_dir, ctx):
             "signal_confidence": best.get("event_confidence", "") if best else "", "signal_basis": best["category_basis"] if best else "", "nlp_event": best["nlp_event"] if best else "",
             "matched_articles": len(evs), "distinct_stories": len(set(stories.values())) if stories else (len(evs) or ""),
             "events_not_other": sum(e["category"] != OTHER for e in evs),
+            "company_website_articles": sum(e["source"] == "newsroom" for e in evs),
             "possible_matches_to_review": sum(r["company_id"] == cid for r in review),
-            "name_type": f"ambiguous ({matchers[cid].ambiguous_reason})" if matchers[cid].ambiguous else "distinctive",
+            "name_type": matchers[cid].name_type,
             "profile_status": cards[cid].get("status", "not built"),
             "profile_keywords": "; ".join(cards[cid].get("keywords", [])[:8]),
             "sources_ok": ";".join(s for s, st in statuses.items() if st == "ok"),
@@ -481,14 +453,31 @@ def _export_rest(out_dir, ctx):
         write_csv(out_dir, name, rows, cols)
 
     ev_cols = ["company_id", "signal_type", "published_at", "age_days", "category", "category_basis", "strength", "recency_factor", "weighted",
-               "event_confidence", "match_score", "title", "publisher", "url", "google_url", "source", "text_status", "evidence", "check", "story_id",
+               "event_confidence", "match_score", "title", "publisher", "url", "google_url", "source", "origin", "text_status", "evidence", "check",
+               "identity_rule", "story_id",
                "clf_top", "clf_score",
                "nlp_entity_check", "nlp_event", "nlp_role", "nlp_certainty", "zs_category", "zs_label", "zs_score", "fit", "mentions", "about_p", "lead"]
     write("signal_events.csv", sorted(events + extra, key=lambda e: (e["company_id"], e["published_at"]), reverse=True), ev_cols)
-    write("review.csv", sorted(review, key=lambda e: (e["company_id"], e["published_at"]), reverse=True), ev_cols)
+    # review.csv: who the company is, next to its id, so a reviewer can judge the match without looking it up
+    def profile_text(card):
+        if not (card.get("status") or "").startswith("ok"):          # "ok" or "ok (little found)"
+            return f"(website not readable: {(card.get('status') or 'not built')[:80]})"
+        parts = [("site", card.get("site_name")), ("legal name", card.get("legal_name")), ("also", "; ".join(card.get("alt_names", []))),
+                 ("city", card.get("city")), ("ticker", card.get("ticker")), ("about", re.sub(r"\s+", " ", card.get("description") or "")[:200]),
+                 ("keywords", "; ".join(card.get("keywords", [])[:8]))]
+        return " | ".join(f"{k}: {v}" for k, v in parts if v) or "(website read, nothing found)"
+    who = {cid: {"company_name": name, "website": domain or "", "company_profile": profile_text(cards[cid])} for cid, name, domain in companies}
+    review_rows = [{**r, **who.get(r["company_id"], {})} for r in review]
+    write("review.csv", sorted(review_rows, key=lambda e: (e["company_id"], e["published_at"]), reverse=True),
+          ev_cols[:1] + ["company_name", "website", "company_profile"] + ev_cols[1:])
+    # one sheet to check identity and event per article against the company name
+    from . import check_sheet
+    check_sheet.write(out_dir, events, review, who,
+                      {cid: matchers[cid].name_type for cid, _, _ in companies})
     # same columns on every row (job and filing fields only exist for companies that were checked)
     cols = list(dict.fromkeys(["company_id", "company_name", "website", "news_status", "news_signal", "news_signal_date", "headline", "publisher",
-                               "url", "signal_confidence", "signal_basis", "nlp_event", "matched_articles", "distinct_stories", "events_not_other", "possible_matches_to_review",
+                               "url", "signal_confidence", "signal_basis", "nlp_event", "matched_articles", "distinct_stories", "events_not_other",
+                               "company_website_articles", "possible_matches_to_review",
                                "jobs_status", "jobs_method", "open_roles", "job_postings_30d", "jobs_dates_known", "hiring_spike", "open_roles_before",
                                "careers_url", "filings_status", "filing_signal", "filing_signal_date", "registered_name", "registration_id", "abn",
                                "registered_status", "registered_on", "trading_names", "uk_accounts", "uk_sic"]

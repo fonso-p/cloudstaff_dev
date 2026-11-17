@@ -68,6 +68,8 @@ def main(argv=None):
     j.add_argument("--workers", type=int, default=6)
     j.add_argument("--limit", type=int)
     j.add_argument("--db", default=os.path.join(HERE, "data", "news.db"))
+    j.add_argument("--no-browser", action="store_true",
+                   help="skip the headless-browser pass for careers pages that load their jobs with JavaScript (needs playwright)")
     f = sub.add_parser("filings", help="filings: AU (ASIC companies + business names) and UK (Companies House + Gazette) registers")
     f.add_argument("--companies", required=True)
     f.add_argument("--registers", default="au,uk", help="comma-separated: au, uk")
@@ -191,7 +193,7 @@ def main(argv=None):
     elif a.cmd == "jobs":
         from .jobs import run_jobs
         os.makedirs(os.path.dirname(os.path.abspath(a.db)), exist_ok=True)
-        run_jobs(read_companies(a.companies)[: a.limit], a.db, a.workers)
+        run_jobs(read_companies(a.companies)[: a.limit], a.db, a.workers, browser=not a.no_browser)
     elif a.cmd == "filings":
         from .registers import run_filings
         regs = [r.strip().lower() for r in a.registers.split(",") if r.strip()]

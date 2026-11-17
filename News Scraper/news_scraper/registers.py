@@ -30,7 +30,7 @@ from collections import defaultdict
 import requests
 
 from . import http
-from .match import LEGAL, NUMBERED, core_name, root_domain
+from .names import LEGAL, NUMBERED, core_name, root_domain
 
 TABLES = """
 CREATE TABLE IF NOT EXISTS registry_records (

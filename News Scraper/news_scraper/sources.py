@@ -20,7 +20,7 @@ from urllib.parse import parse_qs, urljoin, urlparse
 from bs4 import BeautifulSoup
 
 from . import http
-from .match import core_name, root_domain
+from .names import core_name, root_domain
 
 UTC = dt.timezone.utc
 GOOGLE_REGION = {"AU": ("en-AU", "AU"), "NZ": ("en-NZ", "NZ"), "UK": ("en-GB", "GB"), "GB": ("en-GB", "GB"), "US": ("en-US", "US"),

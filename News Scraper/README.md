@@ -267,7 +267,7 @@ The holdout is the honest estimate: about two in three events are right and abou
 - **Embedding classifier for passing mentions:** caught 15 of 51 and wrongly rejected 13.
 - **Training on the real labels as well:** worse across companies than the written examples alone (the labels are mostly one company's layoffs).
 - **Requiring the company to be the grammatical actor of the event:** lost real layoffs ("A.I. Wave Hits Canva as Design Giant Cuts 1,000 Jobs").
-- What did work for passing mentions is a short list of safe phrases (`Matcher.passing_lexical`): "X-backed", "an X veteran", "like X", "the X tower". It removed 21 of 51 with no real article lost. About 30 in 672 remain (precision 0.954).
+- What did work for passing mentions is a short list of safe phrases (`Identity.passing_phrase`): "X-backed", "an X veteran", "like X", "the X tower". It removed 21 of 51 with no real article lost. About 30 in 672 remain (precision 0.954).
 
 **Name-matching fixes found on the holdout:**
 - "Zip Co (ASX:ZIP)", the exact name followed by an exchange ticker, now counts as strong evidence (`listed-company name`).
@@ -292,11 +292,12 @@ All sources are free and need no API key. The CSV can also have an `employees` (
 ### Jobs (`jobs.py`)
 
 For each company with a website (robots.txt respected):
-1. **Find the careers page**: a "Careers", "Jobs" or "Join us" link on the home page, else a common path (`/careers`, `/jobs`…), plus one "View open roles" link from there.
-2. **Read a job system's public feed** if the page uses one: Greenhouse, Lever, Ashby, Workable, SmartRecruiters, BambooHR, Recruitee or Personio. This gives every open role with title, department, city and usually the date posted.
+1. **Find the careers page**: a link on the home page with short "Careers", "Jobs" or "Join us" text, or a URL with a careers path segment (`/careers`, `/join-our-team`…), else a common path. Whole segments only, so `/job-costing` or `/jobsite-delivery` don't count. A guessed path that redirects to the home page or to an unrelated page (WordPress sends an unknown `/careers` to the closest-sounding post) is rejected. Plus one "View open roles" link from there.
+2. **Read a job system's public feed** if the page uses one: Greenhouse, Lever, Ashby, Workable, SmartRecruiters, BambooHR, Recruitee, Personio, Rippling, Pinpoint, Breezy, Teamtailor, Workday, UltiPro (UKG Pro), Paylocity or JobAdder (client job board). This gives every open role with title, department, city and usually the date posted.
 3. **Otherwise read `JobPosting` data**, the structured data Google for Jobs uses, from the careers page and up to 25 job pages it links to.
+4. **Browser pass.** A careers page with nothing readable in its HTML (the list is built with JavaScript) is opened in headless Chromium (Playwright) and checked again. That includes feeds that only appear once the page runs, JobPosting data, and job links on the company's own job system (iSolvedHire, Jobvite, iCIMS, Dayforce, Employment Hero, PageUp…), whose link text is the job title (no date). It runs one page at a time after the main pass; `--no-browser` skips it. It needs the `browser` dependency group and `../.venv/Scripts/python -m playwright install chromium`. Pages showing a bot check (Cloudflare) are left alone and noted.
 
-Job systems without a public feed (JobAdder, Employment Hero, Workday, PageUp…) and job boards (SEEK, Indeed, LinkedIn) are recorded in `jobs_method` as `seen: …` but not read.
+Job boards (SEEK, Indeed, LinkedIn) are recorded in `jobs_method` as `seen: …` but never read; their terms restrict automated access.
 
 | `company_summary.csv` column | Meaning |
 |---|---|
@@ -355,7 +356,25 @@ The card is built automatically during `run`. To see what was found:
 ../.venv/Scripts/python.exe -m news_scraper profile --companies sample_companies.csv [--refresh]
 ```
 
-## Does an article count? (`match.py`, applied at export)
+## Does an article count? (`identity.py`, applied at export)
+
+Every rule that decides whether an article is about *this* company lives in `identity.py`, with its thresholds at the top of the file. `export` calls one function, `identity.judge()`, per article. The rules run in this order, and the first objection wins:
+
+1. **The company's own website** (newsroom): always counts.
+2. **Name rules**: the evidence and name-type checks below.
+3. **NLP entity rules**, when `nlp run` results exist, for small companies only: the name is part of a hyphenated word ("Big Post-Launch"), part of another company's longer name ("Array Technologies"), or tagged as a person or place.
+4. **Passing phrases**: "Acme-backed", "an Acme veteran", "like Acme".
+5. **Match score** below `--min-match`.
+6. **The trained combiner** (`nlp train`), if one exists. It can accept or reject when it is confident, but never accepts an article below the match score.
+
+The rule that decided is written to the `identity_rule` column of `signal_events.csv` and `review.csv`. Counted articles show `evidence`, `name only` or `company website`.
+
+**Measure any change** before trusting it:
+```
+../.venv/Scripts/python.exe eval/eval_identity.py [--db data/news.db] [--show errors|all]   # precision / recall against hand labels, by rule
+../.venv/Scripts/python.exe -m unittest discover -s tests                                  # the example cases each rule was written for
+```
+The eval scores labels from `eval/gold_identity.csv` and `eval/gold_events.csv` against the articles in the database you point it at. On the 10 sample companies (16 Nov 2026) it scores precision 95.4% and recall 100% on 702 news articles. These are mostly well-known names, and it is the data the rules were built on, so treat that as a ceiling.
 
 Each article collects **identity evidence**: points for signs that it means *this* company.
 
@@ -399,7 +418,7 @@ Two more checks apply only to **small companies** (`employees` under 1,000, no t
 
 ## How it decides
 
-- **The quick match score at scrape time** (`match.py`) decides what is stored. Each article gets a score from 0 to 1:
+- **The quick match score at scrape time** (`Identity.score` in `identity.py`) decides what is stored. Each article gets a score from 0 to 1:
   - name in the headline: +0.6
   - name in the summary only: +0.4
   - website domain mentioned: +0.3
@@ -436,12 +455,12 @@ Two more checks apply only to **small companies** (`employees` under 1,000, no t
 
 ## Next steps
 
-In order of value for effort. Each one has a way to measure it: re-run `eval/eval_events.py` (events) or the labelled sheets in `out/labels_*_claude.csv` (is it about the company).
+In order of value for effort. Each one has a way to measure it: re-run `eval/eval_events.py` (events) or `eval/eval_identity.py` (is it about the company).
 
 **1. Make it safe and checkable (days)**
 1. **Commit the work.** Nothing in this folder is committed yet, and `pipeline.py` was once truncated to zero bytes during editing and had to be rebuilt.
 2. **Have a person check the labels.** Go through `eval/gold_events.csv`, holdout rows first (193), and correct any `about_company` or `category` you disagree with. Then add 100–200 rows from your own companies. Every number here depends on these labels.
-3. **Turn the evaluation into tests.** A small `pytest` suite that fails if precision or recall on the labelled set drops, so rule changes can't silently make things worse.
+3. **Turn the evaluation into a gate.** `eval/eval_identity.py` and `tests/test_identity.py` exist (16 Nov 2026). What's left: fail a run when precision on the labelled set drops below the target, and rebuild a database for the 18 small companies in `eval/gold_identity.csv`. The current database holds only the 10 sample companies, which are mostly well-known names.
 
 **2. Feed the Priority Score (1–2 weeks)**
 1. **Replace the mock fields in `format_priority_data.ipynb`** with the real outputs:

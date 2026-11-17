@@ -17,13 +17,13 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(HERE))
 from news_scraper import nlp                       # noqa: E402
 from news_scraper.classify import OTHER, classify  # noqa: E402
-from news_scraper.match import _pat, core_name     # noqa: E402
+from news_scraper.names import core_name, name_pattern     # noqa: E402
 
 
 def main():
     rows = list(csv.DictReader(open(os.path.join(HERE, "gold_events.csv"), encoding="utf-8-sig")))
     clf = nlp.EventClassifier()
-    probs = clf.probs([nlp.mask_name(r["title"], [_pat(core_name(r["company"]))]) for r in rows])
+    probs = clf.probs([nlp.mask_name(r["title"], [name_pattern(core_name(r["company"]))]) for r in rows])
     for r, p in zip(rows, probs):
         r["rule"] = classify(r["title"], "") or OTHER
         r["final"], r["basis"], r["conf"] = nlp.combine_event(r["rule"], p, OTHER)

@@ -7,9 +7,9 @@
     (export picks the results up automatically: nlp_* and zs_* columns, and the entity checks in `check`)
 
 Four techniques, all CPU-only and free (dependency group `nlp` in pyproject.toml):
-  entities   spaCy NER on the headline and lead. At export the company name is compared with the entity that contains it:
-             a longer name ("Array Technologies" for Array Inc.), a person or place ("Clancy", "Barga"), or a hyphenated
-             compound ("Big Post-Launch") means it is not our company.
+  entities   spaCy NER on the headline and lead. At export, identity.entity_check compares the company name with the entity
+             that contains it: a longer name ("Array Technologies" for Array Inc.), a person or place ("Clancy", "Barga"), or a
+             hyphenated compound ("Big Post-Launch") means it is not our company.
   events     spaCy dependency parse + trigger words: the event (M&A, funding, layoffs, expansion, leadership, insolvency),
              who did it to whom (subject / object / agent, so "acquires" vs "acquired by"), the details (job count and %,
              place, executive title, amount) and the certainty (reported / announced / possible / denied).
@@ -33,6 +33,8 @@ import os
 import re
 import struct
 from collections import Counter, defaultdict
+
+from . import identity
 
 MODEL_VERSION = "2026-11-13.4"           # bump to recompute everything
 SPACY_MODEL = "en_core_web_sm"
@@ -100,12 +102,6 @@ INSOLV = re.compile(r"\b(administration|administrators?|receivers?|receivership|
                     r"collapse[sd]?|ceases? trading|dissolve[sd]?|dissolution)\b", re.I)
 BUSINESS_OBJ = re.compile(r"\b(stake|business|division|unit|arm|subsidiary|company|firm|practice|operations|portfolio|assets?|brand|chain|"
                           r"shareholding|interest in)\b", re.I)
-# another company's naming: "Array Technologies" is not "Array Inc.", "Clutch Security" is not "Clutch"
-ORG_SUFFIX = {"technologies", "technology", "tech", "systems", "solutions", "networks", "security", "software", "labs", "capital", "partners",
-              "ventures", "village", "estate", "estates", "park", "centre", "center", "hospital", "university", "college", "school", "church",
-              "inc", "corp", "corporation", "llc", "plc", "ltd", "limited", "gmbh", "ag", "sa", "bank", "media", "entertainment", "studios",
-              "games", "motors", "airlines", "energy", "mining", "resources", "pharmaceuticals", "therapeutics", "biosciences", "foods"}
-ORG_SUFFIX -= {"ltd", "limited", "inc", "corp", "corporation", "llc", "plc"}      # our own suffix is stripped already (GENERIC_NAME_WORDS)
 PE = re.compile(r"\bprivate equity\b|\bpe[- ](firm|backed|owned)\b|\b(capital|partners|equity|investments)\b", re.I)
 COUNT = re.compile(r"\b(\d{1,3}(?:,\d{3})+|\d+)\s*(?:jobs?|roles?|staff|workers|employees|positions?|people|redundancies)\b", re.I)
 PCT = re.compile(r"\b(\d{1,2}(?:\.\d)?)\s?(%|per ?cent)\b", re.I)
@@ -116,14 +112,6 @@ POSSIBLE = re.compile(r"\b(plans?|planning|planned|set to|in talks|considering|c
 DENIED = re.compile(r"\b(denies|denied|rules? out|ruled out|no plans|rejects?|rejected|scraps|scrapped|abandons?|abandoned|calls? off|"
                     r"called off|won'?t|will not|not (planning|going) to)\b", re.I)
 COMPLETED = re.compile(r"\b(completes?|completed|closes?|closed|finalis\w+|finaliz\w+|wraps? up)\b", re.I)
-GENERIC_NAME_WORDS = {"the", "a", "an", "group", "team", "staff", "ceo", "cfo", "coo", "cto", "boss", "chief", "founder", "founders", "co-founder",
-                      "shares", "stock", "stocks", "share", "ltd", "limited", "pty", "inc", "llc", "plc", "corp", "corporation", "co", "company",
-                      "holdings", "australia", "australian", "uk", "us", "nz", "'s", "’s", "s", "and", "&", "of"}
-# NER types that make a one-word name "something else". PRODUCT and WORK_OF_ART are left out on purpose: spaCy tags well-known
-# brands (Xero, Canva) as products. And the type rules apply to small companies only (see entity_check(strict=...)).
-BAD_TYPES = {"PERSON": "a person", "GPE": "a place", "LOC": "a place", "FAC": "a building or place", "EVENT": "an event",
-             "NORP": "a nationality or group", "DATE": "a date"}
-
 _cache = {}
 
 
@@ -343,70 +331,7 @@ def analyse(title, summary, lead):
     return ents, events
 
 
-# ================================================================ company-level checks (at export, no model needed)
-def _norm_words(s):
-    s = re.sub(r"['’]s", "", (s or "").lower())                    # "Canva's" is Canva
-    return [w for w in re.findall(r"[a-z0-9&-]+", s) if w not in GENERIC_NAME_WORDS]
-
-
-def longer_entity(names, title, entities):
-    """Normalised text of the headline entity that contains the company name but is longer than it, else ''.
-    Counted per company across its articles: a name that keeps recurring ("array technologies") is another company."""
-    low = (title or "").lower()
-    for p in names:
-        m = p.search(low)
-        if m:
-            a, b = m.span()
-            for e in entities:
-                if e["in"] == "title" and e["start"] <= a and e["end"] >= b:
-                    extra = [w for w in _norm_words(e["text"]) if w not in _norm_words(title[a:b])]
-                    return " ".join(_norm_words(e["text"])) if extra else ""
-    return ""
-
-
-def entity_check(names, title, lead, entities, known_names=(), recurring=frozenset(), one_word=False, is_actor=False, strict=False):
-    """How the company name sits in the text. names: regexes for the name and aliases (match.Matcher.names).
-    Returns (verdict, note): 'org' (named as an organisation), 'ok' (no objection), or a reject reason:
-      compound     part of a hyphenated word ("Big Post-Launch")
-      longer name  inside a longer name, only when that longer name recurs across the company's articles (recurring),
-                   carries another company's suffix ("Array Technologies"), or is a person or place ("Lindsay Clancy's",
-                   "Accora Village"). A descriptor ("Armstrong Ambulance Service") or headline-case NER noise ("Canva Offers
-                   Layoff Package") is not held against the article.
-      wrong type   a one-word name tagged as a person or place ("Clancy", "Barga"); two-word firms are often named after
-                   people (Shaw Gibbs). Never when the name is the actor of a business event (is_actor).
-      strict       small companies only (match.Matcher.small): the compound, longer-name and type rules. Well-known companies
-                   skip them: "Ex-Canva staff" and Reuters' "BRIEF-Atlassian Q1 Revenue" are real news, their names are tagged inconsistently ("Xero" as a product, "Xero Limited"
-                   as a person) and a longer name is usually their own product ("Xero Launches", "Canva Education")."""
-    known = {" ".join(_norm_words(n)) for n in known_names if n}
-    verdict = ("ok", "")
-    for field, text in (("lead", lead), ("title", title)):
-        if not text:
-            continue
-        low = text.lower()
-        for p in names:
-            m = p.search(low)
-            if not m:
-                continue
-            a, b = m.span()
-            if strict and (re.match(r"-\w", text[b:b + 2]) or re.search(r"\w-$", text[:a])):
-                return "compound", f"part of a hyphenated word in the {field}: '{text[max(0, a - 12):b + 12].strip()}'"
-            ents = [e for e in entities if e["in"] == field and e["start"] <= a and e["end"] >= b]
-            if not ents:
-                continue
-            e = ents[0]
-            norm = " ".join(_norm_words(e["text"]))
-            extra = [w for w in _norm_words(e["text"]) if w not in _norm_words(text[a:b])]
-            if extra and norm not in known:
-                if strict and (norm in recurring or set(extra) & ORG_SUFFIX or e["label"] in BAD_TYPES):
-                    return "longer name", f"part of a longer name in the {field}: '{e['text']}'"
-                continue                                             # one-off longer ORG in a headline: no opinion
-            if strict and e["label"] in BAD_TYPES and not extra and one_word and not is_actor:
-                return "wrong type", f"named as {BAD_TYPES[e['label']]} in the {field} ('{e['text']}')"
-            if e["label"] == "ORG" or is_actor:
-                verdict = ("org", f"named as an organisation in the {field}")
-    return verdict
-
-
+# ================================================================ company role in an event
 def role_of(names, event):
     """The company's role in an event, from where its name appears: subject / object / agent."""
     def has(s):
@@ -692,9 +617,9 @@ def train(labels_path, features_by_key, log=print):
                                    "cv_recall": round(tp / max(tp + fn, 1), 3)}
         clf.fit(X, y)
         import pickle
-        pickle.dump({"model": clf, "features": FEATURE_NAMES, "trained_at": dt.datetime.now().isoformat(timespec="seconds"), "n": int(len(y))},
+        pickle.dump({"model": clf, "features": identity.FEATURE_NAMES, "trained_at": dt.datetime.now().isoformat(timespec="seconds"), "n": int(len(y))},
                     open(os.path.join(MODEL_DIR, "about_company.pkl"), "wb"))
-        report["about_company"]["weights"] = {n: round(float(w), 2) for n, w in zip(FEATURE_NAMES, clf.coef_[0])}
+        report["about_company"]["weights"] = {n: round(float(w), 2) for n, w in zip(identity.FEATURE_NAMES, clf.coef_[0])}
     else:
         report["about_company"] = f"need both yes and no labels (have {dict(Counter(y))})"
     # ---- 2. SetFit category classifier
@@ -723,15 +648,6 @@ def train(labels_path, features_by_key, log=print):
     else:
         report["category"] = f"need 8+ labelled 'yes' rows per category to train SetFit (have {dict(counts)})"
     return report
-
-
-FEATURE_NAMES = ["identity_points", "entity_org", "entity_objects", "mention_count", "name_in_title", "fit", "ambiguous", "one_word", "text_read",
-                 "zs_any_event", "passing_mention"]
-
-
-def features(pts, entity_verdict, mentions, in_title, fit, ambiguous, one_word, text_read, zs_any, passing):
-    return [pts, 1 if entity_verdict == "org" else 0, 1 if entity_verdict not in ("ok", "org", "") else 0, min(mentions, 10), 1 if in_title else 0,
-            fit if fit is not None else 0.0, 1 if ambiguous else 0, 1 if one_word else 0, 1 if text_read else 0, 1 if zs_any else 0, 1 if passing else 0]
 
 
 def about_company_model():

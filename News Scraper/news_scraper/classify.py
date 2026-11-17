@@ -10,6 +10,8 @@ import re
 EXEC = r"(ceo|cfo|cto|coo|cmo|cro|cpo|chief [a-z]+ officer|managing director|chair(man|woman|person)?|president|general manager|country manager|head of [a-z]+)"
 PLACES = (r"(the )?(us|u\.s\.|usa|united states|america|uk|u\.k\.|united kingdom|britain|australia|new zealand|nz|europe|asia|apac|emea|canada|"
           r"singapore|japan|india|philippines|ireland|germany|france|the middle east|latin america|southeast asia)")
+ROLE = (r"(director|board|non-executive|executive|officer|chair|head|lead|leader|partner|principal|president|vp|"
+        r"general counsel|secretary|treasurer|advis[eo]r|ambassador|founder|manager)")
 PE_FIRMS = (r"(kkr|blackstone|carlyle|tpg|bain capital|advent international|eqt|permira|cvc|thoma bravo|vista equity|silver lake|hg capital|"
             r"warburg pincus|pacific equity partners|bgh capital|quadrant private equity|anchorage capital|adamantem|five v)")
 
@@ -46,7 +48,9 @@ RULES = [
         r"stake sale|\bdivest", r"\bspin-?off\b|\bspun off\b|\bdemerg",
     ]),
     ("Leadership change", [
-        r"\bappoint(s|ed|ment)\b", r"\bnames? .{0,30}(ceo|cfo|cto|coo|chief|managing director|chair)",
+        # "appoint" alone also means a company appointed as distributor, contractor or partner: require a role nearby
+        r"\bappoint(s|ed|ment|ing)?\b.{0,80}\b(" + EXEC + "|" + ROLE + r")s?\b", r"\b(" + EXEC + "|" + ROLE + r")s?\b.{0,40}\bappoint",
+        r"\bnames? .{0,30}(ceo|cfo|cto|coo|chief|managing director|chair)",
         r"\b(new|incoming|interim|acting) (ceo|cfo|cto|coo|chief|managing director|chair|president)",
         r"steps? down|stepping down|resign(s|ed|ation)?\b", r"joins as|to succeed", r"\b(promoted|elevated) to\b",
         r"\b(hires?|hired|taps?|tapped|names?|named|picks?|picked|poach(es|ed)?|recruits?|recruited|brings? in|welcomes?)\b.{0,50}"
@@ -70,17 +74,18 @@ RULES = [
 _RULES = [(cat, re.compile("|".join(f"(?:{p})" for p in pats), re.I)) for cat, pats in RULES]
 # a rule that matched is ignored when one of these also matches (common false positives)
 NOT = {
-    "Funding round": re.compile(r"price target|\bstocks?\b|\bshares?\b|\brating\b|analyst|-backed\b|\bbacked\b|\bbackers?\b|"
+    "Funding round": re.compile(r"charit|fundrais|donat|sleep ?out|\bappeal\b|price target|\bstocks?\b|\bshares?\b|\brating\b|analyst|-backed\b|\bbacked\b|\bbackers?\b|"
                                 r"raises? (prices?|concerns?|questions?|awareness|the bar|eyebrows|alarm|fees?)", re.I),
-    "M&A": re.compile(r"talent acquisition|customer acquisition|user acquisition|data acquisition|stocks? to buy|\bbuy rating|shares to buy|should you buy|"
+    "M&A": re.compile(r"how to buy|where to buy|\b(token|crypto|coin)\b|talent acquisition|customer acquisition|user acquisition|data acquisition|stocks? to buy|\bbuy rating|shares to buy|should you buy|"
                       r"(snaps?|snapped|scoops?|scooped) up (\w+ )?(shares|stocks?|bargains|tickets|awards?)|sells? (its |the )?(\w+ )?(home|house|mansion|property)", re.I),
     "Restructuring": re.compile(r"\b(cuts?|slash(es|ed)?) (prices?|fees?|rates?|bills?|tax(es)?|costs? for customers)\b|hiring (staff|workers|employees)|"
                                 r"cut (staff|workers'?) (hours|pay)|closes? (the )?(gap|deal|round|day|week|session)", re.I),
-    "Leadership change": re.compile(r"\b(deputy|vice) (pm|prime minister|mayor|premier|minister|governor|sheriff)\b", re.I),
+    "Leadership change": re.compile(r"appoint\w*\b.{0,40}\b(distributor|reseller|supplier|stockist|wholesaler|(head )?contractor|builder)\b|"
+                                    r"\b(deputy|vice) (pm|prime minister|mayor|premier|minister|governor|sheriff)\b", re.I),
     "Expansion / new office": re.compile(r"helps? .{0,40}expand|how to expand|tips", re.I),
 }
 # SEO company-profile pages (Tracxn, CB Insights and the like): not news, dropped entirely
-PROFILE = re.compile(r"list of investors|funding rounds? &|how much did .{0,40}raise|funding & key investors|company profile|"
+PROFILE = re.compile(r"how many employees|list of investors|funding rounds? &|how much did .{0,40}raise|funding & key investors|company profile|"
                      r"competitors (&|and) alternatives|revenue,? valuation|valuation & funding|org chart|employee count|"
                      r"\b(stock|share) price (today|quote|history)|\bstock quote\b|seasonal returns chart|interactive stock chart|\b[A-Z]{1,6}\d{6}[PC]\d{8}\b", re.I)
 OTHER = "Other / Unclassified"

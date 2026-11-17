@@ -107,7 +107,8 @@ class Store:
                              c.ticker, amb, c.lookback_days, getattr(c, "employees", None)))
 
     def profile(self, company_id):
-        row = self.db.execute("SELECT data FROM company_profiles WHERE company_id=?", (company_id,)).fetchone()
+        with self.lock:                                  # one connection is shared by the worker threads
+            row = self.db.execute("SELECT data FROM company_profiles WHERE company_id=?", (company_id,)).fetchone()
         return json.loads(row[0]) if row else None
 
     def set_profile(self, company_id, card):
@@ -116,7 +117,8 @@ class Store:
                             (company_id, card["status"], card["built_at"], json.dumps(card, ensure_ascii=False)))
 
     def feed(self, company_id):
-        row = self.db.execute("SELECT feed_url, feed_checked_at FROM companies WHERE company_id=?", (company_id,)).fetchone()
+        with self.lock:
+            row = self.db.execute("SELECT feed_url, feed_checked_at FROM companies WHERE company_id=?", (company_id,)).fetchone()
         return row or (None, None)
 
     def set_feed(self, company_id, url):
@@ -126,8 +128,9 @@ class Store:
 
     def covered_span(self, company_id, source):
         """(earliest start, latest end) of successful checks, or None if never checked successfully."""
-        row = self.db.execute("SELECT MIN(window_start), MAX(window_end) FROM source_coverage WHERE company_id=? AND source=? AND status='ok'",
-                              (company_id, source)).fetchone()
+        with self.lock:
+            row = self.db.execute("SELECT MIN(window_start), MAX(window_end) FROM source_coverage WHERE company_id=? AND source=? AND status='ok'",
+                                  (company_id, source)).fetchone()
         return (dt.date.fromisoformat(row[0]), dt.date.fromisoformat(row[1])) if row and row[0] else None
 
     def add_articles(self, rows):
@@ -141,10 +144,11 @@ class Store:
     def unread(self, company_id, min_match, limit, retry_failed_after_days=7):
         """Matched articles with no text yet (or a failed read older than N days), newest first."""
         cutoff = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=retry_failed_after_days)).isoformat(timespec="seconds")
-        return self.db.execute("""SELECT a.dedupe_key, a.url FROM articles a LEFT JOIN article_texts t
-              ON t.company_id=a.company_id AND t.dedupe_key=a.dedupe_key
-            WHERE a.company_id=? AND a.match_score>=? AND (t.dedupe_key IS NULL OR (t.status NOT IN ('ok','blocked_robots') AND t.read_at < ?))
-            ORDER BY a.published_at DESC LIMIT ?""", (company_id, min_match, cutoff, limit)).fetchall()
+        with self.lock:
+            return self.db.execute("""SELECT a.dedupe_key, a.url FROM articles a LEFT JOIN article_texts t
+                  ON t.company_id=a.company_id AND t.dedupe_key=a.dedupe_key
+                WHERE a.company_id=? AND a.match_score>=? AND (t.dedupe_key IS NULL OR (t.status NOT IN ('ok','blocked_robots') AND t.read_at < ?))
+                ORDER BY a.published_at DESC LIMIT ?""", (company_id, min_match, cutoff, limit)).fetchall()
 
     def add_text(self, company_id, dedupe_key, r):
         """r: an article_reader.ReadResult (only its attributes are used, so this module does not import article_reader)."""
@@ -200,8 +204,9 @@ class Store:
         """Segment articles with no text yet (or a failed read older than N days), newest first: (key, url), preferring the
         direct link (no Google decoding). limit -1 = all."""
         cutoff = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=retry_failed_after_days)).isoformat(timespec="seconds")
-        return self.db.execute("""SELECT a.dedupe_key, COALESCE(NULLIF(a.direct_url,''), a.url) FROM segment_articles a LEFT JOIN article_texts t
-              ON t.company_id=a.segment_id AND t.dedupe_key=a.dedupe_key
-            WHERE a.segment_id=? AND (t.dedupe_key IS NULL OR (t.status NOT IN ('ok','blocked_robots') AND t.read_at < ?)
-                                      OR (t.status='ok' AND t.meta IS NULL))          -- read before location metadata was kept
-            ORDER BY a.published_at DESC LIMIT ?""", (segment_id, cutoff, limit)).fetchall()
+        with self.lock:
+            return self.db.execute("""SELECT a.dedupe_key, COALESCE(NULLIF(a.direct_url,''), a.url) FROM segment_articles a LEFT JOIN article_texts t
+                  ON t.company_id=a.segment_id AND t.dedupe_key=a.dedupe_key
+                WHERE a.segment_id=? AND (t.dedupe_key IS NULL OR (t.status NOT IN ('ok','blocked_robots') AND t.read_at < ?)
+                                          OR (t.status='ok' AND t.meta IS NULL))          -- read before location metadata was kept
+                ORDER BY a.published_at DESC LIMIT ?""", (segment_id, cutoff, limit)).fetchall()

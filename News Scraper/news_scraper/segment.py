@@ -26,7 +26,7 @@ from dataclasses import dataclass, field
 
 from . import http
 from .classify import PROFILE, load_settings, recency_factor
-from .match import ENGLISH, core_name
+from .names import ENGLISH, SOCIAL, core_name
 from .pipeline import OVERLAP_DAYS, _reader, write_csv
 from .relevance import INDUSTRY_MIN, REGION_MIN, IndustryScorer, RegionScorer, meta_of
 from .sectors import (COUNTRIES, GROUPS, MAX_QUERY_WORDS, OTHER_THEME, SECTOR_TERMS, THEME_WEIGHT, THEMES, classify_theme,
@@ -49,7 +49,6 @@ NOT_NEWS = re.compile(r"\b\d{4} - \d{7,}\b|^\s*\d{1,2}\.\s+\S+(\s+\S+){0,3}\s*$|
                       r"\|\s*\$\d|\$\d+\s*/\s*h(ou)?r\b|\bper hour\b|"
                       r"\bstocks? to (watch|buy)\b|\b(growth|dividend|penny|asx|ftse|insider[- ]backed) (stocks|shares)\b|"
                       r"\bdeserves your next\b|\bshares? to buy\b", re.I)
-SOCIAL = {"instagram", "facebook", "linkedin", "tiktok", "youtube", "x", "x.com", "twitter", "threads", "reddit", "pinterest"}
 SOURCES_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "segment_sources.csv")
 SHRINK = 10          # articles at which the trend is half-way from neutral to its full tailwind (few articles stay near 0.5)
 NEUTRAL = 0.5        # industry_trend when a segment was checked but nothing counted: modifier 1.0, same as unknown
