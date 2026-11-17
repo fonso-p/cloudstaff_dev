@@ -685,3 +685,25 @@ Each article gets an **industry score** and a **region score**, built from evide
 - **Keyword themes can't read tone or who is affected.** For example, "New Zealand accounting firms not expecting AI-driven job cuts" counts as Restructuring. The free local-LLM fix from company mode applies here too.
 - **Company names from headlines are heuristic.** Names in sentence-case headlines are found well. Title Case headlines are treated strictly, so some names are missed.
 - **US segments rely on place words or the `PUBLISHERS` list**, because US outlets use `.com`.
+
+## Headline test set (`testset`)
+
+A hand-labelled set of real headlines, used to measure how well the event categories are assigned. It's kept separate from company and segment mode, and only reads headlines, not whole articles.
+
+```bash
+../.venv/Scripts/python.exe -m news_scraper testset gather   # about 75 min: 414 Google + Bing searches
+# label out/testset/testset_label.xlsx (column "Your category")
+../.venv/Scripts/python.exe -m news_scraper testset score    # your labels vs the system
+```
+
+- **Searches.** Each category has keyword queries ("lays off", "appoints CEO", "seed round"). There are also two extra groups: **near-miss** (event words used in a non-event sense, such as "raises prices" or "talent acquisition") and **other** (everyday business news, such as "wins award" or "partners with"). Each query runs in AU, UK and US, on both Google News and Bing. Half of the queries add small-business terms, so the results aren't all big companies.
+- **Picking.** The run keeps about 100 distinct headlines per group (`--per-bucket`), spread evenly across queries, regions and sources. Headlines under 4 words and company-profile pages are dropped.
+- **Blind labelling.** `testset_label.xlsx` lists the headlines in random order. It doesn't show which search found each headline or what the system predicts. The search group isn't the label: a "lays off" search also returns stories that aren't layoffs. The label choices are the 8 categories, plus "Not about a company" and "Can't tell".
+- **Hidden data.** `testset_meta.csv` holds, per headline, the search details and the system's three predictions from the headline alone:
+  - `pred_rules`: the keyword rules.
+  - `pred_classifier`: the headline classifier.
+  - `pred_system`: the two combined, as the export does.
+
+  Company names are not masked, because the company isn't known.
+- **Re-runs.** Every search result goes into `pool.jsonl`, so a re-run skips searches already done. `testset sheet` rebuilds the sheet from the pool and keeps your labels.
+- **Google pacing.** One query every 20 seconds (`--google-interval`). If Google blocks anyway, the run waits 20 minutes and retries.

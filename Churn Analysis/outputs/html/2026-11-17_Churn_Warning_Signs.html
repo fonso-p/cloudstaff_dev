@@ -1,0 +1,1303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Churn warning signs</title>
+<!-- Fonts, icons and Chart.js load from CDNs. No data is sent anywhere: the data is embedded below. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=Chivo+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ---- Cloudstaff Design System tokens (assets/tokens.css, inlined at build time) ---- */
+/*! Cloudstaff Design System — Tokens
+ *  All design tokens (colours, spacing, typography, radii, shadows, motion, z-index,
+ *  and component-level token mappings).
+ *  To rebrand: load this file, then a theme-X.css that re-declares :root tokens.
+ *  https://cloudstaff.com/design-system
+ */
+
+@layer foundation {
+
+      :root {
+        --color-static-black: #000000;
+        --color-static-white: #ffffff;
+
+        --color-base-primary: var(--color-static-black);
+        --color-base-primary-contrast: var(--color-static-white);
+        --color-base-secondary: #50505c;
+        --color-base-secondary-contrast: var(--color-static-white);
+
+        --color-brand-primary: #007aff;
+        --color-brand-primary-contrast: var(--color-static-white);
+        --color-brand-secondary: #00ab9c;
+        --color-brand-secondary-contrast: var(--color-static-white);
+        --color-brand-primary-soft: color-mix(in oklch, var(--color-brand-primary), white 85%);
+        --color-brand-primary-accent: color-mix(in oklch, var(--color-brand-primary), white 70%);
+        --color-brand-primary-bold: color-mix(in oklch, var(--color-brand-primary), black 18%);
+        --color-brand-secondary-soft: color-mix(in oklch, var(--color-brand-secondary), white 85%);
+        --color-brand-secondary-accent: color-mix(in oklch, var(--color-brand-secondary), white 70%);
+        --color-brand-secondary-bold: color-mix(in oklch, var(--color-brand-secondary), black 18%);
+
+        /* WCAG AA-compliant brand variants — for use as backgrounds when
+           the foreground is white text below large-text threshold (under
+           18pt regular / 14pt bold). The base brand color (#007aff) is
+           4.02:1 against white, which fails WCAG AA's 4.5:1 requirement
+           for normal-size text. The AA variants are darkened just enough
+           to clear 4.5:1 while remaining visually nearly identical to
+           the brand color. Use these for buttons, brand-color cards, and
+           any solid-brand-background context.
+
+             --color-brand-primary-strong:   ~4.66:1 against white (8% black mix)
+             --color-brand-secondary-strong: ~4.83:1 against white (25% black mix —
+                                         needed because #00ab9c teal is much
+                                         lighter perceptually than the blue) */
+        --color-brand-primary-strong:   color-mix(in oklch, var(--color-brand-primary), black 8%);
+        --color-brand-secondary-strong: color-mix(in oklch, var(--color-brand-secondary), black 25%);
+
+        /* Interaction-state tints for brand-primary.
+           Use these instead of inline color-mix(white N%) so the whole
+           system tweaks together when these values change.
+
+           Hierarchy: hover (lightest) < selected (medium) < active (darkest).
+           Applied to backgrounds for menu items, options, list rows, etc. */
+        --color-brand-primary-hover:    color-mix(in oklch, var(--color-brand-primary), white 94%);
+        --color-brand-primary-selected: color-mix(in oklch, var(--color-brand-primary), white 88%);
+        --color-brand-primary-active:   color-mix(in oklch, var(--color-brand-primary), white 82%);
+
+        --color-feature-01: #00ab9c;
+        --color-feature-01-contrast: var(--color-static-white);
+        --color-feature-01-soft: color-mix(in oklch, var(--color-feature-01), white 85%);
+        --color-feature-01-accent: color-mix(in oklch, var(--color-feature-01), white 70%);
+        --color-feature-01-bold: color-mix(in oklch, var(--color-feature-01), black 18%);
+        --color-feature-02: #ffc426;
+        --color-feature-02-contrast: var(--color-static-black);
+        --color-feature-02-soft: color-mix(in oklch, var(--color-feature-02), white 85%);
+        --color-feature-02-accent: color-mix(in oklch, var(--color-feature-02), white 70%);
+        --color-feature-02-bold: color-mix(in oklch, var(--color-feature-02), black 18%);
+        --color-feature-03: #e34678;
+        --color-feature-03-contrast: var(--color-static-white);
+        --color-feature-03-soft: color-mix(in oklch, var(--color-feature-03), white 85%);
+        --color-feature-03-accent: color-mix(in oklch, var(--color-feature-03), white 70%);
+        --color-feature-03-bold: color-mix(in oklch, var(--color-feature-03), black 18%);
+        --color-feature-04: #4121a9;
+        --color-feature-04-contrast: var(--color-static-white);
+        --color-feature-04-soft: color-mix(in oklch, var(--color-feature-04), white 85%);
+        --color-feature-04-accent: color-mix(in oklch, var(--color-feature-04), white 70%);
+        --color-feature-04-bold: color-mix(in oklch, var(--color-feature-04), black 18%);
+        --color-feature-05: #aa67fd;
+        --color-feature-05-contrast: var(--color-static-white);
+        --color-feature-05-soft: color-mix(in oklch, var(--color-feature-05), white 85%);
+        --color-feature-05-accent: color-mix(in oklch, var(--color-feature-05), white 70%);
+        --color-feature-05-bold: color-mix(in oklch, var(--color-feature-05), black 18%);
+        --color-feature-06: #f22c46;
+        --color-feature-06-contrast: var(--color-static-white);
+        --color-feature-06-soft: color-mix(in oklch, var(--color-feature-06), white 85%);
+        --color-feature-06-accent: color-mix(in oklch, var(--color-feature-06), white 70%);
+        --color-feature-06-bold: color-mix(in oklch, var(--color-feature-06), black 18%);
+        --color-feature-07: #f46600;
+        --color-feature-07-contrast: var(--color-static-white);
+        --color-feature-07-soft: color-mix(in oklch, var(--color-feature-07), white 85%);
+        --color-feature-07-accent: color-mix(in oklch, var(--color-feature-07), white 70%);
+        --color-feature-07-bold: color-mix(in oklch, var(--color-feature-07), black 18%);
+        --color-feature-08: #36d6e7;
+        --color-feature-08-contrast: var(--color-static-black);
+        --color-feature-08-soft: color-mix(in oklch, var(--color-feature-08), white 85%);
+        --color-feature-08-accent: color-mix(in oklch, var(--color-feature-08), white 70%);
+        --color-feature-08-bold: color-mix(in oklch, var(--color-feature-08), black 18%);
+        --color-feature-09: #87dd7d;
+        --color-feature-09-contrast: var(--color-static-black);
+        --color-feature-09-soft: color-mix(in oklch, var(--color-feature-09), white 85%);
+        --color-feature-09-accent: color-mix(in oklch, var(--color-feature-09), white 70%);
+        --color-feature-09-bold: color-mix(in oklch, var(--color-feature-09), black 18%);
+        --color-feature-10: #50505c;
+        --color-feature-10-contrast: var(--color-static-white);
+        --color-feature-10-soft: color-mix(in oklch, var(--color-feature-10), white 85%);
+        --color-feature-10-accent: color-mix(in oklch, var(--color-feature-10), white 70%);
+        --color-feature-10-bold: color-mix(in oklch, var(--color-feature-10), black 18%);
+
+        --color-utility-success: #00ab9c;
+        --color-utility-success-contrast: var(--color-static-white);
+        --color-utility-success-soft: color-mix(in oklch, var(--color-utility-success), white 85%);
+        --color-utility-success-accent: color-mix(in oklch, var(--color-utility-success), white 70%);
+        --color-utility-success-bold: color-mix(in oklch, var(--color-utility-success), black 18%);
+        --color-utility-warning: #ffc426;
+        --color-utility-warning-contrast: var(--color-static-black);
+        --color-utility-warning-soft: color-mix(in oklch, var(--color-utility-warning), white 85%);
+        --color-utility-warning-accent: color-mix(in oklch, var(--color-utility-warning), white 70%);
+        --color-utility-warning-bold: color-mix(in oklch, var(--color-utility-warning), black 18%);
+        --color-utility-danger: #f22c46;
+        --color-utility-danger-contrast: var(--color-static-white);
+        --color-utility-danger-soft: color-mix(in oklch, var(--color-utility-danger), white 85%);
+        --color-utility-danger-accent: color-mix(in oklch, var(--color-utility-danger), white 70%);
+        --color-utility-danger-bold: color-mix(in oklch, var(--color-utility-danger), black 18%);
+        --color-utility-info: var(--color-brand-primary);
+        --color-utility-info-contrast: var(--color-static-white);
+        --color-utility-info-soft: color-mix(in oklch, var(--color-utility-info), white 85%);
+        --color-utility-info-accent: color-mix(in oklch, var(--color-utility-info), white 70%);
+        --color-utility-info-bold: color-mix(in oklch, var(--color-utility-info), black 18%);
+        --color-utility-muted: #99a1b3;
+        --color-utility-muted-contrast: var(--color-static-white);
+        --color-utility-muted-soft: color-mix(in oklch, var(--color-utility-muted), white 85%);
+        --color-utility-muted-accent: color-mix(in oklch, var(--color-utility-muted), white 70%);
+        --color-utility-muted-bold: color-mix(in oklch, var(--color-utility-muted), black 18%);
+
+        --color-surface-page: #f3f5f8;
+        --color-surface-page-contrast: #171a21;
+        --color-surface-canvas: #ffffff;
+        --color-surface-canvas-contrast: #171a21;
+        --color-surface-primary: #ffffff;
+        --color-surface-primary-contrast: #1f2430;
+        --color-surface-secondary: #eef2f7;
+        --color-surface-secondary-contrast: #1f2430;
+        --color-surface-tertiary: #e3e8f0;
+        --color-surface-tertiary-contrast: #1f2430;
+        --color-surface-inverse: #1f2430;
+        --color-surface-inverse-contrast: #ffffff;
+        --color-surface-overlay: rgba(12, 16, 24, 0.56);
+        --color-surface-scrim: rgba(9, 13, 22, 0.72);
+        --color-surface-page-soft: color-mix(in oklch, var(--color-surface-page), white 25%);
+        --color-surface-page-accent: color-mix(in oklch, var(--color-surface-page), var(--color-brand-primary) 6%);
+        --color-surface-page-bold: color-mix(in oklch, var(--color-surface-page), black 7%);
+        --color-surface-primary-soft: color-mix(in oklch, var(--color-surface-primary), white 20%);
+        --color-surface-primary-accent: color-mix(in oklch, var(--color-surface-primary), var(--color-brand-primary) 8%);
+        --color-surface-primary-bold: color-mix(in oklch, var(--color-surface-primary), black 8%);
+        --color-surface-secondary-soft: color-mix(in oklch, var(--color-surface-secondary), white 18%);
+        --color-surface-secondary-accent: color-mix(in oklch, var(--color-surface-secondary), var(--color-brand-primary) 8%);
+        --color-surface-secondary-bold: color-mix(in oklch, var(--color-surface-secondary), black 10%);
+        --color-surface-tertiary-soft: color-mix(in oklch, var(--color-surface-tertiary), white 16%);
+        --color-surface-tertiary-accent: color-mix(in oklch, var(--color-surface-tertiary), var(--color-brand-primary) 8%);
+        --color-surface-tertiary-bold: color-mix(in oklch, var(--color-surface-tertiary), black 12%);
+
+        --color-text-base-primary: #252938;
+        --color-text-base-primary-contrast: var(--color-static-white);
+        --color-text-base-secondary: #4e5667;
+        --color-text-base-secondary-contrast: var(--color-static-white);
+        --color-text-base-muted: #737c90;
+        --color-text-base-muted-contrast: var(--color-static-white);
+        --color-text-base-disabled: #9aa3b7;
+        --color-text-base-disabled-contrast: var(--color-static-white);
+        --color-text-base-link: var(--color-brand-primary);
+        --color-text-base-link-contrast: var(--color-brand-primary-contrast);
+
+        --border-color-subtle: color-mix(in oklch, var(--color-surface-tertiary), white 15%);
+        --border-color-default: #dce3ee;
+        --border-color-strong: #c9d2e1;
+        --border-color-inverse: rgba(255, 255, 255, 0.16);
+
+        --radius-none: 0;
+        --radius-2xs: 0.125rem;
+        --radius-xs: 0.25rem;
+        --radius-sm: 0.5rem;
+        --radius-md: 0.625rem;
+        --radius-lg: 0.75rem;
+        --radius-xl: 0.875rem;
+        --radius-2xl: 1rem;
+        --radius-3xl: 1.25rem;
+        --radius-pill: 9999px;
+        --radius-round: 50%;
+
+        --border-width-none: 0; /* @kind spacing */
+        --border-width-xs: 1px;
+        --border-width-sm: 2px;
+        --border-width-md: 3px;
+        --border-width-lg: 4px;
+
+        --space-0: 0;
+        --space-2xs: 0.125rem;
+        --space-xs: 0.25rem;
+        --space-sm: 0.5rem;
+        --space-md: 0.75rem;
+        --space-lg: 1rem;
+        --space-xl: 1.5rem;
+        --space-2xl: 2rem;
+        --space-3xl: 2.5rem;
+        --space-4xl: 3rem;
+        --space-5xl: 4rem;
+        --space-6xl: 5rem;
+
+        /* Floating-drawer inset — authored as a customisable token (see the
+           drawer component). Overridden to 0 at narrow widths below. */
+        --drawer-floating-margin: var(--space-sm);
+
+        /* Brand-logo wordmark fill — theme-aware default consumed by
+           .brand-logo; flips to pure white in dark mode (see dark scope). */
+        --logo-text-fill-default: var(--color-foreground-primary);
+
+        --margin-0: var(--space-0);
+        --margin-2xs: var(--space-2xs);
+        --margin-xs: var(--space-xs);
+        --margin-sm: var(--space-sm);
+        --margin-md: var(--space-md);
+        --margin-lg: var(--space-lg);
+        --margin-xl: var(--space-xl);
+        --margin-2xl: var(--space-2xl);
+        --margin-3xl: var(--space-3xl);
+        --margin-4xl: var(--space-4xl);
+        --margin-5xl: var(--space-5xl);
+        --margin-6xl: var(--space-6xl);
+
+        --padding-0: var(--space-0);
+        --padding-2xs: var(--space-2xs);
+        --padding-xs: var(--space-xs);
+        --padding-sm: var(--space-sm);
+        --padding-md: var(--space-md);
+        --padding-lg: var(--space-lg);
+        --padding-xl: var(--space-xl);
+        --padding-2xl: var(--space-2xl);
+        --padding-3xl: var(--space-3xl);
+        --padding-4xl: var(--space-4xl);
+        --padding-5xl: var(--space-5xl);
+        --padding-6xl: var(--space-6xl);
+
+        --size-2xs: 1rem;
+        --size-xs: 1.5rem;
+        --size-sm: 2rem;
+        --size-md: 2.5rem;
+        --size-lg: 3rem;
+        --size-xl: 3.5rem;
+        --size-2xl: 4rem;
+        --size-3xl: 5rem;
+        --size-4xl: 6rem;
+
+        --container-xs: 420px;
+        --container-sm: 640px;
+        --container-md: 768px;
+        --container-lg: 1024px;
+        --container-xl: 1280px;
+        --container-2xl: 1440px;
+        --container-3xl: 1680px;
+        --container-fluid: 100%;
+
+        --breakpoint-xs: 420px;
+        --breakpoint-sm: 640px;
+        --breakpoint-md: 768px;
+        --breakpoint-lg: 1024px;
+        --breakpoint-xl: 1280px;
+        --breakpoint-2xl: 1440px;
+
+        --font-family-heading: "Poppins", "Segoe UI", Roboto, Arial, sans-serif;
+        --font-family-body: "Manrope", "Segoe UI", Roboto, Arial, sans-serif;
+        /* Alias: --font-family-base is what most components reference for
+           "the default UI font" — points at body. Keeping both names is
+           harmless and matches conventions other design systems use. */
+        --font-family-base: var(--font-family-body);
+        --font-family-accent: "Google Sans Flex", "Poppins", "Segoe UI", sans-serif;
+        --font-family-serif: Georgia, "Times New Roman", serif;
+        --font-family-script: "Pacifico", cursive;
+        --font-family-code: "Courier New", Courier, ui-monospace, monospace;
+        --font-family-mono: "Chivo Mono", ui-monospace, monospace;
+
+        --font-size-2xs: 0.6875rem;
+        --font-size-xs: 0.75rem;
+        --font-size-sm: 0.875rem;
+        --font-size-md: 1rem;
+        --font-size-lg: 1.125rem;
+        --font-size-xl: 1.25rem;
+        --font-size-2xl: 1.5rem;
+        --font-size-3xl: 1.875rem;
+        --font-size-4xl: 2.25rem;
+        --font-size-5xl: 3rem;
+        --font-size-6xl: 3.75rem;
+
+        --font-weight-light: 300; /* @kind font */
+        --font-weight-regular: 400; /* @kind font */
+        --font-weight-medium: 500; /* @kind font */
+        --font-weight-semibold: 600; /* @kind font */
+        --font-weight-bold: 700; /* @kind font */
+        --font-weight-extrabold: 800; /* @kind font */
+
+        --line-height-tight: 1.15; /* @kind font */
+        --line-height-snug: 1.25; /* @kind font */
+        --line-height-normal: 1.5; /* @kind font */
+        --line-height-relaxed: 1.7; /* @kind font */
+
+        --tracking-tight: -0.02em; /* @kind font */
+        --tracking-normal: 0; /* @kind font */
+        --tracking-wide: 0.02em; /* @kind font */
+
+        --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+        --shadow-sm: 0 2px 8px rgba(16, 24, 40, 0.06);
+        --shadow-md: 0 8px 18px rgba(16, 24, 40, 0.08);
+        --shadow-lg: 0 16px 32px rgba(16, 24, 40, 0.12);
+        --shadow-xl: 0 24px 48px rgba(16, 24, 40, 0.16);
+        --shadow-overlay: 0 24px 64px rgba(0, 0, 0, 0.28);
+        --shadow-focus: 0 0 0 4px color-mix(in oklch, var(--color-brand-primary), white 75%);
+        --shadow-inset: inset 0 1px 2px rgba(16, 24, 40, 0.08);
+
+        --blur-sm: blur(4px); /* @kind other */
+        --blur-md: blur(10px); /* @kind other */
+        --blur-lg: blur(16px); /* @kind other */
+
+        --duration-instant: 80ms; /* @kind other */
+        --duration-fast: 140ms; /* @kind other */
+        --duration-standard: 220ms; /* @kind other */
+        --duration-slow: 320ms; /* @kind other */
+        --duration-slower: 480ms; /* @kind other */
+        --ease-standard: cubic-bezier(0.2, 0, 0.2, 1); /* @kind other */
+        --ease-enter: cubic-bezier(0.16, 1, 0.3, 1); /* @kind other */
+        --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* @kind other */
+        --ease-emphasis: cubic-bezier(0.2, 0, 0, 1); /* @kind other */
+
+        --z-index-base: 1; /* @kind other */
+        --z-index-sticky: 100; /* @kind other */
+        --z-index-topbar: 200; /* @kind other */
+        --z-index-dropdown: 500; /* @kind other */
+        --z-index-drawer: 800; /* @kind other */
+        --z-index-overlay: 900; /* @kind other */
+        --z-index-modal: 1000; /* @kind other */
+        --z-index-toast: 1100; /* @kind other */
+        --z-index-tooltip: 1200; /* @kind other */
+        --z-index-max: 2147483647; /* @kind other */
+
+        --icon-size-xs: 0.75rem;
+        --icon-size-sm: 0.875rem;
+        --icon-size-md: 1rem;
+        --icon-size-lg: 1.25rem;
+        --icon-size-xl: 1.5rem;
+        --icon-size-2xl: 2rem;
+
+        /* ============================================================
+         * Breakpoints
+         * Note: CSS variables can't be used inside @media queries directly,
+         * so the values below are mirrored as numbers in @media rules
+         * throughout the system. These tokens are for:
+         *   - Container queries (`container: inline-size` + @container)
+         *   - JS access via getComputedStyle()
+         *   - Documentation
+         * ============================================================ */
+        --breakpoint-sm: 640px;    /* Large phone / small tablet portrait */
+        --breakpoint-md: 768px;    /* Tablet portrait */
+        --breakpoint-lg: 1024px;   /* Tablet landscape / small laptop */
+        --breakpoint-xl: 1280px;   /* Laptop */
+        --breakpoint-2xl: 1536px;  /* Desktop / widescreen */
+
+        /* ============================================================
+         * Touch targets — minimum sizes for tappable elements.
+         * Apple HIG: 44pt minimum. Material: 48dp minimum.
+         * We use 44px for compact contexts and 48px for primary actions.
+         * ============================================================ */
+        --touch-target-min: 44px;
+        --touch-target-comfortable: 48px;
+
+        /* ============================================================
+         * Safe area insets — iOS notch / home indicator / Android nav bar.
+         * Components that anchor to viewport edges (top bar, bottom tab,
+         * floating launcher) should add these to their padding.
+         * ============================================================ */
+        --safe-area-inset-top: env(safe-area-inset-top, 0px);
+        --safe-area-inset-right: env(safe-area-inset-right, 0px);
+        --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+        --safe-area-inset-left: env(safe-area-inset-left, 0px);
+
+        /* ============================================================
+         * Responsive content widths — for long-form prose, dialogs, etc.
+         * ============================================================ */
+        --content-width-prose: 65ch;        /* ideal reading width */
+        --content-width-narrow: 32rem;      /* dialog body, single-column form */
+        --content-width-medium: 48rem;      /* article, blog post */
+        --content-width-wide: 72rem;        /* dashboard inner */
+        --content-width-full: 90rem;        /* page max */
+      }
+}
+
+@layer foundation {
+
+      :root {
+        /* ----- Extended surface tokens (Phase 1) ----- */
+        /* Elevation: layered surfaces from sunken to overlay */
+        --color-surface-sunken: color-mix(in oklch, var(--color-background-page), black 4%);
+        --color-surface-base: var(--color-background-canvas);
+        --color-surface-raised: var(--color-background-primary);
+        --color-surface-overlay: color-mix(in oklch, var(--color-background-canvas), white 8%);
+        --color-surface-floating: var(--color-background-canvas);
+
+        /* Tonal tints — subtle warm/cool/brand backgrounds */
+        --color-surface-warm: color-mix(in oklch, var(--color-background-canvas), #fff5e8 65%);
+        --color-surface-cool: color-mix(in oklch, var(--color-background-canvas), #e8f1ff 65%);
+        --color-surface-brand: color-mix(in oklch, var(--color-brand-primary), white 92%);
+        --color-surface-secondary-brand: color-mix(in oklch, var(--color-brand-secondary), white 92%);
+
+        /* Semantic tints — for cards/sections that carry meaning */
+        --color-surface-success: color-mix(in oklch, var(--color-utility-success), white 88%);
+        --color-surface-warning: color-mix(in oklch, var(--color-utility-warning), white 86%);
+        --color-surface-danger: color-mix(in oklch, var(--color-utility-danger), white 90%);
+        --color-surface-info: color-mix(in oklch, var(--color-utility-info), white 90%);
+
+        /* Borders matching the tints (subtle, theme-aware) */
+        --color-border-warm: color-mix(in oklch, #e8a052, white 65%);
+        --color-border-cool: color-mix(in oklch, #4a90e2, white 65%);
+        --color-border-success: color-mix(in oklch, var(--color-utility-success), white 60%);
+        --color-border-warning: color-mix(in oklch, var(--color-utility-warning), white 50%);
+        --color-border-danger: color-mix(in oklch, var(--color-utility-danger), white 60%);
+        --color-border-info: color-mix(in oklch, var(--color-utility-info), white 60%);
+      }
+      html[data-theme="dark"] {
+        --color-surface-sunken: color-mix(in oklch, var(--color-background-page), black 30%);
+        --color-surface-base: var(--color-background-canvas);
+        --color-surface-raised: color-mix(in oklch, var(--color-background-canvas), white 4%);
+        --color-surface-overlay: color-mix(in oklch, var(--color-background-canvas), white 8%);
+        --color-surface-floating: color-mix(in oklch, var(--color-background-canvas), white 6%);
+
+        --color-surface-warm: color-mix(in oklch, var(--color-background-canvas), #5a3920 30%);
+        --color-surface-cool: color-mix(in oklch, var(--color-background-canvas), #1a3050 30%);
+        --color-surface-brand: color-mix(in oklch, var(--color-brand-primary), black 60%);
+        --color-surface-secondary-brand: color-mix(in oklch, var(--color-brand-secondary), black 60%);
+
+        --color-surface-success: color-mix(in oklch, var(--color-utility-success), black 60%);
+        --color-surface-warning: color-mix(in oklch, var(--color-utility-warning), black 60%);
+        --color-surface-danger: color-mix(in oklch, var(--color-utility-danger), black 60%);
+        --color-surface-info: color-mix(in oklch, var(--color-utility-info), black 60%);
+      }
+}
+
+@layer theme {
+
+      :root { color-scheme: light; }
+      html[data-theme="dark"] {
+        color-scheme: dark;
+        --logo-text-fill-default: #ffffff;
+        --color-surface-page: #0f1218;
+        --color-surface-page-contrast: #f3f5f9;
+        --color-surface-canvas: #121721;
+        --color-surface-canvas-contrast: #f3f5f9;
+        --color-surface-primary: #161c26;
+        --color-surface-primary-contrast: #f3f5f9;
+        --color-surface-secondary: #1b2431;
+        --color-surface-secondary-contrast: #f3f5f9;
+        --color-surface-tertiary: #253040;
+        --color-surface-tertiary-contrast: #f3f5f9;
+        --color-surface-inverse: #f3f5f9;
+        --color-surface-inverse-contrast: #141924;
+        --color-text-base-primary: #f3f5f9;
+        --color-text-base-secondary: #d3d9e5;
+        --color-text-base-muted: #aab3c4;
+        --color-text-base-disabled: #778096;
+        --border-color-subtle: rgba(255,255,255,0.045);
+        --border-color-default: rgba(255,255,255,0.075);
+        --border-color-strong: rgba(255,255,255,0.12);
+        --shadow-xs: 0 1px 2px rgba(0,0,0,0.18);
+        --shadow-sm: 0 6px 16px rgba(0,0,0,0.18);
+        --shadow-md: 0 14px 28px rgba(0,0,0,0.22);
+        --shadow-lg: 0 24px 48px rgba(0,0,0,0.28);
+        --shadow-xl: 0 32px 72px rgba(0,0,0,0.34);
+        --shadow-focus: 0 0 0 4px color-mix(in oklch, var(--color-brand-primary), transparent 70%);
+        --color-overlay-scrim: rgba(0, 0, 0, 0.6);
+
+        /* Interaction-state tints (hover/selected/active).
+           In light mode these mix with WHITE to lighten the brand colour.
+           In dark mode we mix with BLACK so the hover surface is darker,
+           not lighter — otherwise menu/button hover backgrounds become
+           a near-white pastel that's illegible against light foreground text.
+
+           The active state is the strongest tint (closest to pure brand);
+           hover is the most subtle. */
+        --color-brand-primary-hover:    color-mix(in oklch, var(--color-brand-primary), black 70%);
+        --color-brand-primary-selected: color-mix(in oklch, var(--color-brand-primary), black 55%);
+        --color-brand-primary-active:   color-mix(in oklch, var(--color-brand-primary), black 40%);
+
+        /* In dark mode, "bold" should be LIGHTER than the base brand —
+           otherwise hovered/active foregrounds become darker than the
+           surrounding text. Flip the mix from black to white. */
+        --color-brand-primary-bold: color-mix(in oklch, var(--color-brand-primary), white 30%);
+        --color-brand-primary-soft: color-mix(in oklch, var(--color-brand-primary), black 65%);
+
+        /* In dark mode, hovered foregrounds need to STAY light, not shift to
+           the bold variant (which is darker than base brand). Override the
+           foreground hint that menu/nav hover rules pick up. */
+        --color-brand-primary-hover-foreground:    var(--color-foreground-primary);
+
+        /* In dark mode, --gradient-subtle's white-mix endpoints become
+           pale-grey washes that read poorly on dark surfaces. Override
+           with a dark-mixed version that sits naturally as a card or
+           pane background. The other gradients (brand, vibrant, warm,
+           cool) use saturated brand colours that read fine in both
+           modes, so they don't need a dark override. */
+        --gradient-subtle:
+          linear-gradient(135deg,
+            color-mix(in oklch, var(--color-brand-primary), black 78%) 0%,
+            color-mix(in oklch, var(--color-feature-05), black 78%) 100%);
+      }
+    }
+
+@layer semantic {
+
+      :root {
+        --color-background-page: var(--color-surface-page);
+        --color-background-page-contrast: var(--color-surface-page-contrast);
+        --color-background-canvas: var(--color-surface-canvas);
+        --color-background-canvas-contrast: var(--color-surface-canvas-contrast);
+        --color-background-primary: var(--color-surface-primary);
+        --color-background-primary-contrast: var(--color-surface-primary-contrast);
+        --color-background-secondary: var(--color-surface-secondary);
+        --color-background-secondary-contrast: var(--color-surface-secondary-contrast);
+        --color-background-tertiary: var(--color-surface-tertiary);
+        --color-background-tertiary-contrast: var(--color-surface-tertiary-contrast);
+        --color-background-inverse: var(--color-surface-inverse);
+        --color-background-inverse-contrast: var(--color-surface-inverse-contrast);
+        --color-background-brand-primary: var(--color-brand-primary-strong);
+        --color-background-brand-primary-contrast: var(--color-brand-primary-contrast);
+        --color-background-brand-secondary: var(--color-brand-secondary-strong);
+        --color-background-brand-secondary-contrast: var(--color-brand-secondary-contrast);
+        --color-background-accent: var(--color-brand-primary-soft);
+        --color-background-accent-contrast: var(--color-text-base-primary);
+        --color-background-overlay: var(--color-surface-overlay);
+        --color-background-scrim: var(--color-surface-scrim);
+
+        --color-foreground-primary: var(--color-text-base-primary);
+        --color-foreground-secondary: var(--color-text-base-secondary);
+        --color-foreground-muted: var(--color-text-base-muted);
+        --color-foreground-disabled: var(--color-text-base-disabled);
+        --color-foreground-link: var(--color-text-base-link);
+        --color-foreground-link-hover: var(--color-brand-primary-bold);
+        --color-foreground-inverse: var(--color-background-inverse-contrast);
+        --color-foreground-brand-primary: var(--color-brand-primary);
+        --color-foreground-brand-secondary: var(--color-brand-secondary);
+
+        --color-border-subtle: var(--border-color-subtle);
+        --color-border-primary: var(--border-color-default);
+        --color-border-strong: var(--border-color-strong);
+        --color-border-inverse: var(--border-color-inverse);
+        --color-divider: var(--border-color-default);
+
+        /* Overlay scrim — backdrop behind modals/drawers. Dark tint for light themes,
+         * deeper tint for dark themes (overridden in @layer theme). */
+        --color-overlay-scrim: rgba(15, 23, 42, 0.55);
+        --color-overlay-blur: 4px;
+
+        --color-action-primary: var(--color-brand-primary-strong);
+        --color-action-primary-contrast: var(--color-brand-primary-contrast);
+        --color-action-primary-hover: var(--color-brand-primary-bold);
+        --color-action-primary-active: color-mix(in oklch, var(--color-brand-primary), black 28%);
+        --color-action-primary-soft: var(--color-brand-primary-soft);
+        --color-action-secondary: var(--color-surface-primary);
+        --color-action-secondary-contrast: var(--color-foreground-primary);
+        /* Hover uses the global brand-light tint for consistency across
+           all interactive components — buttons, tabs, nav, menu items. */
+        --color-action-secondary-hover: var(--color-brand-primary-hover);
+        --color-action-secondary-active: var(--color-brand-primary-selected);
+        --color-action-secondary-soft: var(--color-surface-primary-soft);
+        --color-action-tertiary: transparent;
+        --color-action-tertiary-contrast: var(--color-foreground-primary);
+        --color-action-tertiary-hover: var(--color-brand-primary-hover);
+        --color-action-tertiary-active: var(--color-brand-primary-selected);
+        --color-action-disabled: var(--color-surface-secondary);
+        --color-action-disabled-contrast: var(--color-foreground-disabled);
+
+        --color-feedback-success: var(--color-utility-success);
+        --color-feedback-success-contrast: var(--color-utility-success-contrast);
+        --color-feedback-success-soft: var(--color-utility-success-soft);
+        --color-feedback-warning: var(--color-utility-warning);
+        --color-feedback-warning-contrast: var(--color-utility-warning-contrast);
+        --color-feedback-warning-soft: var(--color-utility-warning-soft);
+        --color-feedback-danger: var(--color-utility-danger);
+        --color-feedback-danger-contrast: var(--color-utility-danger-contrast);
+        --color-feedback-danger-soft: var(--color-utility-danger-soft);
+        --color-feedback-info: var(--color-utility-info);
+        --color-feedback-info-contrast: var(--color-utility-info-contrast);
+        --color-feedback-info-soft: var(--color-utility-info-soft);
+        --color-feedback-muted: var(--color-utility-muted);
+        --color-feedback-muted-contrast: var(--color-utility-muted-contrast);
+        --color-feedback-muted-soft: var(--color-utility-muted-soft);
+
+        --color-focus-ring: var(--color-brand-primary-accent);
+        --color-focus-ring-strong: var(--color-brand-primary);
+        --color-selection-background: var(--color-brand-primary-soft);
+        --color-selection-foreground: var(--color-foreground-primary);
+
+        /* ============================================================
+           BRAND GRADIENTS
+           ============================================================
+           Five canonical gradients for hero headers, feature text,
+           accent surfaces, and CTA backgrounds. Each is built from
+           existing brand and feature colour tokens via color-mix, so
+           partner rebrands cascade automatically — change
+           --color-brand-primary and --gradient-brand follows.
+
+           Use cases by gradient:
+
+           • --gradient-brand     The system's canonical brand gradient.
+                                  Blue → purple. Use for hero headers,
+                                  landing-page title text, primary CTAs.
+                                  This is the one a partner overrides
+                                  to make the system "feel" like theirs.
+
+           • --gradient-vibrant   High-energy pink → purple. Use for
+                                  marketing surfaces, app store hero
+                                  cards, attention-getting accents.
+                                  Saturated; pairs with white text.
+
+           • --gradient-warm      Orange → pink → purple sunset. Use for
+                                  feature callouts, "new this month"
+                                  banners, anything wanting warmth.
+
+           • --gradient-cool      Deep purple → cyan → green aurora.
+                                  Use for tech-forward sections, dark-
+                                  mode-friendly hero panels, AI/ML
+                                  themed surfaces.
+
+           • --gradient-subtle    Low-contrast tinted version of the
+                                  brand gradient. Use as a card or pane
+                                  background where content sits on top.
+                                  Quiet, not eye-grabbing.
+
+           All gradients are linear at 135° (top-left → bottom-right)
+           by default. The angle reads as forward motion and works for
+           both wide and tall containers. Override per-component if a
+           specific element needs a different direction. */
+        --gradient-brand:
+          linear-gradient(135deg,
+            var(--color-brand-primary) 0%,
+            var(--color-feature-05) 100%);
+
+        --gradient-vibrant:
+          linear-gradient(135deg,
+            var(--color-feature-03) 0%,
+            var(--color-feature-05) 100%);
+
+        --gradient-warm:
+          linear-gradient(135deg,
+            var(--color-feature-07) 0%,
+            var(--color-feature-03) 50%,
+            var(--color-feature-05) 100%);
+
+        --gradient-cool:
+          linear-gradient(135deg,
+            var(--color-feature-04) 0%,
+            var(--color-feature-08) 50%,
+            var(--color-feature-09) 100%);
+
+        --gradient-subtle:
+          linear-gradient(135deg,
+            color-mix(in oklch, var(--color-brand-primary), white 88%) 0%,
+            color-mix(in oklch, var(--color-feature-05), white 88%) 100%);
+      }
+}
+
+@layer component-tokens {
+
+      :root {
+        --control-height-sm: 1.75rem;
+        --control-height-md: 2.25rem;
+        --control-height-lg: 2.75rem;
+        --control-padding-inline-sm: 0.75rem;
+        --control-padding-inline-md: 1rem;
+        --control-padding-inline-lg: 1.25rem;
+
+        --component-topbar-background: var(--color-surface-base);
+        --component-topbar-foreground: var(--color-foreground-primary);
+        --component-topbar-border: var(--color-border-subtle);
+
+        --component-menu-item-background: transparent;
+        --component-menu-item-foreground: var(--color-foreground-secondary);
+        --component-menu-item-hover-background: var(--color-background-secondary);
+        --component-menu-item-hover-foreground: var(--color-foreground-primary);
+        --component-menu-item-active-background: var(--color-brand-primary-soft);
+        --component-menu-item-active-foreground: var(--color-brand-primary-bold);
+        --component-menu-item-active-border: color-mix(in oklch, var(--color-brand-primary), white 60%);
+        --component-menu-item-disabled-opacity: 0.5; /* @kind other */
+
+        --component-card-background: var(--color-background-primary);
+        --component-card-foreground: var(--color-foreground-primary);
+        --component-card-border: var(--color-border-subtle);
+        --component-card-radius: var(--radius-xl);
+        --component-card-shadow: var(--shadow-sm);
+        --component-card-padding: var(--space-xl);
+
+        /* ============================================================
+           PANE & TILE container tokens
+           ============================================================
+           Every container-like component in the system reads from one of
+           three padding tokens. This is the source-of-truth surface for
+           how dense or breathable container content feels. Changing one
+           token here cascades to every consumer — never hardcode padding
+           on a container component, always read from these.
+
+           • --component-pane-padding  — labelled sub-section containers
+                                          (.pane, documentation sections,
+                                          settings groups). Generous (32px)
+                                          because these wrap rich content
+                                          with their own internal layout.
+           • --component-card-padding  — standard card tile (.card, .panel,
+                                          .stat-card, .feature-tile,
+                                          .surface-tile, .testimonial,
+                                          .tier, .selectable-card).
+                                          Comfortable (24px).
+           • --component-tile-padding  — dense grid cells (.kanban-card,
+                                          .person-card, .dnd-card,
+                                          list-item style containers).
+                                          Compact (16px).
+
+           The matching --component-{pane,card,tile}-gap tokens govern
+           the gap between cards inside an .auto-grid or .grid-* when
+           wrapped in a pane. */
+        --component-pane-padding: var(--space-2xl);
+        --component-pane-padding-block-end: var(--space-2xl);
+        --component-pane-gap: var(--space-2xl);
+        --component-pane-rule-color: var(--color-divider);
+        --component-pane-rule-width: 1px;
+
+        --component-tile-padding: var(--space-lg);
+        --component-tile-radius: var(--radius-xl);
+        --component-tile-shadow: var(--shadow-sm);
+        --component-tile-gap: var(--space-lg);
+
+        /* Per-family radius tokens — these are what components reference for
+           shape, and what the theme switcher overrides per family.
+
+           • button  — buttons, FABs, segmented controls (pill by default)
+           • pill    — badges, status pills, tags (pill by default)
+           • input   — text inputs, selects, textareas (lg by default)
+           • card    — cards, raised surfaces (xl by default)
+           • modal   — modals, drawers, sheets (2xl by default)
+           • container — generic sections, panels, alerts (lg by default) */
+        --component-button-radius: var(--radius-pill);
+        --component-pill-radius: var(--radius-pill);
+        --component-container-radius: var(--radius-lg);
+
+        --component-button-primary-background: var(--color-action-primary);
+        --component-button-primary-foreground: var(--color-action-primary-contrast);
+        --component-button-primary-hover-background: var(--color-action-primary-hover);
+        --component-button-primary-active-background: var(--color-action-primary-active);
+        --component-button-primary-border: transparent;
+
+        --component-button-secondary-background: var(--color-action-secondary);
+        --component-button-secondary-foreground: var(--color-action-secondary-contrast);
+        --component-button-secondary-hover-background: var(--color-action-secondary-hover);
+        --component-button-secondary-active-background: var(--color-action-secondary-active);
+        --component-button-secondary-border: var(--color-border-primary);
+
+        --component-button-tertiary-background: transparent;
+        --component-button-tertiary-foreground: var(--color-action-tertiary-contrast);
+        --component-button-tertiary-hover-background: var(--color-action-tertiary-hover);
+        --component-button-tertiary-active-background: var(--color-action-tertiary-active);
+        --component-button-tertiary-border: transparent;
+
+        --component-input-background: var(--color-background-primary);
+        --component-input-foreground: var(--color-foreground-primary);
+        --component-input-border: var(--color-border-primary);
+        --component-input-hover-border: var(--color-border-strong);
+        --component-input-focus-border: var(--color-focus-ring-strong);
+        --component-input-radius: var(--radius-lg);
+        --component-input-placeholder: var(--color-foreground-muted);
+
+        --component-badge-neutral-background: var(--color-background-secondary);
+        --component-badge-neutral-foreground: var(--color-foreground-secondary);
+        --component-badge-neutral-border: var(--color-border-subtle);
+        --component-badge-brand-background: var(--color-brand-primary-soft);
+        --component-badge-brand-foreground: var(--color-brand-primary-bold);
+        --component-badge-brand-border: color-mix(in oklch, var(--color-brand-primary), white 58%);
+
+        --component-modal-background: var(--color-background-canvas);
+        --component-modal-foreground: var(--color-foreground-primary);
+        --component-modal-border: var(--color-border-subtle);
+        --component-modal-shadow: var(--shadow-overlay);
+        --component-modal-radius: var(--radius-2xl);
+
+        --component-drawer-background: var(--color-background-canvas);
+        --component-drawer-border: var(--color-border-subtle);
+        --component-drawer-shadow: var(--shadow-overlay);
+
+        --component-tab-foreground: var(--color-foreground-secondary);
+        --component-tab-hover-background: var(--color-background-secondary);
+        --component-tab-hover-foreground: var(--color-foreground-primary);
+        --component-tab-active-foreground: var(--color-brand-primary);
+        --component-tab-active-indicator: var(--color-brand-primary);
+
+        --component-table-background: var(--color-background-primary);
+        --component-table-border: var(--color-border-subtle);
+        /* Header row: white background with brand-coloured text reads as
+           "structural delimiter" without competing with content. Previously
+           a soft grey-on-grey strip that visually blended into the body. */
+        --component-table-header-background: var(--color-surface-base);
+        --component-table-header-foreground: var(--color-brand-primary);
+        --component-table-row-hover: var(--color-background-secondary);
+      }
+      @media (max-width: 480px) { :root { --drawer-floating-margin: 0; } }
+}
+
+
+/* ---- Dashboard layout (uses design-system tokens only) ---- */
+*{box-sizing:border-box}
+body{margin:0;background:var(--color-surface-page);color:var(--color-text-base-primary);font-family:var(--font-family-body);font-size:var(--font-size-sm)}
+h1,h2,h3{font-family:var(--font-family-heading);margin:0}
+.mono,.num{font-family:var(--font-family-mono)}
+.shell{display:grid;grid-template-columns:16rem minmax(0,1fr);min-height:100vh}
+/* sidebar */
+.side{background:var(--color-surface-primary);border-right:1px solid var(--border-color-default);padding:var(--component-card-padding);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:var(--component-tile-padding)}
+.brand{display:flex;flex-direction:column;gap:4px;padding-bottom:var(--component-tile-padding)}
+.brand svg{width:150px;height:auto}
+.brand small{color:var(--color-text-base-muted)}
+.nav-label{font-family:var(--font-family-mono);font-size:var(--font-size-xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-base-muted);margin:8px 0 4px}
+.nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-lg);color:var(--color-text-base-primary);text-decoration:none;font-weight:var(--font-weight-medium);cursor:pointer}
+.nav a i{width:18px;text-align:center;color:var(--color-text-base-secondary)}
+.nav a:hover{background:var(--color-surface-secondary)}
+.nav a.active{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.nav a.active i{color:var(--color-brand-primary-strong)}
+.side-box{border:1px solid var(--border-color-default);border-radius:var(--radius-xl);padding:var(--component-tile-padding);display:flex;flex-direction:column;gap:8px}
+.btn{display:flex;align-items:center;gap:8px;border:0;border-radius:var(--radius-lg);padding:10px 12px;font:inherit;font-weight:var(--font-weight-semibold);cursor:pointer}
+.btn-teal{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong)}
+.btn-blue{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.side-foot{margin-top:auto;color:var(--color-text-base-muted);font-size:var(--font-size-xs)}
+/* main */
+.main{padding:var(--component-pane-padding);min-width:0}
+.topbar{display:flex;align-items:center;gap:16px;padding-bottom:var(--component-card-padding);border-bottom:1px solid var(--border-color-default);margin-bottom:var(--component-card-padding)}
+.crumbs{color:var(--color-text-base-muted);font-size:var(--font-size-md)}
+.crumbs b{color:var(--color-text-base-primary)}
+.topbar .grow{flex:1}
+.chip{display:flex;align-items:center;gap:8px;font-weight:var(--font-weight-semibold)}
+.chip i{color:var(--color-brand-primary)}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--border-color-default);border-radius:var(--radius-lg);padding:8px 12px;background:var(--color-surface-primary);min-width:240px}
+.search input{border:0;outline:0;font:inherit;width:100%;background:transparent}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:var(--component-tile-padding);flex-wrap:wrap}
+.page-head h1{font-size:var(--font-size-3xl)}
+.page-head p{margin:6px 0 0;color:var(--color-text-base-secondary);font-size:var(--font-size-md)}
+/* filters: one panel, one or more labelled rows */
+.filters{display:flex;flex-direction:column;gap:10px;background:var(--color-surface-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-xl);padding:var(--component-tile-padding);margin-bottom:var(--component-card-padding);box-shadow:var(--shadow-sm)}
+.filters label{display:flex;flex-direction:column;gap:4px;font-size:var(--font-size-xs);color:var(--color-text-base-muted);font-weight:var(--font-weight-semibold)}
+.filters select{font:inherit;color:var(--color-text-base-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:7px 10px;background:var(--color-surface-primary);min-width:120px;max-width:220px}
+.filters .reset{align-self:flex-end}
+.frow{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.frow + .frow{border-top:1px solid var(--border-color-default);padding-top:10px}
+.frow-label{width:100%;font-family:var(--font-family-mono);font-size:var(--font-size-2xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-brand-primary-strong);font-weight:var(--font-weight-semibold)}
+.frow-note{font-size:var(--font-size-xs);color:var(--color-text-base-muted)}
+.frow-note:empty{display:none}
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--component-tile-padding);margin-bottom:var(--component-card-padding)}
+.kpi{border-radius:var(--radius-xl);padding:var(--component-tile-padding);display:flex;flex-direction:column;gap:10px}
+.kpi-top{display:flex;align-items:center;gap:10px;font-weight:var(--font-weight-semibold);font-size:var(--font-size-sm);line-height:1.3}
+.kpi-icon{width:40px;height:40px;border-radius:var(--radius-lg);display:grid;place-items:center;color:var(--color-surface-primary);flex:none}
+.kpi-value{font-family:var(--font-family-heading);font-size:var(--font-size-3xl);font-weight:var(--font-weight-bold)}
+.kpi-sub{color:var(--color-text-base-secondary)}
+.k-blue{background:var(--color-brand-primary-soft)} .k-blue .kpi-icon{background:var(--color-brand-primary)}
+.k-teal{background:var(--color-feature-01-soft)} .k-teal .kpi-icon{background:var(--color-feature-01)}
+.k-yellow{background:var(--color-feature-02-soft)} .k-yellow .kpi-icon{background:var(--color-feature-02)}
+.k-pink{background:var(--color-feature-03-soft)} .k-pink .kpi-icon{background:var(--color-feature-03)}
+.k-purple{background:var(--color-feature-05-soft)} .k-purple .kpi-icon{background:var(--color-feature-05)}
+.k-indigo{background:var(--color-feature-04-soft)} .k-indigo .kpi-icon{background:var(--color-feature-04)}
+/* cards with a solid blue header bar */
+.grid{display:grid;gap:var(--component-card-padding);margin-bottom:var(--component-card-padding)}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:3fr 2fr}
+.card{background:var(--color-surface-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm);overflow:hidden;min-width:0}
+.page > .card{margin-bottom:var(--component-card-padding)}
+.card-head{background:var(--color-brand-primary-strong);color:var(--color-surface-primary);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px var(--component-card-padding)}
+.card-head h3{font-size:var(--font-size-md);font-weight:var(--font-weight-bold);line-height:1.3}
+.card-head span{opacity:.9;font-size:var(--font-size-xs);text-align:right;flex:0 1 auto;max-width:45%}
+.card-body{padding:var(--component-card-padding)}
+.chart{position:relative;height:300px}
+.chart.tall{height:380px}
+.note{color:var(--color-text-base-muted);font-size:var(--font-size-xs);margin-top:10px;line-height:1.5}
+.warn{background:var(--color-feature-02-soft);border-radius:var(--radius-lg);padding:10px 14px;margin:0 0 var(--component-tile-padding);font-size:var(--font-size-xs)}
+.warn i{color:var(--color-feature-07)}
+.info{background:var(--color-brand-primary-soft);border-radius:var(--radius-lg);padding:10px 14px;margin:0 0 var(--component-tile-padding)}
+/* tables */
+.tbl-wrap{overflow:auto;max-height:560px}
+table{border-collapse:collapse;width:100%;font-size:var(--font-size-xs)}
+th{position:sticky;top:0;background:var(--color-surface-primary);color:var(--color-brand-primary-strong);text-align:left;font-weight:var(--font-weight-bold);padding:10px;border-bottom:2px solid var(--border-color-default);white-space:nowrap;cursor:default}
+th.sort{cursor:pointer} th.sort:hover{text-decoration:underline}
+td{padding:8px 10px;border-bottom:1px solid var(--border-color-default);vertical-align:top}
+td.n,th.n{text-align:right}
+td.n{font-family:var(--font-family-mono)}
+tr.small td{color:var(--color-text-base-muted)}
+.nowrap td{white-space:nowrap}
+.sticky1 td:first-child,.sticky1 th:first-child{position:sticky;left:0;background:var(--color-surface-primary);min-width:200px;z-index:1;box-shadow:inset -1px 0 0 var(--border-color-default)}
+.sticky1 th:first-child{z-index:2}
+.badge{display:inline-block;padding:2px 8px;border-radius:var(--radius-pill);font-size:var(--font-size-2xs);font-weight:var(--font-weight-semibold)}
+.b-ok{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong)}
+.b-warn{background:var(--color-feature-02-soft);color:var(--color-text-base-primary)}
+.b-no{background:var(--color-surface-secondary);color:var(--color-text-base-secondary)}
+.b-blue{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.heat td.h{text-align:center;font-family:var(--font-family-mono)}
+.tools{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.tools input{font:inherit;border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:7px 10px;min-width:260px}
+.tools select{font:inherit;border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:6px 8px}
+/* statistics blocks (Stats & method page) */
+.stat{border:1px solid var(--border-color-default);border-radius:var(--radius-lg);padding:var(--component-tile-padding);margin-bottom:12px}
+.stat h4{margin:0 0 6px;font-family:var(--font-family-heading)}
+.stat .reading{font-size:var(--font-size-md);font-weight:var(--font-weight-semibold);margin:6px 0}
+.page{display:none}
+.page.show{display:block}
+ul.rules{margin:0;padding-left:18px;line-height:1.7}
+/* "Numbers behind this chart" panels (added automatically by draw()) */
+details.chart-data{margin-top:12px;border-top:1px solid var(--border-color-default);padding-top:8px}
+details.chart-data summary{cursor:pointer;font-weight:var(--font-weight-semibold);color:var(--color-brand-primary-strong);display:flex;align-items:center;gap:10px;font-size:var(--font-size-xs)}
+details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
+.btn-mini{border:0;border-radius:var(--radius-md);padding:3px 8px;font:inherit;font-size:var(--font-size-2xs);background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong);cursor:pointer}
+/* insight cards */
+.ins .card-body{display:flex;flex-direction:column;gap:8px}
+.ins h4{margin:0;font-family:var(--font-family-heading);font-size:var(--font-size-lg)}
+.ins p{margin:0;line-height:1.6}
+.ins-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ins-link{cursor:pointer;color:var(--color-brand-primary-strong);font-size:var(--font-size-xs);font-weight:var(--font-weight-semibold)}
+@media (max-width:1100px){.g2,.g3{grid-template-columns:1fr}.shell{grid-template-columns:1fr}.side{position:static;height:auto}}
+/* ---- additions for this page ---- */
+.code{font-family:var(--font-family-mono);font-size:var(--font-size-2xs);background:var(--color-surface-secondary);border-radius:var(--radius-md);padding:1px 6px;white-space:nowrap}
+.idtag{font-family:var(--font-family-mono);font-weight:var(--font-weight-bold);color:var(--color-brand-primary-strong)}
+a.jump{cursor:pointer;color:var(--color-brand-primary-strong);text-decoration:underline dotted}
+tr.hl td{background:var(--color-feature-02-soft)!important;transition:background .3s}
+.k-act{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.k-profile{background:var(--color-surface-secondary);color:var(--color-text-base-secondary)}
+.k-late{background:var(--color-feature-07-soft);color:var(--color-text-base-primary)}
+.badge{white-space:nowrap}
+.tbl-wrap.full{max-height:none}
+.tbl-wrap.full .code{white-space:normal}
+.tbl-wrap.full td:nth-child(2){min-width:130px}
+.legend-row{display:flex;flex-wrap:wrap;gap:16px;font-size:var(--font-size-xs);color:var(--color-text-base-secondary);margin:0 0 var(--component-tile-padding)}
+.legend-row span{display:flex;align-items:center;gap:6px}
+.legend-row i.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.chart.xtall{height:440px}
+.wrap-cell{min-width:220px;white-space:normal}
+@media print{.side,.topbar,details.chart-data,.no-print{display:none!important}.shell{grid-template-columns:1fr}.main{padding:0}.card{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- ================= sidebar ================= -->
+  <aside class="side">
+    <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 350 115">
+  <g id="Ring">
+    <path fill-opacity="0" d="M53.51,109.56C24.66,109.56,1.19,86.09,1.19,57.24S24.66,4.93,53.51,4.93s52.31,23.47,52.31,52.31-23.47,52.31-52.31,52.31ZM53.51,11.93c-24.99,0-45.31,20.33-45.31,45.31s20.33,45.31,45.31,45.31,45.31-20.33,45.31-45.31S78.49,11.93,53.51,11.93Z"></path>
+  </g>
+  <g id="Emblem_Base" data-name="Emblem Base">
+    <circle fill="#007aff" cx="53.51" cy="57.24" r="46.31" transform="translate(-11.72 13.82) rotate(-13.28)"></circle>
+  </g>
+  <g id="Cloud">
+    <path fill="#fff" d="M35.66,70.65c9.5-.59,22.4-6.24,32.49-7.31,5.29-.56,9.89-.61,13.07-.54,1.06.02,1.83.05,2.23.08.02,0,.05,0,.07,0,1.8.11,1.7-1.06,1.7-1.06,0-.12,0-.24,0-.36,0-9.9-7.87-17.92-17.58-17.92-6.51,0-12.19,3.61-15.23,8.97-1.02-3.3-4.04-5.69-7.61-5.69-4.41,0-7.98,3.64-7.98,8.13,0,.13,0,.26,0,.39-.97-.25-1.99-.39-3.04-.39-5.82,0-10.7,4.11-12,9.64,0,0-.38,1,.28,1.82,1.95,2.7,7.77,4.6,13.57,4.24Z"></path>
+  </g>
+  <g id="Text_-_Horizontal" data-name="Text - Horizontal">
+    <g>
+      <path fill="#2c2e3c" d="M113.55,47.43c1.32-2.39,3.16-4.25,5.52-5.59,2.36-1.33,5.04-2,8.03-2,3.67,0,6.81.97,9.42,2.9,2.61,1.94,4.36,4.58,5.24,7.92h-8.27c-.62-1.29-1.49-2.27-2.62-2.95-1.13-.67-2.41-1.01-3.85-1.01-2.32,0-4.2.81-5.63,2.42-1.44,1.61-2.16,3.77-2.16,6.47s.72,4.85,2.16,6.47c1.44,1.61,3.31,2.42,5.63,2.42,1.44,0,2.72-.34,3.85-1.01,1.13-.67,2-1.66,2.62-2.95h8.27c-.88,3.34-2.63,5.98-5.24,7.9-2.61,1.92-5.75,2.88-9.42,2.88-2.99,0-5.67-.67-8.03-2-2.36-1.33-4.2-3.19-5.52-5.57-1.32-2.38-1.98-5.09-1.98-8.14s.66-5.77,1.98-8.16Z"></path>
+      <path fill="#2c2e3c" d="M151.25,38.52v32.56h-7.52v-32.56h7.52Z"></path>
+      <path fill="#2c2e3c" d="M159.64,69.89c-1.92-1.03-3.43-2.49-4.53-4.4-1.1-1.91-1.65-4.14-1.65-6.69s.56-4.74,1.67-6.67c1.11-1.92,2.64-3.4,4.58-4.42s4.11-1.54,6.51-1.54,4.58.51,6.51,1.54,3.46,2.5,4.58,4.42c1.11,1.92,1.67,4.14,1.67,6.67s-.56,4.75-1.69,6.67c-1.13,1.92-2.67,3.4-4.62,4.42-1.95,1.03-4.13,1.54-6.53,1.54s-4.57-.51-6.49-1.54ZM169.8,63.33c1.01-1.06,1.52-2.57,1.52-4.53s-.49-3.48-1.47-4.53c-.98-1.06-2.19-1.58-3.63-1.58s-2.68.52-3.65,1.56c-.97,1.04-1.45,2.56-1.45,4.55s.48,3.48,1.43,4.53c.95,1.06,2.15,1.58,3.59,1.58s2.66-.53,3.67-1.58Z"></path>
+      <path fill="#2c2e3c" d="M205.46,46.53v24.55h-7.52v-3.34c-.76,1.09-1.8,1.96-3.1,2.62-1.31.66-2.75.99-4.33.99-1.88,0-3.54-.42-4.97-1.25-1.44-.84-2.55-2.05-3.34-3.63s-1.19-3.45-1.19-5.59v-14.34h7.48v13.33c0,1.64.43,2.92,1.28,3.83.85.91,1.99,1.36,3.43,1.36s2.62-.45,3.48-1.36c.85-.91,1.28-2.18,1.28-3.83v-13.33h7.52Z"></path>
+      <path fill="#2c2e3c" d="M209.05,52.11c.95-1.91,2.25-3.37,3.89-4.4,1.64-1.03,3.48-1.54,5.5-1.54,1.61,0,3.09.34,4.42,1.01,1.33.68,2.38,1.58,3.15,2.73v-11.4h7.52v32.56h-7.52v-3.52c-.7,1.17-1.71,2.11-3.01,2.82-1.31.7-2.82,1.06-4.55,1.06-2.02,0-3.86-.52-5.5-1.56-1.64-1.04-2.94-2.52-3.89-4.44-.95-1.92-1.43-4.14-1.43-6.67s.48-4.74,1.43-6.64ZM224.45,54.36c-1.04-1.08-2.31-1.63-3.81-1.63s-2.77.54-3.81,1.61c-1.04,1.07-1.56,2.55-1.56,4.42s.52,3.37,1.56,4.47c1.04,1.1,2.31,1.65,3.81,1.65s2.76-.54,3.81-1.63c1.04-1.08,1.56-2.57,1.56-4.44s-.52-3.36-1.56-4.44Z"></path>
+      <path fill="#2c2e3c" d="M241.5,70.33c-1.67-.73-2.99-1.74-3.96-3.01-.97-1.28-1.51-2.71-1.63-4.29h7.44c.09.85.48,1.54,1.19,2.07.7.53,1.57.79,2.6.79.94,0,1.66-.18,2.18-.55.51-.37.77-.84.77-1.43,0-.7-.37-1.22-1.1-1.56-.73-.34-1.92-.71-3.56-1.12-1.76-.41-3.23-.84-4.4-1.3-1.17-.45-2.19-1.17-3.04-2.16-.85-.98-1.28-2.31-1.28-3.98,0-1.41.39-2.69,1.17-3.85.78-1.16,1.92-2.07,3.43-2.75,1.51-.67,3.31-1.01,5.39-1.01,3.08,0,5.51.76,7.28,2.29,1.77,1.53,2.79,3.55,3.06,6.07h-6.95c-.12-.85-.49-1.52-1.12-2.02-.63-.5-1.46-.75-2.49-.75-.88,0-1.55.17-2.02.51-.47.34-.7.8-.7,1.39,0,.7.37,1.23,1.12,1.58s1.91.7,3.5,1.06c1.82.47,3.3.93,4.44,1.39,1.14.46,2.15,1.19,3.01,2.2.87,1.01,1.31,2.37,1.34,4.07,0,1.44-.4,2.72-1.21,3.85-.81,1.13-1.97,2.02-3.48,2.66-1.51.65-3.26.97-5.26.97-2.14,0-4.05-.37-5.72-1.1Z"></path>
+      <path fill="#2c2e3c" d="M273.71,64.7v6.38h-3.83c-2.73,0-4.85-.67-6.38-2-1.53-1.33-2.29-3.51-2.29-6.53v-9.77h-2.99v-6.25h2.99v-5.98h7.52v5.98h4.93v6.25h-4.93v9.86c0,.73.18,1.26.53,1.58.35.32.94.48,1.76.48h2.68Z"></path>
+      <path fill="#2c2e3c" d="M276.06,52.11c.95-1.91,2.25-3.37,3.89-4.4,1.64-1.03,3.48-1.54,5.5-1.54,1.73,0,3.25.35,4.55,1.06,1.31.7,2.31,1.63,3.01,2.77v-3.48h7.52v24.55h-7.52v-3.48c-.73,1.14-1.75,2.07-3.06,2.77-1.31.7-2.82,1.06-4.55,1.06-2,0-3.81-.52-5.46-1.56-1.64-1.04-2.94-2.52-3.89-4.44-.95-1.92-1.43-4.14-1.43-6.67s.48-4.74,1.43-6.64ZM291.46,54.36c-1.04-1.08-2.31-1.63-3.81-1.63s-2.77.54-3.81,1.61c-1.04,1.07-1.56,2.55-1.56,4.42s.52,3.37,1.56,4.47c1.04,1.1,2.31,1.65,3.81,1.65s2.76-.54,3.81-1.63c1.04-1.08,1.56-2.57,1.56-4.44s-.52-3.36-1.56-4.44Z"></path>
+      <path fill="#2c2e3c" d="M316.56,52.77h-4.05v18.3h-7.52v-18.3h-2.73v-6.25h2.73v-.7c0-3.02.86-5.32,2.6-6.89,1.73-1.57,4.27-2.35,7.61-2.35.56,0,.97.02,1.23.04v6.38c-1.44-.09-2.45.12-3.04.62-.59.5-.88,1.39-.88,2.68v.22h4.05v6.25Z"></path>
+      <path fill="#2c2e3c" d="M330.64,52.77h-4.05v18.3h-7.52v-18.3h-2.73v-6.25h2.73v-.7c0-3.02.86-5.32,2.6-6.89,1.73-1.57,4.27-2.35,7.61-2.35.56,0,.97.02,1.23.04v6.38c-1.44-.09-2.45.12-3.04.62-.59.5-.88,1.39-.88,2.68v.22h4.05v6.25Z"></path>
+    </g>
+    <path fill="#2c2e3c" d="M336.96,62.08c.73.41,1.3.99,1.7,1.71.41.73.61,1.55.61,2.47s-.2,1.74-.61,2.47c-.41.73-.97,1.3-1.7,1.71-.73.41-1.55.62-2.47.62s-1.74-.21-2.47-.62c-.73-.41-1.3-.98-1.71-1.71-.41-.73-.62-1.55-.62-2.47s.21-1.74.62-2.47c.41-.73.98-1.3,1.71-1.71.73-.41,1.55-.62,2.47-.62s1.74.21,2.47.62ZM337.15,68.98c.67-.69,1-1.59,1-2.71s-.33-2.02-1-2.71-1.55-1.04-2.66-1.04-2.01.35-2.67,1.04c-.66.69-.99,1.6-.99,2.71s.33,2.02.99,2.71c.66.69,1.55,1.03,2.67,1.03s1.99-.34,2.66-1.03ZM336.35,66.23c-.17.25-.4.44-.69.56l1.22,1.89h-1.75l-1.01-1.72h-.16v1.72h-1.45v-4.94h2.32c.54,0,.97.15,1.29.45.32.3.48.69.48,1.16,0,.34-.08.63-.25.89ZM333.96,65.78h.78c.12,0,.23-.03.31-.1.08-.07.13-.16.13-.29s-.04-.21-.13-.28c-.08-.06-.19-.09-.31-.09h-.78v.76Z"></path>
+  </g>
+</svg><small id="brandSub"></small></div>
+    <div class="nav-label">Workspace</div>
+    <nav class="nav">
+      <a data-page="signs" class="active"><i class="fa-solid fa-triangle-exclamation"></i>Warning signs</a>
+      <a data-page="dict"><i class="fa-solid fa-book"></i>Data dictionary</a>
+    </nav>
+    <div class="nav-label">Method</div>
+    <nav class="nav">
+      <a data-page="method"><i class="fa-solid fa-clipboard-check"></i>Method &amp; QA</a>
+    </nav>
+    <div class="side-box">
+      <div class="nav-label" style="margin:0"><i class="fa-solid fa-file-export"></i> Data</div>
+      <button class="btn btn-teal" id="btnSigns"><i class="fa-solid fa-file-csv"></i>Warning signs (CSV)</button>
+      <button class="btn btn-blue" id="btnDict"><i class="fa-solid fa-file-csv"></i>Data dictionary (CSV)</button>
+    </div>
+    <div class="side-foot"><i class="fa-solid fa-database"></i> <span id="sourceTxt"></span>, to <span id="extractTxt"></span><br>Built <span id="builtTxt"></span></div>
+  </aside>
+
+  <!-- ================= main ================= -->
+  <main class="main">
+    <div class="topbar">
+      <div class="crumbs"><span id="crumbRoot"></span> &nbsp;<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>&nbsp; <b id="crumbPage">Warning signs</b></div>
+      <div class="grow"></div>
+      <div class="chip"><i class="fa-regular fa-calendar"></i><span id="dateChip"></span></div>
+    </div>
+    <div class="page-head">
+      <div><h1 id="pageTitle">Warning signs</h1><p id="pageSub"></p></div>
+    </div>
+
+    <!-- ================= Page 1: warning signs (the one-pager) ================= -->
+    <section class="page show" id="p-signs">
+      <div class="info" id="signsInfo"></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="legend-row" id="kindLegend"></div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Warning signs: 5+ staff</h3><span id="h5">times as likely to churn</span></div>
+          <div class="card-body"><div class="chart xtall"><canvas id="cSigns5"></canvas></div><div class="note" id="nSigns5"></div></div></div>
+        <div class="card"><div class="card-head"><h3>Warning signs: 1–4 staff</h3><span id="h1">times as likely to churn</span></div>
+          <div class="card-body"><div class="chart xtall"><canvas id="cSigns1"></canvas></div><div class="note" id="nSigns1"></div></div></div>
+      </div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Two signs together: 5+ staff</h3><span>share that went on to churn</span></div>
+          <div class="card-body"><div class="chart xtall"><canvas id="cCombo5"></canvas></div><div class="note" id="nCombo5"></div></div></div>
+        <div class="card"><div class="card-head"><h3>Two signs together: 1–4 staff</h3><span>share that went on to churn</span></div>
+          <div class="card-body"><div class="chart xtall"><canvas id="cCombo1"></canvas></div><div class="note" id="nCombo1"></div></div></div>
+      </div>
+      <div class="warn" id="signsWarn"></div>
+    </section>
+
+    <!-- ================= Page 2: data dictionary ================= -->
+    <section class="page" id="p-dict">
+      <div class="info"><i class="fa-solid fa-route"></i> <b>How to trace any number on the Warning signs page:</b> the code on each bar (for example <span class="idtag">A1</span>)
+        is an <b>indicator</b> below. Each indicator is a test on one <b>feature</b>, each feature is built from <b>timeline columns</b>, and each timeline column comes from a <b>source file</b>.
+        Click a code or a column name to jump to its row. Clicking a bar on the Warning signs page also brings you here.</div>
+      <div class="card"><div class="card-head"><h3>What counts as churn</h3><span>the outcome every chart measures</span></div>
+        <div class="card-body"><div class="tbl-wrap" id="tOutcome"></div><div class="note" id="nOutcome"></div></div></div>
+      <div class="card"><div class="card-head"><h3>1 · Indicators on the Warning signs page</h3><span>each is a yes/no test at the snapshot</span></div>
+        <div class="card-body"><div class="tbl-wrap full" id="tInd"></div><div class="note">"How common" is the share of client-months where the sign was present. A sign that most clients have is not used in the two-signs charts, because it is the normal state rather than a warning.</div></div></div>
+      <div class="card"><div class="card-head"><h3>2 · Features</h3><span>what each client looked like at the snapshot</span></div>
+        <div class="card-body"><div class="tbl-wrap full" id="tFeat"></div><div class="note">"Per 10 staff" divides by staff at the snapshot, so large and small clients compare fairly. Windows end the day before the snapshot, so no feature uses anything from the 3 months being predicted.</div></div></div>
+      <div class="card"><div class="card-head"><h3>3 · Timeline columns</h3><span>one row per client per day with any event</span></div>
+        <div class="card-body"><div class="tbl-wrap" id="tTl"></div></div></div>
+      <div class="card"><div class="card-head"><h3>4 · Source files</h3><span>as loaded, before any cleaning</span></div>
+        <div class="card-body"><div class="tbl-wrap" id="tSrc"></div></div></div>
+    </section>
+
+    <!-- ================= Method and QA ================= -->
+    <section class="page" id="p-method">
+      <div class="card"><div class="card-head"><h3>How the numbers are worked out</h3><span>definitions</span></div>
+        <div class="card-body" id="methodBox"></div></div>
+      <div class="card"><div class="card-head"><h3>Reconciliation</h3><span>exits in the window to seats counted as churn</span></div>
+        <div class="card-body"><div class="tbl-wrap" id="tQa"></div><div class="note">Each "of which" line is a separate group of exits; together they add up to the total.</div></div></div>
+    </section>
+  </main>
+</div>
+
+<!-- embedded data (built by .claude/skills/cs-dashboard/scripts/build_dashboard.py) -->
+<script id="data" type="application/json">{"meta":{"title":"Churn warning signs","subtitle":"What comes before client churn","source":"SC Engagement List, PB-4108 tickets, attendance and payment logs","extract":"2026-11-13","first_month":"2024-04","last_month":"2026-08","generated":"2026-11-17T19:41:15","horizon_days":90,"high_churn":0.2,"outcome_exclude":["exit_client_business_reasons"],"min_event_months":30,"min_pair_months":30,"max_prevalence":0.5,"test_from":"2026-01-01"},"bands":[{"band":"1–4 staff","outcome":"lose all their seats","outcome_col":"full_exit_next_3m","client_months":18426,"clients":1342,"churned_months":885,"base_rate":0.04803,"auc_early":0.66691,"auc_full":0.69503,"auc_early_new_clients":0.657989,"auc_full_new_clients":0.686662},{"band":"5+ staff","outcome":"lose 20%+ of their seats","outcome_col":"high_churn","client_months":6369,"clients":348,"churned_months":359,"base_rate":0.056367,"auc_early":0.565965,"auc_full":0.634569,"auc_early_new_clients":0.592404,"auc_full_new_clients":0.621102}],"indicators":[{"id":"A1","name":"Absences at 2x normal","kind":"act","kind_name":"Early sign we can act on","test":"Absences per 10 staff in the 3 months before the snapshot are at least twice the average of clients in the same size band that month.","feature":"absence_index","feature_label":"Absences (vs average)","shown_in":["Warning signs ranked"],"prevalence":{"1–4 staff":0.148322,"5+ staff":0.12249}},{"id":"A2","name":"Late arrivals at 2x normal","kind":"act","kind_name":"Early sign we can act on","test":"Late arrivals per 10 staff in the 3 months before the snapshot are at least twice the average of clients in the same size band that month.","feature":"tardiness_index","feature_label":"Late arrivals (vs average)","shown_in":["Warning signs ranked","Combinations (5+ staff)"],"prevalence":{"1–4 staff":0.167047,"5+ staff":0.160622}},{"id":"A3","name":"No call no shows at 2x normal","kind":"act","kind_name":"Early sign we can act on","test":"No call no shows per 10 staff in the 3 months before the snapshot are at least twice the average of clients in the same size band that month.","feature":"ncns_index","feature_label":"No call no shows (vs average)","shown_in":["Warning signs ranked","Combinations (5+ staff)"],"prevalence":{"1–4 staff":0.057365,"5+ staff":0.163291}},{"id":"A4","name":"Staff let go by Cloudstaff (AWOL, behaviour, fraud)","kind":"act","kind_name":"Early sign we can act on","test":"At least one exit in the last 3 months that Cloudstaff initiated (AWOL, behaviour, fraud, failed review, non-payment suspension, ...).","feature":"cloudstaff_exits_per10_3m","feature_label":"Cloudstaff-initiated exits per 10 staff","shown_in":["Warning signs ranked"],"prevalence":{"1–4 staff":0.003473,"5+ staff":0.048987}},{"id":"A5","name":"A staff member resigned","kind":"act","kind_name":"Early sign we can act on","test":"At least one staff resignation in the last 3 months.","feature":"resignations_per10_3m","feature_label":"Staff resignations per 10 staff, last 3 months","shown_in":["Warning signs ranked","Combinations (1–4 staff)"],"prevalence":{"1–4 staff":0.041463,"5+ staff":0.286701}},{"id":"A6","name":"Staff exit for service dissatisfaction","kind":"act","kind_name":"Early sign we can act on","test":"At least one exit in the last 3 months that the client initiated for service dissatisfaction (performance, attendance, conduct).","feature":"service_dissatisfaction_per10_3m","feature_label":"Exits for service dissatisfaction per 10 staff","shown_in":["Warning signs ranked","Combinations (5+ staff)"],"prevalence":{"1–4 staff":0.032725,"5+ staff":0.195478}},{"id":"A7","name":"Paid an invoice late","kind":"act","kind_name":"Early sign we can act on","test":"At least one month in the last 6 with an invoice paid later than the client's terms.","feature":"late_payment_months_6m","feature_label":"Late-payment months, last 6","shown_in":["Warning signs ranked"],"prevalence":{"1–4 staff":0.710681,"5+ staff":0.769823}},{"id":"A8","name":"Unresponsive about a late payment","kind":"act","kind_name":"Early sign we can act on","test":"A late payment in the last 6 months whose Cause of Delay is 'Client unresponsive'.","feature":"late_payment_unresponsive_6m","feature_label":"Late payment, client unresponsive","shown_in":[],"prevalence":{"1–4 staff":0.424617,"5+ staff":0.436332}},{"id":"P1","name":"Headcount down 10%+ in 6 months","kind":"profile","kind_name":"Client profile","test":"Staff at the snapshot are at least 10% below staff 6 months earlier.","feature":"headcount_change_6m","feature_label":"Headcount change, last 6 months","shown_in":["Warning signs ranked","Combinations (5+ staff)"],"prevalence":{"1–4 staff":0.128988,"5+ staff":0.168645}},{"id":"P2","name":"Client for less than a year","kind":"profile","kind_name":"Client profile","test":"The client's first engagement started less than a year before the snapshot.","feature":"client_age_years","feature_label":"Years since first engagement","shown_in":["Warning signs ranked"],"prevalence":{"1–4 staff":0.343862,"5+ staff":0.09719}},{"id":"P3","name":"Smallest clients in the band (1–2 or 5–9 staff)","kind":"profile","kind_name":"Client profile","test":"1–2 staff (in the 1–4 band) or 5–9 staff (in the 5+ band) at the snapshot.","feature":"staff","feature_label":"Staff at snapshot","shown_in":[],"prevalence":{"1–4 staff":0.777814,"5+ staff":0.542}},{"id":"L1","name":"Client gave notice in the last month","kind":"late","kind_name":"Late stage: client already leaving","test":"At least one disengagement notice with a client reason, dated in the 31 days before the snapshot.","feature":"client_notices_per10_1m","feature_label":"Client-initiated notices per 10 staff, last month","shown_in":["Warning signs ranked"],"prevalence":{"1–4 staff":0.03571,"5+ staff":0.149317}},{"id":"L2","name":"Already lost 20%+ of seats recently","kind":"late","kind_name":"Late stage: client already leaving","test":"Seats lost (all reasons) in the 3 months before the snapshot are 20%+ of staff.","feature":"seat_churn_last_3m","feature_label":"Seat churn in the previous 3 months","shown_in":["Warning signs ranked"],"prevalence":{"1–4 staff":0.071041,"5+ staff":0.073324}},{"id":"L3","name":"Lost a seat recently","kind":"late","kind_name":"Late stage: client already leaving","test":"At least one seat lost (all reasons) in the 3 months before the snapshot.","feature":"seat_churn_last_3m","feature_label":"Seat churn in the previous 3 months","shown_in":["Combinations (5+ staff)","Combinations (1–4 staff)"],"prevalence":{"1–4 staff":0.071041,"5+ staff":0.30303}},{"id":"L4","name":"Client not replacing staff (pulling out, budget)","kind":"late","kind_name":"Late stage: client already leaving","test":"At least one exit in the last 3 months not replaced because the client is pulling out, cutting budget, moving onshore or unresponsive.","feature":"client_risk_not_replaced_3m","feature_label":"Not replaced: client pull-out, budget, onshore","shown_in":["Combinations (5+ staff)","Combinations (1–4 staff)"],"prevalence":{"1–4 staff":0.025779,"5+ staff":0.084472}},{"id":"L5","name":"Staff exit for business reasons","kind":"late","kind_name":"Late stage: client already leaving","test":"At least one exit in the last 3 months that the client initiated for business reasons (restructure, slow down, downsizing, budget).","feature":"business_reason_exits_per10_3m","feature_label":"Exits for client business reasons per 10 staff","shown_in":[],"prevalence":{"1–4 staff":0.0305,"5+ staff":0.119014}}],"signs":[{"id":"A1","band":"1–4 staff","x":1.509991,"lo":1.170226,"hi":1.960532,"churn_with":0.069569,"churn_without":0.046073,"months_with":2113,"clear":true},{"id":"A1","band":"5+ staff","x":2.431785,"lo":1.32272,"hi":3.845183,"churn_with":0.122517,"churn_without":0.050381,"months_with":604,"clear":true},{"id":"A2","band":"1–4 staff","x":1.308829,"lo":1.054056,"hi":1.599487,"churn_with":0.059779,"churn_without":0.045674,"months_with":3078,"clear":true},{"id":"A2","band":"5+ staff","x":2.074055,"lo":1.534731,"hi":2.806796,"churn_with":0.099707,"churn_without":0.048073,"months_with":1023,"clear":true},{"id":"A3","band":"1–4 staff","x":1.433289,"lo":1.060245,"hi":1.920341,"churn_with":0.067171,"churn_without":0.046865,"months_with":1057,"clear":true},{"id":"A3","band":"5+ staff","x":1.516863,"lo":0.999063,"hi":2.07187,"churn_with":0.078846,"churn_without":0.05198,"months_with":1040,"clear":false},{"id":"A4","band":"1–4 staff","x":0.649844,"lo":0.0,"hi":1.640673,"churn_with":0.03125,"churn_without":0.048088,"months_with":64,"clear":false},{"id":"A4","band":"5+ staff","x":2.502993,"lo":1.252098,"hi":4.301302,"churn_with":0.13141,"churn_without":0.052501,"months_with":312,"clear":true},{"id":"A5","band":"1–4 staff","x":1.74156,"lo":1.132398,"hi":2.402096,"churn_with":0.081152,"churn_without":0.046597,"months_with":764,"clear":true},{"id":"A5","band":"5+ staff","x":1.113559,"lo":0.701231,"hi":1.556917,"churn_with":0.060789,"churn_without":0.054589,"months_with":1826,"clear":false},{"id":"A6","band":"1–4 staff","x":1.108829,"lo":0.610964,"hi":1.671685,"churn_with":0.053068,"churn_without":0.04786,"months_with":603,"clear":false},{"id":"A6","band":"5+ staff","x":1.545345,"lo":1.041973,"hi":2.249534,"churn_with":0.078715,"churn_without":0.050937,"months_with":1245,"clear":true},{"id":"A7","band":"1–4 staff","x":0.751371,"lo":0.614438,"hi":0.905225,"churn_with":0.043834,"churn_without":0.058338,"months_with":13095,"clear":true},{"id":"A7","band":"5+ staff","x":1.212848,"lo":0.805748,"hi":1.87346,"churn_with":0.05874,"churn_without":0.048431,"months_with":4903,"clear":false},{"id":"P1","band":"1–4 staff","x":2.023112,"lo":1.521087,"hi":2.570183,"churn_with":0.079641,"churn_without":0.039366,"months_with":1896,"clear":true},{"id":"P1","band":"5+ staff","x":2.34322,"lo":1.632071,"hi":3.169996,"churn_with":0.102218,"churn_without":0.043623,"months_with":1037,"clear":true},{"id":"P2","band":"1–4 staff","x":1.358215,"lo":1.109762,"hi":1.658035,"churn_with":0.058081,"churn_without":0.042763,"months_with":6336,"clear":true},{"id":"P2","band":"5+ staff","x":1.680608,"lo":1.014364,"hi":2.703719,"churn_with":0.088853,"churn_without":0.05287,"months_with":619,"clear":true},{"id":"L1","band":"1–4 staff","x":4.733601,"lo":4.030415,"hi":5.579973,"churn_with":0.200608,"churn_without":0.04238,"months_with":658,"clear":true},{"id":"L1","band":"5+ staff","x":1.877953,"lo":1.329449,"hi":2.594616,"churn_with":0.093586,"churn_without":0.049834,"months_with":951,"clear":true},{"id":"L2","band":"1–4 staff","x":1.972512,"lo":1.429553,"hi":2.463073,"churn_with":0.088617,"churn_without":0.044926,"months_with":1309,"clear":true},{"id":"L2","band":"5+ staff","x":3.800593,"lo":2.653238,"hi":4.961948,"churn_with":0.17773,"churn_without":0.046764,"months_with":467,"clear":true}],"combos":[{"band":"5+ staff","id1":"A2","id2":"A6","only1":0.077411,"only2":0.056436,"both":0.174468,"neither":0.046125,"months_both":235,"lift":2.253784,"lift_lo":1.245585,"lift_hi":3.545821},{"band":"5+ staff","id1":"A2","id2":"L3","only1":0.071531,"only2":0.063512,"both":0.160494,"neither":0.041444,"months_both":324,"lift":2.243704,"lift_lo":1.263308,"lift_hi":3.191757},{"band":"5+ staff","id1":"A3","id2":"L4","only1":0.069003,"only2":0.065693,"both":0.149606,"neither":0.050834,"months_both":127,"lift":2.168104,"lift_lo":1.004424,"lift_hi":3.235736},{"band":"5+ staff","id1":"A2","id2":"P1","only1":0.077124,"only2":0.084423,"both":0.178571,"neither":0.037727,"months_both":196,"lift":2.115191,"lift_lo":1.040954,"lift_hi":2.896563},{"band":"1–4 staff","id1":"A5","id2":"L4","only1":0.049521,"only2":0.077151,"both":0.224638,"neither":0.046003,"months_both":138,"lift":2.91165,"lift_lo":1.554612,"lift_hi":5.350806},{"band":"1–4 staff","id1":"A5","id2":"L3","only1":0.018767,"only2":0.066449,"both":0.140665,"neither":0.045509,"months_both":391,"lift":2.116892,"lift_lo":1.246111,"lift_hi":3.542888}],"features":[{"feature":"ncns_index","label":"No call no shows (vs average)","group":"Driver: attendance","window":"3 months","built_from":["ncns_incidents","active_staff"],"how":"NCNS per 10 staff, divided by the average for the same size band that month (1.0 = average).","indicators":["A3"],"models":"early-signal and full"},{"feature":"tardiness_index","label":"Late arrivals (vs average)","group":"Driver: attendance","window":"3 months","built_from":["tardiness_incidents","active_staff"],"how":"Late arrivals per 10 staff, divided by the same-band average that month.","indicators":["A2"],"models":"early-signal and full"},{"feature":"absence_index","label":"Absences (vs average)","group":"Driver: attendance","window":"3 months","built_from":["absence_incidents","active_staff"],"how":"Absences per 10 staff, divided by the same-band average that month. Blank after the absence log ends.","indicators":["A1"],"models":"early-signal and full"},{"feature":"any_ncns_3m","label":"Any no call no show, last 3 months","group":"Driver: attendance","window":"3 months","built_from":["ncns_incidents"],"how":"1 if any no call no show, else 0.","indicators":[],"models":"early-signal and full"},{"feature":"any_tardiness_3m","label":"Any late arrival, last 3 months","group":"Driver: attendance","window":"3 months","built_from":["tardiness_incidents"],"how":"1 if any late arrival, else 0.","indicators":[],"models":"early-signal and full"},{"feature":"any_absence_3m","label":"Any absence, last 3 months","group":"Driver: attendance","window":"3 months","built_from":["absence_incidents"],"how":"1 if any absence, else 0. Blank after the absence log ends.","indicators":[],"models":"early-signal and full"},{"feature":"late_payment_months_6m","label":"Late-payment months, last 6","group":"Driver: payments","window":"6 months","built_from":["late_payment"],"how":"Number of months paid late.","indicators":["A7"],"models":"early-signal and full"},{"feature":"late_payment_share_6m","label":"Share of invoices paid late, last 6 months","group":"Driver: payments","window":"6 months","built_from":["late_payment","late_payment_reported"],"how":"Months paid late / months in the payment report.","indicators":[],"models":"early-signal and full"},{"feature":"late_payment_unresponsive_6m","label":"Late payment, client unresponsive","group":"Driver: payments","window":"6 months","built_from":["late_payment_cause_client_unresponsive"],"how":"1 if any late month with Cause of Delay 'Client unresponsive'.","indicators":["A8"],"models":"early-signal and full"},{"feature":"resignations_per10_3m","label":"Staff resignations per 10 staff, last 3 months","group":"Driver: staff","window":"3 months","built_from":["exit_staff_resignation","active_staff"],"how":"Resignations per 10 staff.","indicators":["A5"],"models":"early-signal and full"},{"feature":"cloudstaff_exits_per10_3m","label":"Cloudstaff-initiated exits per 10 staff","group":"Driver: staff","window":"3 months","built_from":["exit_cloudstaff_initiated","active_staff"],"how":"Cloudstaff-initiated exits per 10 staff.","indicators":["A4"],"models":"early-signal and full"},{"feature":"headcount_change_6m","label":"Headcount change, last 6 months","group":"Profile","window":"6 months","built_from":["active_staff"],"how":"Staff at the snapshot / staff 6 months earlier - 1.","indicators":["P1"],"models":"early-signal and full"},{"feature":"staff","label":"Staff at snapshot","group":"Profile","window":"at the snapshot","built_from":["active_staff"],"how":"Active staff at the start of the snapshot day.","indicators":["P3"],"models":"early-signal and full"},{"feature":"client_age_years","label":"Years since first engagement","group":"Profile","window":"at the snapshot","built_from":["(SC Engagement List: earliest Engagement Date of the client)"],"how":"Years since the client's first engagement.","indicators":["P2"],"models":"early-signal and full"},{"feature":"service_dissatisfaction_per10_3m","label":"Exits for service dissatisfaction per 10 staff","group":"Early warning","window":"3 months","built_from":["exit_client_service_dissatisfaction","active_staff"],"how":"Service-dissatisfaction exits per 10 staff.","indicators":["A6"],"models":"full only"},{"feature":"business_reason_exits_per10_3m","label":"Exits for client business reasons per 10 staff","group":"Early warning","window":"3 months","built_from":["exit_client_business_reasons","active_staff"],"how":"Business-reason exits per 10 staff.","indicators":["L5"],"models":"full only"},{"feature":"client_risk_not_replaced_3m","label":"Not replaced: client pull-out, budget, onshore","group":"Early warning","window":"3 months","built_from":["exit_not_replaced_client_risk"],"how":"1 if any exit not replaced for a client-risk reason.","indicators":["L4"],"models":"full only"},{"feature":"client_notices_per10_1m","label":"Client-initiated notices per 10 staff, last month","group":"Early warning","window":"1 month","built_from":["exit_notices_client_initiated","active_staff"],"how":"Client-initiated notices per 10 staff.","indicators":["L1"],"models":"full only"},{"feature":"seat_churn_last_3m","label":"Seat churn in the previous 3 months","group":"Early warning","window":"3 months","built_from":["seat_exit","exit_record_only","exit_replaced","active_staff"],"how":"Seats lost (exits not record-only and not replaced, all reasons) / staff.","indicators":["L2","L3"],"models":"full only"}],"timeline":[{"field":"active_staff","source":"Derived from SC Engagement List (Engagement Raw A:N)","definition":"Headcount at the client after the day's starts and exits.","derivation":"Running total of seat_added - seat_exit per Shortcode, in date order."},{"field":"seat_exit","source":"SC Engagement List (Engagement Raw A:N)","definition":"Staff who left the client that day (any reason).","derivation":"Count of engagements with disengagement_date = date. Still-active engagements (blank, today's or a future end date) are left out. Equals the sum of the exit_ reason columns, and of the three replacement columns."},{"field":"exit_staff_resignation","source":"UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)","definition":"Exits where the staff member left by choice.","derivation":"Exits only. Reason from the matched UB4108 ticket, first rule that applies: no ticket or cancelled ticket -> unknown; record only; Cloudstaff initiated; client reason (Type of Customer Initiated); Voluntary -> resignation. Here: 'Reason for Disengagement' = Voluntary, with no client reason."},{"field":"exit_client_service_dissatisfaction","source":"UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)","definition":"Exits the client initiated because it was unhappy with the staff member's service (performance, attendance, code of conduct).","derivation":"Exits only. Reason from the matched UB4108 ticket, first rule that applies: no ticket or cancelled ticket -> unknown; record only; Cloudstaff initiated; client reason (Type of Customer Initiated); Voluntary -> resignation. Here: 'Type of Customer Initiated' = Service Dissatisfaction."},{"field":"exit_client_business_reasons","source":"UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)","definition":"Exits the client initiated for its own business reasons (restructure, slowdown, role moved).","derivation":"Exits only. Reason from the matched UB4108 ticket, first rule that applies: no ticket or cancelled ticket -> unknown; record only; Cloudstaff initiated; client reason (Type of Customer Initiated); Voluntary -> resignation. Here: 'Type of Customer Initiated' = Business Reasons."},{"field":"exit_cloudstaff_initiated","source":"UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)","definition":"Exits Cloudstaff initiated (AWOL, behaviour, fraud, attendance, medical).","derivation":"Exits only. Reason from the matched UB4108 ticket, first rule that applies: no ticket or cancelled ticket -> unknown; record only; Cloudstaff initiated; client reason (Type of Customer Initiated); Voluntary -> resignation. Here: 'Type of Involuntary' = Cloudstaff Initiated."},{"field":"exit_record_only","source":"UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)","definition":"Exits recorded for documentation only, e.g. a move to OfficeFLEX; not a real loss of the staff member.","derivation":"Exits only. Reason from the matched UB4108 ticket, first rule that applies: no ticket or cancelled ticket -> unknown; record only; Cloudstaff initiated; client reason (Type of Customer Initiated); Voluntary -> resignation. Here: 'Reason for Disengagement' = For Record Purpose Only, or 'Type of Disengagement' = Disengagement For Documentation."},{"field":"exit_replaced","source":"UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)","definition":"Exits where the client will fill the seat again.","derivation":"Exits whose ticket 'Type of Disengagement' is Disengagement with Replacement or Resignation with Replacement."},{"field":"exit_not_replaced_client_risk","source":"UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)","definition":"Not-replaced exits whose reason points to the client shrinking or leaving. A subset of exit_not_replaced.","derivation":"exit_not_replaced exits whose 'Reason for NO Replacement' is client pull out, Subclient pulling out/not replacing, Budget constraints, Moving onshore/other provider, or client has gone unresponsive. Operational reasons (no Backfill classes scheduled, no active projects, changed mind) are not counted."},{"field":"exit_notices_client_initiated","source":"UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)","definition":"The client-initiated part of exit_notices_received.","derivation":"exit_notices_received tickets whose exit reason is one of the exit_client_ columns."},{"field":"ncns_incidents","source":"NCNS.xlsx, 'NCNS' tab (no call no show log)","definition":"No call no shows that day: staff on the client who neither turned up nor notified, with no logs. Counts from Jan 2026 are about 10x earlier years because recording changed (automatic detection from 2026), so compare clients within the same period, not across years.","derivation":"NCNS 'NCNS' tab rows (Attendance = NCNS, Actual NCNS = No logs), counted only when the staff member was on an engagement with that client on that date: 'Client Shortcode' = engagement Shortcode, 'Employee ID' = engagement CSID, and engagement_date <= Date <= disengagement_date. Other records are in ncns_unmatched. Does not change active_staff."},{"field":"tardiness_incidents","source":"Tardiness.xlsx, 'Tardiness' tab (late arrival log)","definition":"Late arrivals that day by staff on the client. Automatic recording started in Q3 2026, so that quarter's counts are about 3x earlier quarters.","derivation":"Tardiness rows (all Attendance = Late), counted only when the staff member was on an engagement with that client on that date: 'Client Shortcode' = engagement Shortcode, 'Employee ID' = engagement CSID, and engagement_date <= Date <= disengagement_date. Records also in NCNS.xlsx (same Log ID) are left out, as they are counted in ncns_incidents. Other records are in tardiness_unmatched. Does not change active_staff."},{"field":"absence_incidents","source":"Absences.xlsx, 'Absences' tab (notified absence log)","definition":"Staff on the client who were absent that day with notice (any reason: health, caring, personal, weather…). The absence file ends on 16 Feb 2026: after that date zero means no data, not no absences.","derivation":"Absences rows, counted only when the staff member was on an engagement with that client on that date: 'Shortcode' = engagement Shortcode and 'CSID' = engagement CSID; records that don't match on CSID (it is blank on about 1 in 8 rows) are tried on 'Username' = engagement Username before the @; and engagement_date <= Date <= disengagement_date. At most one per staff member per day (the file repeats some). The same staff-day can also appear in ncns_incidents or tardiness_incidents. Other records are in absences_unmatched. Does not change active_staff."},{"field":"late_payment_reported","source":"Late Payments.xlsx, sheets 2023-2026 (monthly days to pay and late flag per client)","definition":"1 on the 15th of each month the client was in the late-payment report (it had an invoice). Lets late_payment = 0 be read as 'paid on time' rather than 'no data'.","derivation":"One per client per month where the days-to-pay column for that month is above 0, placed on the 15th of the month, only when the client had at least one active engagement that day ('Mystaff Shortcode' = engagement Shortcode). Other client-months are in late_payments_unmatched."},{"field":"late_payment","source":"Late Payments.xlsx, sheets 2023-2026 (monthly days to pay and late flag per client)","definition":"1 on the 15th of a month in which the client paid its invoice late.","derivation":"The sheet's 1/0 flag for that month (the second block of month columns, headers ending '.1'); it equals days to pay > the client's Terms in every row. Same placement as late_payment_reported."},{"field":"late_payment_cause_client_unresponsive","source":"Late Payments.xlsx, sheets 2023-2026 (monthly days to pay and late flag per client)","definition":"1 on a late month when the client's Cause of Delay that year is 'Client unresponsive'.","derivation":"late_payment = 1 and that sheet's 'Cause of Delay' = Client unresponsive. Cause of Delay is one value per client per year, so it marks every late month that year."}],"sources":[{"dataset":"Engagement Raw","source":"Churn Analysis workbook · Engagement Raw","rows":31126,"columns":35,"date column":"Engagement Date / Disengagement Date","min date":"1995-05-13","max date":"2026-10-31"},{"dataset":"UB4108","source":"PB-4108.xlsx · UB Staff Disengagement","rows":14802,"columns":117,"date column":"Submitted at","min date":"2020-05-07","max date":"2026-11-14"},{"dataset":"UB Retraction","source":"Churn Analysis workbook · UB Retraction","rows":636,"columns":17,"date column":"Submitted at","min date":"2024-04-04","max date":"2026-11-10"},{"dataset":"PB-4136 CS Now","source":"Churn Analysis workbook · PB-4136 CSNOW Churn","rows":113,"columns":16,"date column":"Submitted At","min date":"2025-01-02","max date":"2026-11-09"},{"dataset":"Mystaff Lookup","source":"Churn Analysis workbook · Mystaff Lookup","rows":2805,"columns":3,"date column":"(no dates)","min date":null,"max date":null},{"dataset":"Reference","source":"Churn Analysis workbook · Reference","rows":2708,"columns":16,"date column":"(no dates)","min date":null,"max date":null},{"dataset":"Settings","source":"Churn Analysis workbook · Settings","rows":21,"columns":4,"date column":"(no dates)","min date":null,"max date":null},{"dataset":"Client Raw","source":"Churn Analysis workbook · Client Raw","rows":9719,"columns":33,"date column":"Month","min date":"2026-01-01","max date":"2026-10-01"},{"dataset":"Client Table","source":"Churn Analysis workbook · Client Table","rows":1196,"columns":21,"date column":"First start date","min date":"2011-08-02","max date":"2026-10-29"},{"dataset":"NCNS","source":"NCNS.xlsx · NCNS","rows":22447,"columns":27,"date column":"Date","min date":"2023-01-01","max date":"2026-09-18"},{"dataset":"Tardiness","source":"Tardiness.xlsx · Tardiness","rows":14638,"columns":27,"date column":"Date","min date":"2023-01-01","max date":"2026-09-18"},{"dataset":"Absences","source":"Absences.xlsx · Absences","rows":79753,"columns":17,"date column":"Date","min date":"2023-01-01","max date":"2026-02-16"},{"dataset":"Late Payments","source":"Late Payments.xlsx · 2023-2026 (client-months)","rows":31461,"columns":8,"date column":"Month","min date":"2023-01-01","max date":"2026-10-01"}],"qa":[{"step":"Exits from 01 Apr 2024 to 29 Oct 2026 (all clients)","rows":9431},{"step":"  of which record-only (data clean-up, not a real exit)","rows":117},{"step":"  of which replaced (the client kept the seat)","rows":1880},{"step":"  of which business reasons, not replaced (market churn, not counted)","rows":1185},{"step":"  = seats lost that count as churn","rows":6249},{"step":"Client-months, clients with 1–4 staff (CS and OPTI clients)","rows":18426},{"step":"  of which churned (lose all their seats in the next 3 months)","rows":885},{"step":"Client-months, clients with 5+ staff (CS and OPTI clients)","rows":6369},{"step":"  of which churned (lose 20%+ of their seats in the next 3 months)","rows":359}]}</script>
+
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = id => document.getElementById(id);
+
+// ---- palette (brand order) and fixed colour per kind of sign
+const PALETTE = ['#007AFF', '#00AB9C', '#FFC426', '#E34678', '#4121A9', '#AA67FD', '#F46600', '#36D6E7', '#87DD7D', '#50505C'];
+const GREY = '#C9D2E1';
+const KIND_COLOUR = {act: '#007AFF', profile: '#50505C', late: '#F46600'};
+const KIND_NAME = {act: 'Early sign we can act on', profile: 'Client profile', late: 'Late stage: client already leaving'};
+const MONTHS_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const monLbl = ym => MONTHS_ABBR[+ym.slice(5, 7) - 1] + ' ' + ym.slice(0, 4);
+
+// ---- formatting
+const sum = a => a.reduce((s, x) => s + x, 0);
+const fmt = (v, d = 0) => v === null || v === undefined || Number.isNaN(v) ? '–' : Number(v).toLocaleString('en-AU', {minimumFractionDigits: d, maximumFractionDigits: d});
+const pct = (v, d = 1) => v === null || v === undefined || Number.isNaN(v) ? '–' : (100 * v).toFixed(d) + '%';
+const xfmt = v => v === null || v === undefined ? '–' : Number(v).toFixed(1) + 'x';
+const esc = s => String(s ?? '').replace(/[&<>"]/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[ch]));
+function wrapWords(s, w) { const out = []; let line = ''; for (const word of String(s).split(' ')) { if ((line + ' ' + word).trim().length > w && line) { out.push(line); line = word; } else line = (line + ' ' + word).trim(); } if (line) out.push(line); return out; }
+
+// ---- Chart.js house style, plus two small plugins: value labels at the bar ends and a reference line
+Chart.defaults.font.family = 'Manrope, Segoe UI, Arial, sans-serif';
+Chart.defaults.color = '#737C90';
+Chart.defaults.borderColor = '#DCE3EE';
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.maintainAspectRatio = false;
+const pctAxis = {ticks: {callback: v => pct(v, 0)}, beginAtZero: true};
+Chart.register({id: 'barLabels', afterDatasetsDraw(chart, args, o) {
+  if (!o || !o.text) return; const ctx = chart.ctx; ctx.save(); ctx.textBaseline = 'middle';
+  chart.data.datasets.forEach((ds, di) => { const meta = chart.getDatasetMeta(di); if (meta.hidden) return;
+    meta.data.forEach((bar, i) => { const t = o.text(di, i); if (!t) return; ctx.font = (t.bold ? '700 ' : '500 ') + '11px Manrope, sans-serif';
+      ctx.fillStyle = t.colour || '#1F2533'; ctx.fillText(t.text, Math.max(bar.x, chart.scales.x.getPixelForValue(t.at ?? 0)) + 6, bar.y); }); });
+  ctx.restore(); }});
+Chart.register({id: 'refLine', afterDatasetsDraw(chart, args, o) {
+  if (!o || o.value === undefined || o.value === null) return; const x = chart.scales.x.getPixelForValue(o.value), {top, bottom} = chart.chartArea, ctx = chart.ctx;
+  ctx.save(); ctx.strokeStyle = o.colour || '#1F2533'; ctx.lineWidth = 1.2; ctx.setLineDash(o.dash || []); ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke();
+  if (o.label) { ctx.setLineDash([]); ctx.fillStyle = '#737C90'; ctx.font = '11px Manrope, sans-serif'; ctx.textBaseline = 'bottom'; ctx.fillText(o.label, x + 4, top - 2); }
+  ctx.restore(); }});
+
+const DATA_OPEN = false;   // "Numbers behind this chart" panels start closed on this exec page
+const charts = {};
+function draw(id, cfg) {
+  const scales = (cfg.options && cfg.options.scales) || {};
+  const isPct = Object.values(scales).some(sc => sc.ticks && sc.ticks.callback);
+  if (charts[id]) charts[id].destroy(); charts[id] = new Chart($(id), cfg); chartData(id, cfg, isPct);
+}
+const dataClosed = {};
+function chartData(id, cfg, isPct) {
+  const body = $(id).closest('.card-body');
+  let box = body.querySelector('details.chart-data');
+  if (!box) {
+    box = document.createElement('details'); box.className = 'chart-data'; box.open = DATA_OPEN;
+    box.innerHTML = '<summary>Numbers behind this chart <button class="btn-mini" type="button">CSV</button></summary><div class="tbl-wrap"></div>';
+    box.ontoggle = () => { dataClosed[id] = !box.open; };
+    body.appendChild(box);
+  }
+  const show = v => v === null || v === undefined || Number.isNaN(v) ? '–' : isPct ? pct(v) : Number.isInteger(v) ? fmt(v) : fmt(v, 2);
+  const sets = cfg.data.datasets, labels = cfg.data.labels.map(l => Array.isArray(l) ? l.join(' ') : l);
+  const cols = [{k: 'label', label: ''}, ...sets.map((d, j) => ({k: 'd' + j, label: esc(d.label) + (isPct ? ' (%)' : ''), n: 1, f: show}))];
+  const rows = labels.map((l, i) => Object.assign({label: l}, ...sets.map((d, j) => ({['d' + j]: d.data[i]}))));
+  table(box.querySelector('.tbl-wrap'), cols, rows);
+  box.querySelector('button').onclick = e => { e.preventDefault(); e.stopPropagation();
+    download(id + '_numbers.csv', rows.map(r => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, isPct && k !== 'label' && typeof v === 'number' ? +(100 * v).toFixed(2) : v]))),
+      cols.map(c => ({k: c.k, label: c.label.replace(/&amp;/g, '&') || 'group'}))); };
+}
+function table(el, cols, rows, opts = {}) {
+  let h = '<table><thead><tr>' + cols.map(c => `<th class="${c.n ? 'n' : ''}">${c.label}</th>`).join('') + '</tr></thead><tbody>';
+  h += rows.map(r => `<tr${opts.rowId ? ` id="${opts.rowId(r)}"` : ''} class="${r._small ? 'small' : ''}">` + cols.map(c => `<td class="${c.n ? 'n' : ''} ${c.cls || ''}">${c.f ? c.f(r[c.k], r) : esc(r[c.k])}</td>`).join('') + '</tr>').join('');
+  el.innerHTML = h + '</tbody></table>';
+}
+function download(name, rows, cols) {
+  const q = v => { const s = v === null || v === undefined ? '' : String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const csv = [cols.map(c => q(c.label)).join(','), ...rows.map(r => cols.map(c => q(r[c.k])).join(','))].join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'})); a.download = name; a.click();
+}
+const kpiTiles = items => items.map(([cls, ic, l, v, s]) => `<div class="kpi ${cls}"><div class="kpi-top"><span class="kpi-icon"><i class="fa-solid ${ic}"></i></span>${esc(l)}</div><div class="kpi-value">${v}</div><div class="kpi-sub">${s}</div></div>`).join('');
+
+// ---- lookups
+const M = D.meta;
+const IND = Object.fromEntries(D.indicators.map(r => [r.id, r]));
+const BAND = Object.fromEntries(D.bands.map(r => [r.band, r]));
+const B5 = '5+ staff', B1 = '1–4 staff';
+const KIND_SHORT = {act: 'Early sign', profile: 'Profile', late: 'Late stage'};
+const kindBadge = k => `<span class="badge k-${k}" title="${esc(KIND_NAME[k])}">${esc(KIND_SHORT[k])}</span>`;
+const shownShort = s => s.replace('Warning signs ranked', 'Ranked chart').replace(/^Combinations \((.*)\)$/, 'Pairs chart, $1');
+const idLink = id => `<a class="jump idtag" data-target="ind-${id}">${id}</a>`;
+const brk = s => esc(s).replace(/_/g, '_<wbr>');   // long column names wrap only at underscores
+const featLink = f => `<a class="jump code" data-target="feat-${f}">${brk(f)}</a>`;
+const colLink = c => c.startsWith('(') ? esc(c) : `<a class="jump code" data-target="tl-${c}">${esc(c)}</a>`;
+
+// ---- header text: every date comes from the data
+document.title = M.title;
+$('brandSub').textContent = M.subtitle; $('crumbRoot').textContent = M.title; $('sourceTxt').textContent = M.source;
+$('extractTxt').textContent = new Date(M.extract).toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric'});
+$('builtTxt').textContent = M.generated.slice(0, 10);
+$('dateChip').textContent = 'Data to ' + $('extractTxt').textContent;
+
+// ---- page switching (no filters: every number is a result of the analysis, so nothing on the page recalculates)
+const TITLES = {signs: 'Warning signs', dict: 'Data dictionary', method: 'Method and QA'};
+let page = 'signs';
+document.querySelectorAll('.nav a').forEach(a => a.onclick = () => go(a.dataset.page));
+function go(p) {
+  page = p;
+  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('active', a.dataset.page === p));
+  document.querySelectorAll('.page').forEach(s => s.classList.toggle('show', s.id === 'p-' + p));
+  $('pageTitle').textContent = TITLES[p]; $('crumbPage').textContent = TITLES[p];
+  render();
+}
+function jump(target) {   // go to the dictionary row with this id and highlight it
+  if (page !== 'dict') go('dict');
+  const row = $(target); if (!row) return;
+  row.scrollIntoView({behavior: 'smooth', block: 'center'});
+  row.classList.add('hl'); setTimeout(() => row.classList.remove('hl'), 2200);
+}
+document.addEventListener('click', e => { const a = e.target.closest('a.jump'); if (a) { e.preventDefault(); jump(a.dataset.target); } });
+function render() {
+  const months = sum(D.bands.map(b => b.client_months)), clients = sum(D.bands.map(b => b.clients));
+  $('pageSub').textContent = `${fmt(months)} client-months · monthly snapshots ${monLbl(M.first_month)} to ${monLbl(M.last_month)} · churn measured over the next ${Math.round(M.horizon_days / 30)} months`;
+  ({signs: rSigns, dict: rDict, method: rMethod})[page]();
+}
+
+// ---------------- Page 1: warning signs
+const signOrder = () => {   // within each kind, strongest first for clients with 5+ staff (signs that are not clear go last)
+  const s5 = D.signs.filter(s => s.band === B5);
+  return ['act', 'profile', 'late'].flatMap(k => s5.filter(s => IND[s.id].kind === k).sort((a, b) => (b.clear ? b.x : 0) - (a.clear ? a.x : 0)).map(s => s.id));
+};
+function signsChart(canvas, band, order, xmax) {
+  const rows = order.map(id => D.signs.find(s => s.id === id && s.band === band));
+  draw(canvas, {type: 'bar',
+    data: {labels: rows.map(r => wrapWords(`${r.id} · ${IND[r.id].name}`, 34)),
+           datasets: [{label: 'Times as likely to churn', data: rows.map(r => r.x), backgroundColor: rows.map(r => r.clear ? KIND_COLOUR[IND[r.id].kind] : GREY), barPercentage: 0.8}]},
+    options: {indexAxis: 'y', layout: {padding: {right: 90, top: 14}},
+      onClick: (e, els) => { if (els.length) jump('ind-' + rows[els[0].index].id); },
+      onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+      plugins: {legend: {display: false},
+        tooltip: {callbacks: {label: c => { const r = rows[c.dataIndex]; return [`${xfmt(r.x)} as likely (95% range ${xfmt(r.lo)} to ${xfmt(r.hi)})`, `churn ${pct(r.churn_with)} with the sign vs ${pct(r.churn_without)} without`, `${fmt(r.months_with)} client-months with the sign`]; }}},
+        barLabels: {text: (di, i) => { const r = rows[i]; return r.clear ? {text: xfmt(r.x) + (r.x < 1 ? ' (less churn)' : ''), bold: true, at: 1} : {text: 'not clear', colour: '#737C90', at: 1}; }},
+        refLine: {value: 1, label: '1x = no difference'}},
+      scales: {x: {min: 0, max: xmax, title: {display: true, text: 'times as likely to churn'}}, y: {ticks: {autoSkip: false, font: {size: 11}}}}}});
+  const b = BAND[band];
+  return `Each bar compares client-months where the sign was present with those where it wasn't: 2x means twice as likely to ${esc(b.outcome)} within 3 months (normally ${pct(b.base_rate)}). Grey = not a clear signal (its 95% range crosses 1x). Click a bar to see how the sign is defined.`;
+}
+function comboChart(canvas, band) {
+  const rows = D.combos.filter(c => c.band === band);
+  if (!rows.length) return 'No pair of signs is clearly stronger together for this group.';
+  draw(canvas, {type: 'bar',
+    data: {labels: rows.map(r => [...wrapWords(`${r.id1} ${IND[r.id1].name}`, 34), ...wrapWords(`+ ${r.id2} ${IND[r.id2].name}`, 34)]),
+           datasets: [{label: 'First sign on its own', data: rows.map(r => r.only1), backgroundColor: GREY},
+                      {label: 'Second sign on its own', data: rows.map(r => r.only2), backgroundColor: '#8D97AB'},
+                      {label: 'Both together', data: rows.map(r => r.both), backgroundColor: PALETTE[3]}]},
+    options: {indexAxis: 'y', layout: {padding: {right: 40, top: 14}},
+      onClick: (e, els) => { if (els.length) { const r = rows[els[0].index]; jump('ind-' + (els[0].datasetIndex === 1 ? r.id2 : r.id1)); } },
+      plugins: {legend: {position: 'bottom'},
+        tooltip: {callbacks: {afterBody: items => { const r = rows[items[0].dataIndex]; return [`Neither sign: ${pct(r.neither)}`, `${fmt(r.months_both)} client-months with both`]; }}},
+        barLabels: {text: (di, i) => { const r = rows[i], v = [r.only1, r.only2, r.both][di]; return {text: pct(v, 0), bold: di === 2}; }},
+        refLine: {value: BAND[band].base_rate, dash: [4, 4], colour: '#737C90', label: `all clients ${pct(BAND[band].base_rate, 0)}`}},
+      scales: {x: pctAxis, y: {ticks: {autoSkip: false, font: {size: 11}}}}}});
+  const best = rows[0];
+  return `Share that went on to ${esc(BAND[band].outcome)} within 3 months. Shown: pairs where both together is clearly higher than the stronger sign on its own, and at least one sign is something we can act on. `
+    + `Strongest: ${idLink(best.id1)} + ${idLink(best.id2)}, ${pct(best.both, 0)} with both vs ${pct(Math.max(best.only1, best.only2), 0)} for either alone. Dashed line = all clients in the group.`;
+}
+function rSigns() {
+  const b5 = BAND[B5], b1 = BAND[B1];
+  $('signsInfo').innerHTML = `<i class="fa-solid fa-circle-info"></i> <b>What comes before a client churns.</b> Churn means a client with <b>5+ staff</b> loses <b>${pct(M.high_churn, 0)}+ of its seats</b>, or a client with <b>1–4 staff</b> loses <b>all</b> its seats, within 3 months. `
+    + `Seats lost are exits that weren't replaced; exits for <b>business reasons</b> (restructures, slowdowns, budget cuts) are market churn and are not counted. Codes such as <span class="idtag">A1</span> are defined on the <a class="jump" data-target="ind-A1">Data dictionary</a> page.`;
+  const s5 = D.signs.filter(s => s.band === B5 && s.clear && IND[s.id].kind === 'act').sort((a, b) => b.x - a.x);
+  const c5 = D.combos.filter(c => c.band === B5).sort((a, b) => b.both - a.both)[0];
+  $('kpis').innerHTML = kpiTiles([
+    ['k-blue', 'fa-building', 'Clients with 5+ staff', pct(b5.base_rate), `of client-months lose ${pct(M.high_churn, 0)}+ of seats within 3 months · ${fmt(b5.clients)} clients`],
+    ['k-teal', 'fa-user', 'Clients with 1–4 staff', pct(b1.base_rate), `of client-months lose all seats within 3 months · ${fmt(b1.clients)} clients`],
+    ['k-yellow', 'fa-triangle-exclamation', 'Strongest early signs (5+ staff)', s5.length ? xfmt(s5[0].x) : '–', s5.slice(0, 2).map(s => `${idLink(s.id)} ${esc(IND[s.id].name)} (${xfmt(s.x)})`).join(' and ') + ' as likely to churn'],
+    ['k-pink', 'fa-layer-group', 'Two signs together (5+ staff)', c5 ? pct(c5.both, 0) : '–', c5 ? `churn when ${idLink(c5.id1)} and ${idLink(c5.id2)} happen together, vs ${pct(Math.max(c5.only1, c5.only2), 0)} for either alone` : ''],
+  ]);
+  $('kindLegend').innerHTML = Object.entries(KIND_NAME).map(([k, n]) => `<span><i class="sw" style="background:${KIND_COLOUR[k]}"></i>${esc(n)}</span>`).join('') + `<span><i class="sw" style="background:${GREY}"></i>Not a clear signal</span>`;
+  const order = signOrder(), xmax = Math.ceil(Math.max(...D.signs.filter(s => s.clear).map(s => s.x)) + 0.5);
+  $('nSigns5').innerHTML = signsChart('cSigns5', B5, order, xmax);
+  $('nSigns1').innerHTML = signsChart('cSigns1', B1, order, xmax);
+  $('nCombo5').innerHTML = comboChart('cCombo5', B5);
+  $('nCombo1').innerHTML = comboChart('cCombo1', B1);
+  $('signsWarn').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <b>Read with care.</b> These signs come <i>before</i> churn; the analysis does not show they cause it. `
+    + `Orange signs mean the client has usually already decided. As a model, the signs rank clients better than chance but are not precise enough to name who will leave: `
+    + `accuracy (AUC, 0.5 = coin flip, 1 = perfect) is ${fmt(b5.auc_full, 2)} for clients with 5+ staff and ${fmt(b1.auc_full, 2)} for 1–4 staff, on months the model never saw.`;
+}
+
+// ---------------- Page 2: data dictionary
+function rDict() {
+  table($('tOutcome'), [
+    {k: 'band', label: 'Clients with'}, {k: 'outcome', label: 'Churn means (within 3 months)'},
+    {k: 'outcome_col', label: 'Column', f: v => `<span class="code">${esc(v)}</span>`},
+    {k: 'clients', label: 'Clients', n: 1, f: v => fmt(v)}, {k: 'client_months', label: 'Client-months', n: 1, f: v => fmt(v)},
+    {k: 'churned_months', label: 'Churned', n: 1, f: v => fmt(v)}, {k: 'base_rate', label: 'Churn rate', n: 1, f: v => pct(v)}], D.bands);
+  $('nOutcome').innerHTML = `A <b>snapshot</b> is a client on the 1st of a month (${monLbl(M.first_month)} to ${monLbl(M.last_month)}); a client-month is one snapshot. `
+    + `<b>Seats lost</b> = exits in the next ${M.horizon_days} days that are not record-only, not replaced, and not for ${M.outcome_exclude.map(c => `<span class="code">${esc(c)}</span>`).join(', ')}. `
+    + `Clients with 1–4 staff are measured on losing every seat, because one exit at a 2-person client is already 50%. A client is placed in a group by its staff on the snapshot day, so it can move between groups.`;
+  table($('tInd'), [
+    {k: 'id', label: 'Code', f: v => `<span class="idtag">${v}</span>`}, {k: 'name', label: 'Indicator'}, {k: 'kind', label: 'Type', f: v => kindBadge(v)},
+    {k: 'test', label: 'Present when', cls: 'wrap-cell'}, {k: 'feature', label: 'Feature', f: v => featLink(v)},
+    {k: 'shown_in', label: 'Shown in', f: v => v.length ? v.map(s => `<span style="white-space:nowrap">${esc(shownShort(s))}</span>`).join('<br>') : '<span class="note">dictionary only</span>'},
+    {k: 'p5', label: 'How common<br>5+ staff', n: 1, f: v => pct(v, 0)}, {k: 'p1', label: 'How common<br>1–4 staff', n: 1, f: v => pct(v, 0)}],
+    D.indicators.map(r => ({...r, p5: r.prevalence[B5], p1: r.prevalence[B1]})), {rowId: r => 'ind-' + r.id});
+  table($('tFeat'), [
+    {k: 'feature', label: 'Feature', f: v => `<span class="code">${esc(v)}</span>`}, {k: 'label', label: 'Meaning'}, {k: 'how', label: 'How it is built', cls: 'wrap-cell'},
+    {k: 'window', label: 'Looks back'}, {k: 'built_from', label: 'Timeline columns', f: v => v.map(colLink).join('<br>')},
+    {k: 'indicators', label: 'Indicators', f: v => v.map(idLink).join(' ') || '–'}, {k: 'models', label: 'In models'}],
+    D.features, {rowId: r => 'feat-' + r.feature});
+  table($('tTl'), [
+    {k: 'field', label: 'Column', f: v => `<span class="code">${esc(v)}</span>`}, {k: 'definition', label: 'Definition', cls: 'wrap-cell'},
+    {k: 'source', label: 'Source'}, {k: 'derivation', label: 'How it is derived', cls: 'wrap-cell'}], D.timeline, {rowId: r => 'tl-' + r.field});
+  table($('tSrc'), [
+    {k: 'dataset', label: 'Dataset'}, {k: 'source', label: 'File · tab'}, {k: 'rows', label: 'Rows', n: 1, f: v => fmt(v)},
+    {k: 'date column', label: 'Date column'}, {k: 'min date', label: 'From'}, {k: 'max date', label: 'To'}], D.sources);
+}
+
+// ---------------- Method and QA
+function rMethod() {
+  const b5 = BAND[B5], b1 = BAND[B1];
+  $('methodBox').innerHTML = `<ul class="rules">
+    <li><b>Times as likely:</b> the churn rate among client-months with the sign, divided by the rate among client-months without it. Months where the sign's source has no data are left out.</li>
+    <li><b>Clear signal:</b> the 95% range of that ratio does not cross 1x. The range comes from resampling whole clients 500 times, because one client's months are not independent. Signs seen in fewer than ${M.min_event_months} client-months are not rated.</li>
+    <li><b>Two signs together:</b> the churn rate when both signs were present, compared with each sign on its own (without the other). A pair is shown when "both" is clearly above the stronger sign alone (95% range above 1), it was seen in at least ${M.min_pair_months} client-months, at least one sign is an early sign we can act on, and neither sign is present in more than ${pct(M.max_prevalence, 0)} of client-months.</li>
+    <li><b>Types of sign:</b> <i>early signs we can act on</i> (attendance, staff events, payments) can happen while the client is still committed; <i>client profile</i> describes the account; <i>late stage</i> means the client has usually already started to leave.</li>
+    <li><b>Accuracy:</b> a model using every sign was trained on earlier snapshots (ending ${M.horizon_days} days before the test months, so no outcome overlaps them) and tested on snapshots from ${monLbl(M.test_from.slice(0, 7))} to ${monLbl(M.last_month)}, months it never saw. AUC (0.5 = coin flip, 1 = perfect): 5+ staff ${fmt(b5.auc_full, 2)} (early signs only ${fmt(b5.auc_early, 2)}), 1–4 staff ${fmt(b1.auc_full, 2)} (early signs only ${fmt(b1.auc_early, 2)}). On clients the model had never seen: ${fmt(b5.auc_full_new_clients, 2)} and ${fmt(b1.auc_full_new_clients, 2)}.</li>
+    <li><b>Associations, not causes.</b> The signs come before churn; this does not show that they cause it.</li></ul>`;
+  table($('tQa'), [{k: 'step', label: 'Step', f: v => esc(v).replace(/^ +/, m => '&nbsp;'.repeat(m.length * 2))}, {k: 'rows', label: 'Count', n: 1, f: v => fmt(v)}], D.qa);
+}
+
+// ---- exports
+$('btnSigns').onclick = () => download('churn_warning_signs.csv',
+  D.signs.map(s => ({...s, name: IND[s.id].name, kind: KIND_NAME[IND[s.id].kind]})),
+  [{k: 'id', label: 'code'}, {k: 'name', label: 'indicator'}, {k: 'kind', label: 'type'}, {k: 'band', label: 'clients with'}, {k: 'x', label: 'times as likely'},
+   {k: 'lo', label: '95% range low'}, {k: 'hi', label: '95% range high'}, {k: 'clear', label: 'clear signal'}, {k: 'churn_with', label: 'churn with'},
+   {k: 'churn_without', label: 'churn without'}, {k: 'months_with', label: 'client-months with'}]);
+$('btnDict').onclick = () => download('churn_data_dictionary.csv',
+  D.indicators.map(r => ({...r, built_from: (D.features.find(f => f.feature === r.feature) || {built_from: []}).built_from.join('; '), shown_in: r.shown_in.join('; ')})),
+  [{k: 'id', label: 'code'}, {k: 'name', label: 'indicator'}, {k: 'kind_name', label: 'type'}, {k: 'test', label: 'present when'}, {k: 'feature', label: 'feature'},
+   {k: 'feature_label', label: 'feature meaning'}, {k: 'built_from', label: 'timeline columns'}, {k: 'shown_in', label: 'shown in'}]);
+
+render();
+</script>
+</body>
+</html>

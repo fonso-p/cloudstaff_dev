@@ -1,0 +1,67 @@
+Create an Excel file (.xlsx) of synthetic news headlines. They will be used to train and test a classifier that sorts real business news headlines into event categories, for a B2B sales-signal tool focused on small and mid-sized companies in Australia, the UK and the US.
+
+## Categories (use these exact names)
+
+Event categories (positives):
+1. PE buyout: a private equity firm buys, takes a majority stake in, or takes private a company. Includes "acquired by X Capital/Partners/Equity", management buyouts backed by PE, and secondary sales between PE firms.
+2. Funding round: the company raises money from investors: seed, Series A–E, venture/growth rounds, capital raises, convertible notes, crowdfunding rounds for startups. Not debt refinancing for large listed firms, not charity fundraising.
+3. M&A: the company buys, merges with, or sells another business, division or stake (no PE involvement). Includes takeovers, mergers, divestments, spin-offs, demergers, minority strategic investments.
+4. Expansion / new office: the company opens a new office, branch, warehouse, hub or HQ; enters a new country or market; launches in a new city; announces a hiring drive or plans to add N jobs.
+5. Restructuring: reorganisation, closing an office/plant/store/division, entering administration, receivership, liquidation, insolvency, bankruptcy, Chapter 11, ceasing trading. Must NOT be mainly about job cuts (those are Layoffs).
+6. Layoffs: the headline is about job cuts: layoffs, redundancies, "N jobs to go", cutting/axing/shedding staff or headcount, reducing the workforce.
+7. Leadership change: a new or departing CEO, CFO, COO, CTO, chair, managing director, board director, or other senior executive; appointments, resignations, retirements, successions, promotions to the C-suite, leadership shake-ups.
+
+Non-event category:
+8. Other / Unclassified: real business news about a company that is none of the above.
+
+## How many rows
+
+A. Positives: 100 headlines for EACH of the 7 event categories (700 rows). example_type = "positive".
+
+B. Near-misses: 30 headlines for EACH of the 7 event categories (210 rows). These are labelled "Other / Unclassified" but use the vocabulary of the event category they imitate, so a keyword matcher would get them wrong. example_type = "near_miss", mimics = the event category being imitated. Examples of the idea (do not reuse these):
+   - M&A-like: "Acme's guide to buying your first investment property", "Talent acquisition trends for 2026", "Three ASX stocks to buy this week"
+   - Funding-like: "Acme staff raise $40,000 for children's hospital", "Acme raises prices as costs bite", "Analysts raise Acme price target"
+   - Expansion-like: "How Acme helps clients expand into Asia", "Acme expands its product range with new colours"
+   - Leadership-like: "Acme appointed as official distributor for Bosch", "Acme CEO shares five lessons on resilience"
+   - Restructuring/Layoffs-like: "Acme cuts prices on winter range", "Why downsizers are flocking to Noosa", "Building network redundancy into your data centre", "Acme closes the gap on market leader"
+   - PE-like: "Private equity interest in childcare: what it means for parents", "Acme partners with KKR-backed platform on new integration"
+
+C. General Other: 300 headlines labelled "Other / Unclassified", example_type = "other". Spread across: product launches, partnerships, client wins and contracts, awards and rankings, sponsorships and community events, opinion and thought-leadership posts, how-to guides and blog posts, property listings and market updates, case studies, earnings/trading updates with no event, conference appearances, regulatory or compliance news, customer complaints or reviews, local-news mentions.
+
+Total: about 1,210 rows.
+
+## Realism and variety (most important)
+
+- Write like real outlets, and vary the style across rows: trade press (e.g. "AFR-style", "Business Insider-style", industry newsletters), local newspapers, press-release wires ("X announces…", "X today announced…"), stock-exchange announcements ("Appointment of Chief Financial Officer"), company blog/news pages, and casual/clickbait headlines.
+- Vary length from 4 to 20 words. Vary structure: company first, company in the middle, company as object ("Rival snaps up Acme"), possessive ("Acme's new CEO…"), no company name at all (about 10% of rows, e.g. "Brisbane logistics firm cuts 40 jobs").
+- Mix regions about 50% Australia, 25% UK, 25% US, with matching spelling (organisation/organization), currency (A$, £, $) and place names.
+- Mix company types: accounting firms, real estate agencies, construction, healthcare clinics, SaaS, logistics, retail, manufacturing, law firms, recruitment agencies, marketing agencies, financial planners, NFP organisations.
+- Mix company sizes, but mostly small and mid-sized (10–500 staff); amounts mostly A$1m–A$50m, not only billion-dollar deals.
+- Use varied verbs and idioms, not the obvious word every time: e.g. Layoffs: "axes", "sheds", "culls", "swings the axe", "job losses mount", "dozens let go"; M&A: "snaps up", "swoops on", "inks deal to buy", "joins forces with"; Leadership: "taps", "poaches", "bolsters C-suite", "hands reins to".
+- Include harder positives: two events in one headline (label the main one), events reported indirectly ("Acme staff told of cuts in dawn email"), and announcement-style titles with little context ("Change of Chief Executive Officer").
+- Use FICTIONAL company names and fictional people only. Do not use real companies or real people (real PE firm names like KKR, Blackstone or BGH Capital are allowed as the buyer in PE headlines only).
+- No duplicates and no near-duplicates (same sentence with only the name or number swapped). Before finishing, check each category for repeated templates and rewrite any that repeat.
+
+## Columns (sheet "headlines", one row per headline, header in row 1)
+
+| column | content |
+|---|---|
+| id | H0001, H0002, … |
+| category | one of the 8 exact category names above |
+| example_type | positive / near_miss / other |
+| mimics | for near_miss rows: the event category being imitated; blank otherwise |
+| headline | the headline text |
+| company_mention | the exact company name string as it appears in the headline (blank if no company is named), so it can be masked later |
+| region | AU / UK / US |
+| outlet_style | trade_press / local_news / press_wire / exchange_announcement / company_blog / casual |
+| difficulty | easy / medium / hard (hard = indirect wording, unusual verb, two events, or no company name) |
+| rationale | one short sentence: why this category (for near_miss: why it is NOT the mimicked event) |
+
+## Other sheets
+
+- "category_definitions": the 8 category names and the definitions above, copied exactly.
+- "counts": a pivot or formula table of rows per category × example_type, so the totals can be checked (use COUNTIFS formulas referencing the headlines sheet).
+
+## Output
+
+Return the .xlsx file. If you cannot produce .xlsx, return a UTF-8 CSV of the "headlines" sheet with the same columns. Generate category by category so quality does not drop in later categories; the 100th headline in a category should be as varied and realistic as the first.

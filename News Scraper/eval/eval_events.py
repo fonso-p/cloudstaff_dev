@@ -4,7 +4,8 @@
 
 gold_events.csv: one row per distinct story. set = build (10 sample companies + the 100-company test, the data the rules
 and example headlines were developed on) or holdout (12 companies scraped afterwards and never used for development).
-Labels were made by Claude from the headline alone: about_company yes/no, and the Priority Score category.
+Labels were made by Claude from the headline alone (not by a person), hence the column names: about_company_claude_labelled (yes/no)
+and category_claude_labelled (the Priority Score category).
 Only trust the holdout numbers as an estimate of real performance; the build set is flattered by 61 Canva layoff stories.
 Add your own rows (or correct labels) and re-run after any change to classify.py, event_examples.py or nlp.combine_event.
 """
@@ -27,17 +28,17 @@ def main():
     for r, p in zip(rows, probs):
         r["rule"] = classify(r["title"], "") or OTHER
         r["final"], r["basis"], r["conf"] = nlp.combine_event(r["rule"], p, OTHER)
-        r["about"] = r["about_company"] == "yes"
+        r["about"] = r["about_company_claude_labelled"] == "yes"
     for name in ("build", "holdout"):
         D = [r for r in rows if r["set"] == name]
-        gold = [r for r in D if r["about"] and r["category"] != OTHER]
-        print(f"\n{name}: {len(D)} stories, {len(gold)} real events  {dict(Counter(r['category'] for r in gold))}")
+        gold = [r for r in D if r["about"] and r["category_claude_labelled"] != OTHER]
+        print(f"\n{name}: {len(D)} stories, {len(gold)} real events  {dict(Counter(r['category_claude_labelled'] for r in gold))}")
         for label, key in (("rules alone", "rule"), ("rules + classifier", "final")):
             pred = [r for r in D if r[key] != OTHER]
-            ok = sum(r["about"] and r[key] == r["category"] for r in pred)
-            hit = sum(r[key] == r["category"] for r in gold)
+            ok = sum(r["about"] and r[key] == r["category_claude_labelled"] for r in pred)
+            hit = sum(r[key] == r["category_claude_labelled"] for r in gold)
             print(f"  {label:<20} precision {ok / max(len(pred), 1):.2f} ({ok}/{len(pred)})   recall {hit / max(len(gold), 1):.2f} ({hit}/{len(gold)})")
-        tiers = Counter((r["conf"], r["about"] and r["final"] == r["category"]) for r in D if r["final"] != OTHER)
+        tiers = Counter((r["conf"], r["about"] and r["final"] == r["category_claude_labelled"]) for r in D if r["final"] != OTHER)
         print("  by confidence: " + " · ".join(f"{t} {tiers[(t, True)]}/{tiers[(t, True)] + tiers[(t, False)]} right" for t in ("high", "medium", "low")))
 
 

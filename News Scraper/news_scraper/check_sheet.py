@@ -84,6 +84,55 @@ def rows(events, review, who, name_type):
     return out
 
 
+CHECK_HEADERS = [h for g, h, _, k in COLUMNS if g == "YOUR CHECK"]
+
+
+def old_labels(path):
+    """Your-check marks already typed into an earlier article_check.xlsx, so a re-export keeps them.
+    Keyed by (company ID, link) and (company ID, headline); each value also carries the row's category at the time."""
+    if not os.path.exists(path):
+        return {}
+    from openpyxl import load_workbook
+    ws = load_workbook(path)["Article check"]
+    head = {c.value: c.column for c in ws[2] if c.value}
+    if not all(h in head for h in CHECK_HEADERS + ["Company ID", "Headline", "Link"]):
+        return {}
+    out = []
+    for r in range(3, ws.max_row + 1):
+        marks = [ws.cell(row=r, column=head[h]).value for h in CHECK_HEADERS]
+        if not any(m not in (None, "") for m in marks):
+            continue
+        link = ws.cell(row=r, column=head["Link"])
+        out.append({"company_id": ws.cell(row=r, column=head["Company ID"]).value, "title": ws.cell(row=r, column=head["Headline"]).value or "",
+                    "url": link.hyperlink.target if link.hyperlink else "", "marks": marks,
+                    "category": ws.cell(row=r, column=head["Event category"]).value or "" if "Event category" in head else "",
+                    "company_name": ws.cell(row=r, column=head["Company name"]).value or "" if "Company name" in head else ""})
+    if "Marks without a row" in ws.parent.sheetnames:  # marks parked by an earlier export: try them again, keep them otherwise
+        for v in ws.parent["Marks without a row"].iter_rows(min_row=2, values_only=True):
+            if v and v[1]:
+                out.append({"company_name": v[0] or "", "company_id": v[1], "title": v[2] or "", "url": v[3] or "",
+                            "category": v[4] or "", "marks": list(v[5:5 + len(CHECK_HEADERS)])})
+    return out
+
+
+def _place_labels(data, labels):
+    """Put each old mark on its row (link first, then headline). Returns the marks that found no row."""
+    by_url = {(r["company_id"], r.get("url")): r for r in data if r.get("url")}
+    by_title = {(r["company_id"], r.get("title")): r for r in data}
+    lost = []
+    for lab in labels:
+        row = by_url.get((lab["company_id"], lab["url"])) if lab["url"] else None
+        row = row or by_title.get((lab["company_id"], lab["title"]))
+        if row is None:
+            lost.append(lab)
+            continue
+        row["_marks"] = list(lab["marks"])
+        if lab["category"] != (row.get("category") or "") and lab["marks"][1] not in (None, ""):
+            note = f"[category was '{lab['category'] or 'blank'}' when checked]"
+            row["_marks"][2] = f"{row['_marks'][2]} {note}".strip() if row["_marks"][2] else note
+    return lost
+
+
 def write(out_dir, events, review, who, name_type, name="article_check.xlsx"):
     try:
         from openpyxl import Workbook
@@ -94,6 +143,12 @@ def write(out_dir, events, review, who, name_type, name="article_check.xlsx"):
         print("  openpyxl not installed: article_check.xlsx skipped")
         return None
     data = rows(events, review, who, name_type)
+    try:
+        labels = old_labels(os.path.join(out_dir, name))
+    except Exception as e:                           # an unreadable old sheet must not stop the export; it is not overwritten below
+        print(f"  could not read the marks in the existing {name} ({e}); it is kept and the new sheet gets a dated name")
+        labels, name = None, f"{name[:-5]}_new.xlsx"
+    lost = _place_labels(data, labels or [])
     wb = Workbook()
     ws = wb.active
     ws.title = "Article check"
@@ -117,7 +172,7 @@ def write(out_dir, events, review, who, name_type, name="article_check.xlsx"):
     review_fill = PatternFill("solid", fgColor="FFFDE7")
     for r_i, row in enumerate(data, 3):
         for c_i, (g, h, _, key) in enumerate(COLUMNS, 1):
-            v = row.get(key, "") if key else ""
+            v = row.get(key, "") if key else (row.get("_marks") or [""] * len(CHECK_HEADERS))[CHECK_HEADERS.index(h)] or ""
             cell = ws.cell(row=r_i, column=c_i, value=v if v not in (None, "nan") else "")
             cell.font, cell.border = base, Border(bottom=thin)
             cell.alignment = Alignment(vertical="top", wrap_text=key in ("title", "lead", "company_profile", "check", "evidence"))
@@ -155,7 +210,11 @@ def write(out_dir, events, review, who, name_type, name="article_check.xlsx"):
                              "Medium = rules only, about a coin flip. Low = classifier only. n/a = no event."),
         ("How the category was decided", "Which method set the category. A company-website post whose headline doesn't name the company "
                                          "is never an event (blog posts and guides)."),
-        ("Your check", "Yellow columns: pick Yes / No / Unsure. These marks can later be used to measure and tune the matching."),
+        ("Your check", "Yellow columns: pick Yes / No / Unsure. These marks can later be used to measure and tune the matching. "
+                       "A re-export keeps them (matched by company ID + link, else headline). If the category changed since you "
+                       "checked it, Notes says what it was. Marks whose article left the export go to the 'Marks without a row' tab."),
+        ("Layoffs", "Split out of Restructuring: a headline about job cuts, layoffs or redundancies. Closures, administration and "
+                    "reorganisations stay in Restructuring. Same score weight as Restructuring unless the settings give Layoffs its own."),
         ("Note", "Precision figures are from one hand-labelled sample (Claude, 16 Nov 2026), not a person's review yet."),
     ]
     for i, (a, b) in enumerate(guide, 1):
@@ -167,6 +226,17 @@ def write(out_dir, events, review, who, name_type, name="article_check.xlsx"):
             for c in (1, 2):
                 g.cell(row=1, column=c).fill = PatternFill("solid", fgColor="1F4E79")
     g.column_dimensions["A"].width, g.column_dimensions["B"].width = 30, 110
+
+    if lost:                                         # never drop a mark: the article left the export (e.g. now outside the lookback)
+        ls = wb.create_sheet("Marks without a row")
+        hdr = ["Company name", "Company ID", "Headline", "Link", "Event category when checked"] + CHECK_HEADERS
+        for c, h in enumerate(hdr, 1):
+            ls.cell(row=1, column=c, value=h).font = white
+            ls.cell(row=1, column=c).fill = PatternFill("solid", fgColor="7F6000")
+        for r_i, lab in enumerate(lost, 2):
+            for c, v in enumerate([lab["company_name"], lab["company_id"], lab["title"], lab["url"], lab["category"]] + lab["marks"], 1):
+                ls.cell(row=r_i, column=c, value=v).font = base
+    print(f"  article_check: {len(labels or []) - len(lost)} of your marked rows carried over" + (f", {len(lost)} without a row (own tab)" if lost else ""))
 
     path = os.path.join(out_dir, name)
     try:

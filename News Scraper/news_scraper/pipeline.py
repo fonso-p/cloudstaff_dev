@@ -16,7 +16,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 
 from . import http, jobs, nlp, profile, registers
-from .classify import OTHER, classify, load_settings, recency_factor
+from .classify import OTHER, classify, load_settings, recency_factor, split_layoffs
 from .identity import MATCH, POSSIBLE, Identity, NlpSignals, common_name_flips, judge, longer_entity
 from .names import SOCIAL, root_domain
 from .sources import GDELT_MAX_DAYS, SOURCES, SkipSource, find_feed
@@ -393,6 +393,12 @@ def _judge(ctx):
                 r["category"], r["category_basis"] = p, "setfit"
                 r["strength"] = strength.get(p, strength.get(OTHER, 0.3))
                 r["weighted"] = round(r["strength"] * r["recency_factor"], 3)
+    for r in events + review:                        # last: whichever method chose Restructuring, job cuts become Layoffs
+        c = split_layoffs(r["category"], r["title"])
+        if c != r["category"]:
+            r["category"] = c
+            r["strength"] = strength.get(c, strength.get(OTHER, 0.3))
+            r["weighted"] = round(r["strength"] * r["recency_factor"], 3)
     return events, review
 
 

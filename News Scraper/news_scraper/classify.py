@@ -90,8 +90,27 @@ PROFILE = re.compile(r"how many employees|list of investors|funding rounds? &|ho
                      r"\b(stock|share) price (today|quote|history)|\bstock quote\b|seasonal returns chart|interactive stock chart|\b[A-Z]{1,6}\d{6}[PC]\d{8}\b", re.I)
 OTHER = "Other / Unclassified"
 
+# Layoffs: split out of Restructuring after every method (rules, classifier, NLP, SetFit) has picked "Restructuring",
+# so the trained models need no retraining. Job cuts named in the headline only; property "downsizers" and network
+# "redundancy" don't count.
+LAYOFFS = re.compile(
+    r"\blay-?offs?\b|\blays? off\b|\blaying off\b|\blaid\s*-?\s*off\b|\bjob (cuts?|losses|losses?)\b|\bjobs? (to go|axed|slashed|lost)\b|"
+    r"\bredundancies\b|\bmade redundant\b|\bredundancy (round|payouts?|packages?)\b|"
+    r"\b(cuts?|cutting|slash(es|ed|ing)?|shed(s|ding)?|axe[sd]?|axing|trims?|trimm(ed|ing)|eliminat(es|ed|ing)|culls?)\b.{0,40}"
+    r"\b(jobs?|roles?|staff|workers|employees|workforce|positions|headcount)\b|"
+    r"\b(downsiz\w*|reduc\w*) (its |the )?(workforce|headcount|staff)\b", re.I)
+LAYOFFS_CAT = "Layoffs"
+
+
+def split_layoffs(cat, title):
+    """'Restructuring' -> 'Layoffs' when the headline is about job cuts; any other category is returned unchanged."""
+    if cat == "Restructuring" and LAYOFFS.search(title or "") and not NOT["Restructuring"].search(title or ""):
+        return LAYOFFS_CAT
+    return cat
+
+
 DEFAULT_STRENGTH = {"Funding round": 1.0, "PE buyout": 1.0, "M&A": 0.8, "Expansion / new office": 0.7, "Restructuring": 0.5,
-                    "Leadership change": 0.3, OTHER: 0.3, "None": 0.0}
+                    LAYOFFS_CAT: 0.5, "Leadership change": 0.3, OTHER: 0.3, "None": 0.0}
 DEFAULT_RECENCY = [(30, 1.0), (90, 0.7), (180, 0.4), (None, 0.0)]
 
 
@@ -101,6 +120,8 @@ def load_settings(path):
         return DEFAULT_STRENGTH, DEFAULT_RECENCY
     rows = json.load(open(path, encoding="utf-8"))
     strength = {r["label"]: float(r["value"]) for r in rows if r["kind"] == "news"} or DEFAULT_STRENGTH
+    if LAYOFFS_CAT not in strength and "Restructuring" in strength:   # settings written before Layoffs existed
+        strength = {**strength, LAYOFFS_CAT: strength["Restructuring"]}
     rec = []
     for r in (r for r in rows if r["kind"] == "recency"):
         m = re.search(r"(\d+)\D*$", r["label"])

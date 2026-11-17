@@ -75,6 +75,18 @@ def main(argv=None):
     f.add_argument("--registers", default="au,uk", help="comma-separated: au, uk")
     f.add_argument("--limit", type=int)
     f.add_argument("--db", default=os.path.join(HERE, "data", "news.db"))
+    ts = sub.add_parser("testset", help="headline test set: gather headlines by event keywords for hand-labelling, then score the system")
+    tss = ts.add_subparsers(dest="action", required=True)
+    tg = tss.add_parser("gather", help="search Google + Bing by category keywords and write the blind labelling sheet")
+    tg.add_argument("--out", default=os.path.join(HERE, "out", "testset"))
+    tg.add_argument("--per-bucket", type=int, default=100, help="headlines per search bucket (7 events + near-miss + other; default 100)")
+    tg.add_argument("--lookback-days", type=int, default=180)
+    tg.add_argument("--google-interval", type=float, default=20.0, help="seconds between Google queries (default 20; faster gets blocked)")
+    tb = tss.add_parser("sheet", help="rebuild the sheet from searches already done (keeps your labels)")
+    tb.add_argument("--out", default=os.path.join(HERE, "out", "testset"))
+    tb.add_argument("--per-bucket", type=int, default=100)
+    tc = tss.add_parser("score", help="compare your labels with the system's predictions")
+    tc.add_argument("--out", default=os.path.join(HERE, "out", "testset"))
     nl = sub.add_parser("nlp", help="entities, events, embeddings and zero-shot categories for stored articles (CPU, free)")
     ns = nl.add_subparsers(dest="action", required=True)
     nr = ns.add_parser("run", help="compute NLP results for articles that don't have them yet")
@@ -127,6 +139,16 @@ def main(argv=None):
     sd.add_argument("--workers", type=int, default=6)
     ss.add_parser("list", help="show the industry groups, countries and themes")
     a = ap.parse_args(argv)
+
+    if a.cmd == "testset":
+        from . import testset
+        if a.action == "gather":
+            testset.gather(a.out, a.per_bucket, a.lookback_days, a.google_interval)
+        elif a.action == "sheet":
+            testset.build_sheet(a.out, a.per_bucket)
+        else:
+            testset.score(a.out)
+        return
 
     if a.cmd == "segment":
         from . import segment as seg

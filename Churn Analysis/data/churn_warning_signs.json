@@ -1,0 +1,1159 @@
+{
+ "meta": {
+  "title": "Churn warning signs",
+  "subtitle": "What comes before client churn",
+  "source": "SC Engagement List, PB-4108 tickets, attendance and payment logs",
+  "extract": "2026-11-13",
+  "first_month": "2024-04",
+  "last_month": "2026-08",
+  "generated": "2026-11-17T19:41:15",
+  "horizon_days": 90,
+  "high_churn": 0.2,
+  "outcome_exclude": [
+   "exit_client_business_reasons"
+  ],
+  "min_event_months": 30,
+  "min_pair_months": 30,
+  "max_prevalence": 0.5,
+  "test_from": "2026-01-01"
+ },
+ "bands": [
+  {
+   "band": "1–4 staff",
+   "outcome": "lose all their seats",
+   "outcome_col": "full_exit_next_3m",
+   "client_months": 18426,
+   "clients": 1342,
+   "churned_months": 885,
+   "base_rate": 0.04803,
+   "auc_early": 0.66691,
+   "auc_full": 0.69503,
+   "auc_early_new_clients": 0.657989,
+   "auc_full_new_clients": 0.686662
+  },
+  {
+   "band": "5+ staff",
+   "outcome": "lose 20%+ of their seats",
+   "outcome_col": "high_churn",
+   "client_months": 6369,
+   "clients": 348,
+   "churned_months": 359,
+   "base_rate": 0.056367,
+   "auc_early": 0.565965,
+   "auc_full": 0.634569,
+   "auc_early_new_clients": 0.592404,
+   "auc_full_new_clients": 0.621102
+  }
+ ],
+ "indicators": [
+  {
+   "id": "A1",
+   "name": "Absences at 2x normal",
+   "kind": "act",
+   "kind_name": "Early sign we can act on",
+   "test": "Absences per 10 staff in the 3 months before the snapshot are at least twice the average of clients in the same size band that month.",
+   "feature": "absence_index",
+   "feature_label": "Absences (vs average)",
+   "shown_in": [
+    "Warning signs ranked"
+   ],
+   "prevalence": {
+    "1–4 staff": 0.148322,
+    "5+ staff": 0.12249
+   }
+  },
+  {
+   "id": "A2",
+   "name": "Late arrivals at 2x normal",
+   "kind": "act",
+   "kind_name": "Early sign we can act on",
+   "test": "Late arrivals per 10 staff in the 3 months before the snapshot are at least twice the average of clients in the same size band that month.",
+   "feature": "tardiness_index",
+   "feature_label": "Late arrivals (vs average)",
+   "shown_in": [
+    "Warning signs ranked",
+    "Combinations (5+ staff)"
+   ],
+   "prevalence": {
+    "1–4 staff": 0.167047,
+    "5+ staff": 0.160622
+   }
+  },
+  {
+   "id": "A3",
+   "name": "No call no shows at 2x normal",
+   "kind": "act",
+   "kind_name": "Early sign we can act on",
+   "test": "No call no shows per 10 staff in the 3 months before the snapshot are at least twice the average of clients in the same size band that month.",
+   "feature": "ncns_index",
+   "feature_label": "No call no shows (vs average)",
+   "shown_in": [
+    "Warning signs ranked",
+    "Combinations (5+ staff)"
+   ],
+   "prevalence": {
+    "1–4 staff": 0.057365,
+    "5+ staff": 0.163291
+   }
+  },
+  {
+   "id": "A4",
+   "name": "Staff let go by Cloudstaff (AWOL, behaviour, fraud)",
+   "kind": "act",
+   "kind_name": "Early sign we can act on",
+   "test": "At least one exit in the last 3 months that Cloudstaff initiated (AWOL, behaviour, fraud, failed review, non-payment suspension, ...).",
+   "feature": "cloudstaff_exits_per10_3m",
+   "feature_label": "Cloudstaff-initiated exits per 10 staff",
+   "shown_in": [
+    "Warning signs ranked"
+   ],
+   "prevalence": {
+    "1–4 staff": 0.003473,
+    "5+ staff": 0.048987
+   }
+  },
+  {
+   "id": "A5",
+   "name": "A staff member resigned",
+   "kind": "act",
+   "kind_name": "Early sign we can act on",
+   "test": "At least one staff resignation in the last 3 months.",
+   "feature": "resignations_per10_3m",
+   "feature_label": "Staff resignations per 10 staff, last 3 months",
+   "shown_in": [
+    "Warning signs ranked",
+    "Combinations (1–4 staff)"
+   ],
+   "prevalence": {
+    "1–4 staff": 0.041463,
+    "5+ staff": 0.286701
+   }
+  },
+  {
+   "id": "A6",
+   "name": "Staff exit for service dissatisfaction",
+   "kind": "act",
+   "kind_name": "Early sign we can act on",
+   "test": "At least one exit in the last 3 months that the client initiated for service dissatisfaction (performance, attendance, conduct).",
+   "feature": "service_dissatisfaction_per10_3m",
+   "feature_label": "Exits for service dissatisfaction per 10 staff",
+   "shown_in": [
+    "Warning signs ranked",
+    "Combinations (5+ staff)"
+   ],
+   "prevalence": {
+    "1–4 staff": 0.032725,
+    "5+ staff": 0.195478
+   }
+  },
+  {
+   "id": "A7",
+   "name": "Paid an invoice late",
+   "kind": "act",
+   "kind_name": "Early sign we can act on",
+   "test": "At least one month in the last 6 with an invoice paid later than the client's terms.",
+   "feature": "late_payment_months_6m",
+   "feature_label": "Late-payment months, last 6",
+   "shown_in": [
+    "Warning signs ranked"
+   ],
+   "prevalence": {
+    "1–4 staff": 0.710681,
+    "5+ staff": 0.769823
+   }
+  },
+  {
+   "id": "A8",
+   "name": "Unresponsive about a late payment",
+   "kind": "act",
+   "kind_name": "Early sign we can act on",
+   "test": "A late payment in the last 6 months whose Cause of Delay is 'Client unresponsive'.",
+   "feature": "late_payment_unresponsive_6m",
+   "feature_label": "Late payment, client unresponsive",
+   "shown_in": [],
+   "prevalence": {
+    "1–4 staff": 0.424617,
+    "5+ staff": 0.436332
+   }
+  },
+  {
+   "id": "P1",
+   "name": "Headcount down 10%+ in 6 months",
+   "kind": "profile",
+   "kind_name": "Client profile",
+   "test": "Staff at the snapshot are at least 10% below staff 6 months earlier.",
+   "feature": "headcount_change_6m",
+   "feature_label": "Headcount change, last 6 months",
+   "shown_in": [
+    "Warning signs ranked",
+    "Combinations (5+ staff)"
+   ],
+   "prevalence": {
+    "1–4 staff": 0.128988,
+    "5+ staff": 0.168645
+   }
+  },
+  {
+   "id": "P2",
+   "name": "Client for less than a year",
+   "kind": "profile",
+   "kind_name": "Client profile",
+   "test": "The client's first engagement started less than a year before the snapshot.",
+   "feature": "client_age_years",
+   "feature_label": "Years since first engagement",
+   "shown_in": [
+    "Warning signs ranked"
+   ],
+   "prevalence": {
+    "1–4 staff": 0.343862,
+    "5+ staff": 0.09719
+   }
+  },
+  {
+   "id": "P3",
+   "name": "Smallest clients in the band (1–2 or 5–9 staff)",
+   "kind": "profile",
+   "kind_name": "Client profile",
+   "test": "1–2 staff (in the 1–4 band) or 5–9 staff (in the 5+ band) at the snapshot.",
+   "feature": "staff",
+   "feature_label": "Staff at snapshot",
+   "shown_in": [],
+   "prevalence": {
+    "1–4 staff": 0.777814,
+    "5+ staff": 0.542
+   }
+  },
+  {
+   "id": "L1",
+   "name": "Client gave notice in the last month",
+   "kind": "late",
+   "kind_name": "Late stage: client already leaving",
+   "test": "At least one disengagement notice with a client reason, dated in the 31 days before the snapshot.",
+   "feature": "client_notices_per10_1m",
+   "feature_label": "Client-initiated notices per 10 staff, last month",
+   "shown_in": [
+    "Warning signs ranked"
+   ],
+   "prevalence": {
+    "1–4 staff": 0.03571,
+    "5+ staff": 0.149317
+   }
+  },
+  {
+   "id": "L2",
+   "name": "Already lost 20%+ of seats recently",
+   "kind": "late",
+   "kind_name": "Late stage: client already leaving",
+   "test": "Seats lost (all reasons) in the 3 months before the snapshot are 20%+ of staff.",
+   "feature": "seat_churn_last_3m",
+   "feature_label": "Seat churn in the previous 3 months",
+   "shown_in": [
+    "Warning signs ranked"
+   ],
+   "prevalence": {
+    "1–4 staff": 0.071041,
+    "5+ staff": 0.073324
+   }
+  },
+  {
+   "id": "L3",
+   "name": "Lost a seat recently",
+   "kind": "late",
+   "kind_name": "Late stage: client already leaving",
+   "test": "At least one seat lost (all reasons) in the 3 months before the snapshot.",
+   "feature": "seat_churn_last_3m",
+   "feature_label": "Seat churn in the previous 3 months",
+   "shown_in": [
+    "Combinations (5+ staff)",
+    "Combinations (1–4 staff)"
+   ],
+   "prevalence": {
+    "1–4 staff": 0.071041,
+    "5+ staff": 0.30303
+   }
+  },
+  {
+   "id": "L4",
+   "name": "Client not replacing staff (pulling out, budget)",
+   "kind": "late",
+   "kind_name": "Late stage: client already leaving",
+   "test": "At least one exit in the last 3 months not replaced because the client is pulling out, cutting budget, moving onshore or unresponsive.",
+   "feature": "client_risk_not_replaced_3m",
+   "feature_label": "Not replaced: client pull-out, budget, onshore",
+   "shown_in": [
+    "Combinations (5+ staff)",
+    "Combinations (1–4 staff)"
+   ],
+   "prevalence": {
+    "1–4 staff": 0.025779,
+    "5+ staff": 0.084472
+   }
+  },
+  {
+   "id": "L5",
+   "name": "Staff exit for business reasons",
+   "kind": "late",
+   "kind_name": "Late stage: client already leaving",
+   "test": "At least one exit in the last 3 months that the client initiated for business reasons (restructure, slow down, downsizing, budget).",
+   "feature": "business_reason_exits_per10_3m",
+   "feature_label": "Exits for client business reasons per 10 staff",
+   "shown_in": [],
+   "prevalence": {
+    "1–4 staff": 0.0305,
+    "5+ staff": 0.119014
+   }
+  }
+ ],
+ "signs": [
+  {
+   "id": "A1",
+   "band": "1–4 staff",
+   "x": 1.509991,
+   "lo": 1.170226,
+   "hi": 1.960532,
+   "churn_with": 0.069569,
+   "churn_without": 0.046073,
+   "months_with": 2113,
+   "clear": true
+  },
+  {
+   "id": "A1",
+   "band": "5+ staff",
+   "x": 2.431785,
+   "lo": 1.32272,
+   "hi": 3.845183,
+   "churn_with": 0.122517,
+   "churn_without": 0.050381,
+   "months_with": 604,
+   "clear": true
+  },
+  {
+   "id": "A2",
+   "band": "1–4 staff",
+   "x": 1.308829,
+   "lo": 1.054056,
+   "hi": 1.599487,
+   "churn_with": 0.059779,
+   "churn_without": 0.045674,
+   "months_with": 3078,
+   "clear": true
+  },
+  {
+   "id": "A2",
+   "band": "5+ staff",
+   "x": 2.074055,
+   "lo": 1.534731,
+   "hi": 2.806796,
+   "churn_with": 0.099707,
+   "churn_without": 0.048073,
+   "months_with": 1023,
+   "clear": true
+  },
+  {
+   "id": "A3",
+   "band": "1–4 staff",
+   "x": 1.433289,
+   "lo": 1.060245,
+   "hi": 1.920341,
+   "churn_with": 0.067171,
+   "churn_without": 0.046865,
+   "months_with": 1057,
+   "clear": true
+  },
+  {
+   "id": "A3",
+   "band": "5+ staff",
+   "x": 1.516863,
+   "lo": 0.999063,
+   "hi": 2.07187,
+   "churn_with": 0.078846,
+   "churn_without": 0.05198,
+   "months_with": 1040,
+   "clear": false
+  },
+  {
+   "id": "A4",
+   "band": "1–4 staff",
+   "x": 0.649844,
+   "lo": 0.0,
+   "hi": 1.640673,
+   "churn_with": 0.03125,
+   "churn_without": 0.048088,
+   "months_with": 64,
+   "clear": false
+  },
+  {
+   "id": "A4",
+   "band": "5+ staff",
+   "x": 2.502993,
+   "lo": 1.252098,
+   "hi": 4.301302,
+   "churn_with": 0.13141,
+   "churn_without": 0.052501,
+   "months_with": 312,
+   "clear": true
+  },
+  {
+   "id": "A5",
+   "band": "1–4 staff",
+   "x": 1.74156,
+   "lo": 1.132398,
+   "hi": 2.402096,
+   "churn_with": 0.081152,
+   "churn_without": 0.046597,
+   "months_with": 764,
+   "clear": true
+  },
+  {
+   "id": "A5",
+   "band": "5+ staff",
+   "x": 1.113559,
+   "lo": 0.701231,
+   "hi": 1.556917,
+   "churn_with": 0.060789,
+   "churn_without": 0.054589,
+   "months_with": 1826,
+   "clear": false
+  },
+  {
+   "id": "A6",
+   "band": "1–4 staff",
+   "x": 1.108829,
+   "lo": 0.610964,
+   "hi": 1.671685,
+   "churn_with": 0.053068,
+   "churn_without": 0.04786,
+   "months_with": 603,
+   "clear": false
+  },
+  {
+   "id": "A6",
+   "band": "5+ staff",
+   "x": 1.545345,
+   "lo": 1.041973,
+   "hi": 2.249534,
+   "churn_with": 0.078715,
+   "churn_without": 0.050937,
+   "months_with": 1245,
+   "clear": true
+  },
+  {
+   "id": "A7",
+   "band": "1–4 staff",
+   "x": 0.751371,
+   "lo": 0.614438,
+   "hi": 0.905225,
+   "churn_with": 0.043834,
+   "churn_without": 0.058338,
+   "months_with": 13095,
+   "clear": true
+  },
+  {
+   "id": "A7",
+   "band": "5+ staff",
+   "x": 1.212848,
+   "lo": 0.805748,
+   "hi": 1.87346,
+   "churn_with": 0.05874,
+   "churn_without": 0.048431,
+   "months_with": 4903,
+   "clear": false
+  },
+  {
+   "id": "P1",
+   "band": "1–4 staff",
+   "x": 2.023112,
+   "lo": 1.521087,
+   "hi": 2.570183,
+   "churn_with": 0.079641,
+   "churn_without": 0.039366,
+   "months_with": 1896,
+   "clear": true
+  },
+  {
+   "id": "P1",
+   "band": "5+ staff",
+   "x": 2.34322,
+   "lo": 1.632071,
+   "hi": 3.169996,
+   "churn_with": 0.102218,
+   "churn_without": 0.043623,
+   "months_with": 1037,
+   "clear": true
+  },
+  {
+   "id": "P2",
+   "band": "1–4 staff",
+   "x": 1.358215,
+   "lo": 1.109762,
+   "hi": 1.658035,
+   "churn_with": 0.058081,
+   "churn_without": 0.042763,
+   "months_with": 6336,
+   "clear": true
+  },
+  {
+   "id": "P2",
+   "band": "5+ staff",
+   "x": 1.680608,
+   "lo": 1.014364,
+   "hi": 2.703719,
+   "churn_with": 0.088853,
+   "churn_without": 0.05287,
+   "months_with": 619,
+   "clear": true
+  },
+  {
+   "id": "L1",
+   "band": "1–4 staff",
+   "x": 4.733601,
+   "lo": 4.030415,
+   "hi": 5.579973,
+   "churn_with": 0.200608,
+   "churn_without": 0.04238,
+   "months_with": 658,
+   "clear": true
+  },
+  {
+   "id": "L1",
+   "band": "5+ staff",
+   "x": 1.877953,
+   "lo": 1.329449,
+   "hi": 2.594616,
+   "churn_with": 0.093586,
+   "churn_without": 0.049834,
+   "months_with": 951,
+   "clear": true
+  },
+  {
+   "id": "L2",
+   "band": "1–4 staff",
+   "x": 1.972512,
+   "lo": 1.429553,
+   "hi": 2.463073,
+   "churn_with": 0.088617,
+   "churn_without": 0.044926,
+   "months_with": 1309,
+   "clear": true
+  },
+  {
+   "id": "L2",
+   "band": "5+ staff",
+   "x": 3.800593,
+   "lo": 2.653238,
+   "hi": 4.961948,
+   "churn_with": 0.17773,
+   "churn_without": 0.046764,
+   "months_with": 467,
+   "clear": true
+  }
+ ],
+ "combos": [
+  {
+   "band": "5+ staff",
+   "id1": "A2",
+   "id2": "A6",
+   "only1": 0.077411,
+   "only2": 0.056436,
+   "both": 0.174468,
+   "neither": 0.046125,
+   "months_both": 235,
+   "lift": 2.253784,
+   "lift_lo": 1.245585,
+   "lift_hi": 3.545821
+  },
+  {
+   "band": "5+ staff",
+   "id1": "A2",
+   "id2": "L3",
+   "only1": 0.071531,
+   "only2": 0.063512,
+   "both": 0.160494,
+   "neither": 0.041444,
+   "months_both": 324,
+   "lift": 2.243704,
+   "lift_lo": 1.263308,
+   "lift_hi": 3.191757
+  },
+  {
+   "band": "5+ staff",
+   "id1": "A3",
+   "id2": "L4",
+   "only1": 0.069003,
+   "only2": 0.065693,
+   "both": 0.149606,
+   "neither": 0.050834,
+   "months_both": 127,
+   "lift": 2.168104,
+   "lift_lo": 1.004424,
+   "lift_hi": 3.235736
+  },
+  {
+   "band": "5+ staff",
+   "id1": "A2",
+   "id2": "P1",
+   "only1": 0.077124,
+   "only2": 0.084423,
+   "both": 0.178571,
+   "neither": 0.037727,
+   "months_both": 196,
+   "lift": 2.115191,
+   "lift_lo": 1.040954,
+   "lift_hi": 2.896563
+  },
+  {
+   "band": "1–4 staff",
+   "id1": "A5",
+   "id2": "L4",
+   "only1": 0.049521,
+   "only2": 0.077151,
+   "both": 0.224638,
+   "neither": 0.046003,
+   "months_both": 138,
+   "lift": 2.91165,
+   "lift_lo": 1.554612,
+   "lift_hi": 5.350806
+  },
+  {
+   "band": "1–4 staff",
+   "id1": "A5",
+   "id2": "L3",
+   "only1": 0.018767,
+   "only2": 0.066449,
+   "both": 0.140665,
+   "neither": 0.045509,
+   "months_both": 391,
+   "lift": 2.116892,
+   "lift_lo": 1.246111,
+   "lift_hi": 3.542888
+  }
+ ],
+ "features": [
+  {
+   "feature": "ncns_index",
+   "label": "No call no shows (vs average)",
+   "group": "Driver: attendance",
+   "window": "3 months",
+   "built_from": [
+    "ncns_incidents",
+    "active_staff"
+   ],
+   "how": "NCNS per 10 staff, divided by the average for the same size band that month (1.0 = average).",
+   "indicators": [
+    "A3"
+   ],
+   "models": "early-signal and full"
+  },
+  {
+   "feature": "tardiness_index",
+   "label": "Late arrivals (vs average)",
+   "group": "Driver: attendance",
+   "window": "3 months",
+   "built_from": [
+    "tardiness_incidents",
+    "active_staff"
+   ],
+   "how": "Late arrivals per 10 staff, divided by the same-band average that month.",
+   "indicators": [
+    "A2"
+   ],
+   "models": "early-signal and full"
+  },
+  {
+   "feature": "absence_index",
+   "label": "Absences (vs average)",
+   "group": "Driver: attendance",
+   "window": "3 months",
+   "built_from": [
+    "absence_incidents",
+    "active_staff"
+   ],
+   "how": "Absences per 10 staff, divided by the same-band average that month. Blank after the absence log ends.",
+   "indicators": [
+    "A1"
+   ],
+   "models": "early-signal and full"
+  },
+  {
+   "feature": "any_ncns_3m",
+   "label": "Any no call no show, last 3 months",
+   "group": "Driver: attendance",
+   "window": "3 months",
+   "built_from": [
+    "ncns_incidents"
+   ],
+   "how": "1 if any no call no show, else 0.",
+   "indicators": [],
+   "models": "early-signal and full"
+  },
+  {
+   "feature": "any_tardiness_3m",
+   "label": "Any late arrival, last 3 months",
+   "group": "Driver: attendance",
+   "window": "3 months",
+   "built_from": [
+    "tardiness_incidents"
+   ],
+   "how": "1 if any late arrival, else 0.",
+   "indicators": [],
+   "models": "early-signal and full"
+  },
+  {
+   "feature": "any_absence_3m",
+   "label": "Any absence, last 3 months",
+   "group": "Driver: attendance",
+   "window": "3 months",
+   "built_from": [
+    "absence_incidents"
+   ],
+   "how": "1 if any absence, else 0. Blank after the absence log ends.",
+   "indicators": [],
+   "models": "early-signal and full"
+  },
+  {
+   "feature": "late_payment_months_6m",
+   "label": "Late-payment months, last 6",
+   "group": "Driver: payments",
+   "window": "6 months",
+   "built_from": [
+    "late_payment"
+   ],
+   "how": "Number of months paid late.",
+   "indicators": [
+    "A7"
+   ],
+   "models": "early-signal and full"
+  },
+  {
+   "feature": "late_payment_share_6m",
+   "label": "Share of invoices paid late, last 6 months",
+   "group": "Driver: payments",
+   "window": "6 months",
+   "built_from": [
+    "late_payment",
+    "late_payment_reported"
+   ],
+   "how": "Months paid late / months in the payment report.",
+   "indicators": [],
+   "models": "early-signal and full"
+  },
+  {
+   "feature": "late_payment_unresponsive_6m",
+   "label": "Late payment, client unresponsive",
+   "group": "Driver: payments",
+   "window": "6 months",
+   "built_from": [
+    "late_payment_cause_client_unresponsive"
+   ],
+   "how": "1 if any late month with Cause of Delay 'Client unresponsive'.",
+   "indicators": [
+    "A8"
+   ],
+   "models": "early-signal and full"
+  },
+  {
+   "feature": "resignations_per10_3m",
+   "label": "Staff resignations per 10 staff, last 3 months",
+   "group": "Driver: staff",
+   "window": "3 months",
+   "built_from": [
+    "exit_staff_resignation",
+    "active_staff"
+   ],
+   "how": "Resignations per 10 staff.",
+   "indicators": [
+    "A5"
+   ],
+   "models": "early-signal and full"
+  },
+  {
+   "feature": "cloudstaff_exits_per10_3m",
+   "label": "Cloudstaff-initiated exits per 10 staff",
+   "group": "Driver: staff",
+   "window": "3 months",
+   "built_from": [
+    "exit_cloudstaff_initiated",
+    "active_staff"
+   ],
+   "how": "Cloudstaff-initiated exits per 10 staff.",
+   "indicators": [
+    "A4"
+   ],
+   "models": "early-signal and full"
+  },
+  {
+   "feature": "headcount_change_6m",
+   "label": "Headcount change, last 6 months",
+   "group": "Profile",
+   "window": "6 months",
+   "built_from": [
+    "active_staff"
+   ],
+   "how": "Staff at the snapshot / staff 6 months earlier - 1.",
+   "indicators": [
+    "P1"
+   ],
+   "models": "early-signal and full"
+  },
+  {
+   "feature": "staff",
+   "label": "Staff at snapshot",
+   "group": "Profile",
+   "window": "at the snapshot",
+   "built_from": [
+    "active_staff"
+   ],
+   "how": "Active staff at the start of the snapshot day.",
+   "indicators": [
+    "P3"
+   ],
+   "models": "early-signal and full"
+  },
+  {
+   "feature": "client_age_years",
+   "label": "Years since first engagement",
+   "group": "Profile",
+   "window": "at the snapshot",
+   "built_from": [
+    "(SC Engagement List: earliest Engagement Date of the client)"
+   ],
+   "how": "Years since the client's first engagement.",
+   "indicators": [
+    "P2"
+   ],
+   "models": "early-signal and full"
+  },
+  {
+   "feature": "service_dissatisfaction_per10_3m",
+   "label": "Exits for service dissatisfaction per 10 staff",
+   "group": "Early warning",
+   "window": "3 months",
+   "built_from": [
+    "exit_client_service_dissatisfaction",
+    "active_staff"
+   ],
+   "how": "Service-dissatisfaction exits per 10 staff.",
+   "indicators": [
+    "A6"
+   ],
+   "models": "full only"
+  },
+  {
+   "feature": "business_reason_exits_per10_3m",
+   "label": "Exits for client business reasons per 10 staff",
+   "group": "Early warning",
+   "window": "3 months",
+   "built_from": [
+    "exit_client_business_reasons",
+    "active_staff"
+   ],
+   "how": "Business-reason exits per 10 staff.",
+   "indicators": [
+    "L5"
+   ],
+   "models": "full only"
+  },
+  {
+   "feature": "client_risk_not_replaced_3m",
+   "label": "Not replaced: client pull-out, budget, onshore",
+   "group": "Early warning",
+   "window": "3 months",
+   "built_from": [
+    "exit_not_replaced_client_risk"
+   ],
+   "how": "1 if any exit not replaced for a client-risk reason.",
+   "indicators": [
+    "L4"
+   ],
+   "models": "full only"
+  },
+  {
+   "feature": "client_notices_per10_1m",
+   "label": "Client-initiated notices per 10 staff, last month",
+   "group": "Early warning",
+   "window": "1 month",
+   "built_from": [
+    "exit_notices_client_initiated",
+    "active_staff"
+   ],
+   "how": "Client-initiated notices per 10 staff.",
+   "indicators": [
+    "L1"
+   ],
+   "models": "full only"
+  },
+  {
+   "feature": "seat_churn_last_3m",
+   "label": "Seat churn in the previous 3 months",
+   "group": "Early warning",
+   "window": "3 months",
+   "built_from": [
+    "seat_exit",
+    "exit_record_only",
+    "exit_replaced",
+    "active_staff"
+   ],
+   "how": "Seats lost (exits not record-only and not replaced, all reasons) / staff.",
+   "indicators": [
+    "L2",
+    "L3"
+   ],
+   "models": "full only"
+  }
+ ],
+ "timeline": [
+  {
+   "field": "active_staff",
+   "source": "Derived from SC Engagement List (Engagement Raw A:N)",
+   "definition": "Headcount at the client after the day's starts and exits.",
+   "derivation": "Running total of seat_added - seat_exit per Shortcode, in date order."
+  },
+  {
+   "field": "seat_exit",
+   "source": "SC Engagement List (Engagement Raw A:N)",
+   "definition": "Staff who left the client that day (any reason).",
+   "derivation": "Count of engagements with disengagement_date = date. Still-active engagements (blank, today's or a future end date) are left out. Equals the sum of the exit_ reason columns, and of the three replacement columns."
+  },
+  {
+   "field": "exit_staff_resignation",
+   "source": "UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)",
+   "definition": "Exits where the staff member left by choice.",
+   "derivation": "Exits only. Reason from the matched UB4108 ticket, first rule that applies: no ticket or cancelled ticket -> unknown; record only; Cloudstaff initiated; client reason (Type of Customer Initiated); Voluntary -> resignation. Here: 'Reason for Disengagement' = Voluntary, with no client reason."
+  },
+  {
+   "field": "exit_client_service_dissatisfaction",
+   "source": "UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)",
+   "definition": "Exits the client initiated because it was unhappy with the staff member's service (performance, attendance, code of conduct).",
+   "derivation": "Exits only. Reason from the matched UB4108 ticket, first rule that applies: no ticket or cancelled ticket -> unknown; record only; Cloudstaff initiated; client reason (Type of Customer Initiated); Voluntary -> resignation. Here: 'Type of Customer Initiated' = Service Dissatisfaction."
+  },
+  {
+   "field": "exit_client_business_reasons",
+   "source": "UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)",
+   "definition": "Exits the client initiated for its own business reasons (restructure, slowdown, role moved).",
+   "derivation": "Exits only. Reason from the matched UB4108 ticket, first rule that applies: no ticket or cancelled ticket -> unknown; record only; Cloudstaff initiated; client reason (Type of Customer Initiated); Voluntary -> resignation. Here: 'Type of Customer Initiated' = Business Reasons."
+  },
+  {
+   "field": "exit_cloudstaff_initiated",
+   "source": "UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)",
+   "definition": "Exits Cloudstaff initiated (AWOL, behaviour, fraud, attendance, medical).",
+   "derivation": "Exits only. Reason from the matched UB4108 ticket, first rule that applies: no ticket or cancelled ticket -> unknown; record only; Cloudstaff initiated; client reason (Type of Customer Initiated); Voluntary -> resignation. Here: 'Type of Involuntary' = Cloudstaff Initiated."
+  },
+  {
+   "field": "exit_record_only",
+   "source": "UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)",
+   "definition": "Exits recorded for documentation only, e.g. a move to OfficeFLEX; not a real loss of the staff member.",
+   "derivation": "Exits only. Reason from the matched UB4108 ticket, first rule that applies: no ticket or cancelled ticket -> unknown; record only; Cloudstaff initiated; client reason (Type of Customer Initiated); Voluntary -> resignation. Here: 'Reason for Disengagement' = For Record Purpose Only, or 'Type of Disengagement' = Disengagement For Documentation."
+  },
+  {
+   "field": "exit_replaced",
+   "source": "UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)",
+   "definition": "Exits where the client will fill the seat again.",
+   "derivation": "Exits whose ticket 'Type of Disengagement' is Disengagement with Replacement or Resignation with Replacement."
+  },
+  {
+   "field": "exit_not_replaced_client_risk",
+   "source": "UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)",
+   "definition": "Not-replaced exits whose reason points to the client shrinking or leaving. A subset of exit_not_replaced.",
+   "derivation": "exit_not_replaced exits whose 'Reason for NO Replacement' is client pull out, Subclient pulling out/not replacing, Budget constraints, Moving onshore/other provider, or client has gone unresponsive. Operational reasons (no Backfill classes scheduled, no active projects, changed mind) are not counted."
+  },
+  {
+   "field": "exit_notices_client_initiated",
+   "source": "UB4108 disengagement tickets, PB-4108.xlsx (via the ub4108_ join)",
+   "definition": "The client-initiated part of exit_notices_received.",
+   "derivation": "exit_notices_received tickets whose exit reason is one of the exit_client_ columns."
+  },
+  {
+   "field": "ncns_incidents",
+   "source": "NCNS.xlsx, 'NCNS' tab (no call no show log)",
+   "definition": "No call no shows that day: staff on the client who neither turned up nor notified, with no logs. Counts from Jan 2026 are about 10x earlier years because recording changed (automatic detection from 2026), so compare clients within the same period, not across years.",
+   "derivation": "NCNS 'NCNS' tab rows (Attendance = NCNS, Actual NCNS = No logs), counted only when the staff member was on an engagement with that client on that date: 'Client Shortcode' = engagement Shortcode, 'Employee ID' = engagement CSID, and engagement_date <= Date <= disengagement_date. Other records are in ncns_unmatched. Does not change active_staff."
+  },
+  {
+   "field": "tardiness_incidents",
+   "source": "Tardiness.xlsx, 'Tardiness' tab (late arrival log)",
+   "definition": "Late arrivals that day by staff on the client. Automatic recording started in Q3 2026, so that quarter's counts are about 3x earlier quarters.",
+   "derivation": "Tardiness rows (all Attendance = Late), counted only when the staff member was on an engagement with that client on that date: 'Client Shortcode' = engagement Shortcode, 'Employee ID' = engagement CSID, and engagement_date <= Date <= disengagement_date. Records also in NCNS.xlsx (same Log ID) are left out, as they are counted in ncns_incidents. Other records are in tardiness_unmatched. Does not change active_staff."
+  },
+  {
+   "field": "absence_incidents",
+   "source": "Absences.xlsx, 'Absences' tab (notified absence log)",
+   "definition": "Staff on the client who were absent that day with notice (any reason: health, caring, personal, weather…). The absence file ends on 16 Feb 2026: after that date zero means no data, not no absences.",
+   "derivation": "Absences rows, counted only when the staff member was on an engagement with that client on that date: 'Shortcode' = engagement Shortcode and 'CSID' = engagement CSID; records that don't match on CSID (it is blank on about 1 in 8 rows) are tried on 'Username' = engagement Username before the @; and engagement_date <= Date <= disengagement_date. At most one per staff member per day (the file repeats some). The same staff-day can also appear in ncns_incidents or tardiness_incidents. Other records are in absences_unmatched. Does not change active_staff."
+  },
+  {
+   "field": "late_payment_reported",
+   "source": "Late Payments.xlsx, sheets 2023-2026 (monthly days to pay and late flag per client)",
+   "definition": "1 on the 15th of each month the client was in the late-payment report (it had an invoice). Lets late_payment = 0 be read as 'paid on time' rather than 'no data'.",
+   "derivation": "One per client per month where the days-to-pay column for that month is above 0, placed on the 15th of the month, only when the client had at least one active engagement that day ('Mystaff Shortcode' = engagement Shortcode). Other client-months are in late_payments_unmatched."
+  },
+  {
+   "field": "late_payment",
+   "source": "Late Payments.xlsx, sheets 2023-2026 (monthly days to pay and late flag per client)",
+   "definition": "1 on the 15th of a month in which the client paid its invoice late.",
+   "derivation": "The sheet's 1/0 flag for that month (the second block of month columns, headers ending '.1'); it equals days to pay > the client's Terms in every row. Same placement as late_payment_reported."
+  },
+  {
+   "field": "late_payment_cause_client_unresponsive",
+   "source": "Late Payments.xlsx, sheets 2023-2026 (monthly days to pay and late flag per client)",
+   "definition": "1 on a late month when the client's Cause of Delay that year is 'Client unresponsive'.",
+   "derivation": "late_payment = 1 and that sheet's 'Cause of Delay' = Client unresponsive. Cause of Delay is one value per client per year, so it marks every late month that year."
+  }
+ ],
+ "sources": [
+  {
+   "dataset": "Engagement Raw",
+   "source": "Churn Analysis workbook · Engagement Raw",
+   "rows": 31126,
+   "columns": 35,
+   "date column": "Engagement Date / Disengagement Date",
+   "min date": "1995-05-13",
+   "max date": "2026-10-31"
+  },
+  {
+   "dataset": "UB4108",
+   "source": "PB-4108.xlsx · UB Staff Disengagement",
+   "rows": 14802,
+   "columns": 117,
+   "date column": "Submitted at",
+   "min date": "2020-05-07",
+   "max date": "2026-11-14"
+  },
+  {
+   "dataset": "UB Retraction",
+   "source": "Churn Analysis workbook · UB Retraction",
+   "rows": 636,
+   "columns": 17,
+   "date column": "Submitted at",
+   "min date": "2024-04-04",
+   "max date": "2026-11-10"
+  },
+  {
+   "dataset": "PB-4136 CS Now",
+   "source": "Churn Analysis workbook · PB-4136 CSNOW Churn",
+   "rows": 113,
+   "columns": 16,
+   "date column": "Submitted At",
+   "min date": "2025-01-02",
+   "max date": "2026-11-09"
+  },
+  {
+   "dataset": "Mystaff Lookup",
+   "source": "Churn Analysis workbook · Mystaff Lookup",
+   "rows": 2805,
+   "columns": 3,
+   "date column": "(no dates)",
+   "min date": null,
+   "max date": null
+  },
+  {
+   "dataset": "Reference",
+   "source": "Churn Analysis workbook · Reference",
+   "rows": 2708,
+   "columns": 16,
+   "date column": "(no dates)",
+   "min date": null,
+   "max date": null
+  },
+  {
+   "dataset": "Settings",
+   "source": "Churn Analysis workbook · Settings",
+   "rows": 21,
+   "columns": 4,
+   "date column": "(no dates)",
+   "min date": null,
+   "max date": null
+  },
+  {
+   "dataset": "Client Raw",
+   "source": "Churn Analysis workbook · Client Raw",
+   "rows": 9719,
+   "columns": 33,
+   "date column": "Month",
+   "min date": "2026-01-01",
+   "max date": "2026-10-01"
+  },
+  {
+   "dataset": "Client Table",
+   "source": "Churn Analysis workbook · Client Table",
+   "rows": 1196,
+   "columns": 21,
+   "date column": "First start date",
+   "min date": "2011-08-02",
+   "max date": "2026-10-29"
+  },
+  {
+   "dataset": "NCNS",
+   "source": "NCNS.xlsx · NCNS",
+   "rows": 22447,
+   "columns": 27,
+   "date column": "Date",
+   "min date": "2023-01-01",
+   "max date": "2026-09-18"
+  },
+  {
+   "dataset": "Tardiness",
+   "source": "Tardiness.xlsx · Tardiness",
+   "rows": 14638,
+   "columns": 27,
+   "date column": "Date",
+   "min date": "2023-01-01",
+   "max date": "2026-09-18"
+  },
+  {
+   "dataset": "Absences",
+   "source": "Absences.xlsx · Absences",
+   "rows": 79753,
+   "columns": 17,
+   "date column": "Date",
+   "min date": "2023-01-01",
+   "max date": "2026-02-16"
+  },
+  {
+   "dataset": "Late Payments",
+   "source": "Late Payments.xlsx · 2023-2026 (client-months)",
+   "rows": 31461,
+   "columns": 8,
+   "date column": "Month",
+   "min date": "2023-01-01",
+   "max date": "2026-10-01"
+  }
+ ],
+ "qa": [
+  {
+   "step": "Exits from 01 Apr 2024 to 29 Oct 2026 (all clients)",
+   "rows": 9431
+  },
+  {
+   "step": "  of which record-only (data clean-up, not a real exit)",
+   "rows": 117
+  },
+  {
+   "step": "  of which replaced (the client kept the seat)",
+   "rows": 1880
+  },
+  {
+   "step": "  of which business reasons, not replaced (market churn, not counted)",
+   "rows": 1185
+  },
+  {
+   "step": "  = seats lost that count as churn",
+   "rows": 6249
+  },
+  {
+   "step": "Client-months, clients with 1–4 staff (CS and OPTI clients)",
+   "rows": 18426
+  },
+  {
+   "step": "  of which churned (lose all their seats in the next 3 months)",
+   "rows": 885
+  },
+  {
+   "step": "Client-months, clients with 5+ staff (CS and OPTI clients)",
+   "rows": 6369
+  },
+  {
+   "step": "  of which churned (lose 20%+ of their seats in the next 3 months)",
+   "rows": 359
+  }
+ ]
+}

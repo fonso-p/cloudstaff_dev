@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<!-- Fonts, icons and Chart.js load from CDNs. No data is sent anywhere: the data is embedded below. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=Chivo+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ---- Cloudstaff Design System tokens (assets/tokens.css, inlined at build time) ---- */
+/*__TOKENS__*/
+
+/* ---- Dashboard layout (uses design-system tokens only) ---- */
+*{box-sizing:border-box}
+body{margin:0;background:var(--color-surface-page);color:var(--color-text-base-primary);font-family:var(--font-family-body);font-size:var(--font-size-sm)}
+h1,h2,h3{font-family:var(--font-family-heading);margin:0}
+.mono,.num{font-family:var(--font-family-mono)}
+.shell{display:grid;grid-template-columns:16rem minmax(0,1fr);min-height:100vh}
+/* sidebar */
+.side{background:var(--color-surface-primary);border-right:1px solid var(--border-color-default);padding:var(--component-card-padding);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:var(--component-tile-padding)}
+.brand{display:flex;flex-direction:column;gap:4px;padding-bottom:var(--component-tile-padding)}
+.brand svg{width:150px;height:auto}
+.brand small{color:var(--color-text-base-muted)}
+.nav-label{font-family:var(--font-family-mono);font-size:var(--font-size-xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-base-muted);margin:8px 0 4px}
+.nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-lg);color:var(--color-text-base-primary);text-decoration:none;font-weight:var(--font-weight-medium);cursor:pointer}
+.nav a i{width:18px;text-align:center;color:var(--color-text-base-secondary)}
+.nav a:hover{background:var(--color-surface-secondary)}
+.nav a.active{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.nav a.active i{color:var(--color-brand-primary-strong)}
+.side-box{border:1px solid var(--border-color-default);border-radius:var(--radius-xl);padding:var(--component-tile-padding);display:flex;flex-direction:column;gap:8px}
+.btn{display:flex;align-items:center;gap:8px;border:0;border-radius:var(--radius-lg);padding:10px 12px;font:inherit;font-weight:var(--font-weight-semibold);cursor:pointer}
+.btn-teal{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong)}
+.btn-blue{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.side-foot{margin-top:auto;color:var(--color-text-base-muted);font-size:var(--font-size-xs)}
+/* main */
+.main{padding:var(--component-pane-padding);min-width:0}
+.topbar{display:flex;align-items:center;gap:16px;padding-bottom:var(--component-card-padding);border-bottom:1px solid var(--border-color-default);margin-bottom:var(--component-card-padding)}
+.crumbs{color:var(--color-text-base-muted);font-size:var(--font-size-md)}
+.crumbs b{color:var(--color-text-base-primary)}
+.topbar .grow{flex:1}
+.chip{display:flex;align-items:center;gap:8px;font-weight:var(--font-weight-semibold)}
+.chip i{color:var(--color-brand-primary)}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--border-color-default);border-radius:var(--radius-lg);padding:8px 12px;background:var(--color-surface-primary);min-width:240px}
+.search input{border:0;outline:0;font:inherit;width:100%;background:transparent}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:var(--component-tile-padding);flex-wrap:wrap}
+.page-head h1{font-size:var(--font-size-3xl)}
+.page-head p{margin:6px 0 0;color:var(--color-text-base-secondary);font-size:var(--font-size-md)}
+/* filters: one panel, one or more labelled rows */
+.filters{display:flex;flex-direction:column;gap:10px;background:var(--color-surface-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-xl);padding:var(--component-tile-padding);margin-bottom:var(--component-card-padding);box-shadow:var(--shadow-sm)}
+.filters label{display:flex;flex-direction:column;gap:4px;font-size:var(--font-size-xs);color:var(--color-text-base-muted);font-weight:var(--font-weight-semibold)}
+.filters select{font:inherit;color:var(--color-text-base-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:7px 10px;background:var(--color-surface-primary);min-width:120px;max-width:220px}
+.filters .reset{align-self:flex-end}
+.frow{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.frow + .frow{border-top:1px solid var(--border-color-default);padding-top:10px}
+.frow-label{width:100%;font-family:var(--font-family-mono);font-size:var(--font-size-2xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-brand-primary-strong);font-weight:var(--font-weight-semibold)}
+.frow-note{font-size:var(--font-size-xs);color:var(--color-text-base-muted)}
+.frow-note:empty{display:none}
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--component-tile-padding);margin-bottom:var(--component-card-padding)}
+.kpi{border-radius:var(--radius-xl);padding:var(--component-tile-padding);display:flex;flex-direction:column;gap:10px}
+.kpi-top{display:flex;align-items:center;gap:10px;font-weight:var(--font-weight-semibold);font-size:var(--font-size-sm);line-height:1.3}
+.kpi-icon{width:40px;height:40px;border-radius:var(--radius-lg);display:grid;place-items:center;color:var(--color-surface-primary);flex:none}
+.kpi-value{font-family:var(--font-family-heading);font-size:var(--font-size-3xl);font-weight:var(--font-weight-bold)}
+.kpi-sub{color:var(--color-text-base-secondary)}
+.k-blue{background:var(--color-brand-primary-soft)} .k-blue .kpi-icon{background:var(--color-brand-primary)}
+.k-teal{background:var(--color-feature-01-soft)} .k-teal .kpi-icon{background:var(--color-feature-01)}
+.k-yellow{background:var(--color-feature-02-soft)} .k-yellow .kpi-icon{background:var(--color-feature-02)}
+.k-pink{background:var(--color-feature-03-soft)} .k-pink .kpi-icon{background:var(--color-feature-03)}
+.k-purple{background:var(--color-feature-05-soft)} .k-purple .kpi-icon{background:var(--color-feature-05)}
+.k-indigo{background:var(--color-feature-04-soft)} .k-indigo .kpi-icon{background:var(--color-feature-04)}
+/* cards with a solid blue header bar */
+.grid{display:grid;gap:var(--component-card-padding);margin-bottom:var(--component-card-padding)}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:3fr 2fr}
+.card{background:var(--color-surface-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm);overflow:hidden;min-width:0}
+.page > .card{margin-bottom:var(--component-card-padding)}
+.card-head{background:var(--color-brand-primary-strong);color:var(--color-surface-primary);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px var(--component-card-padding)}
+.card-head h3{font-size:var(--font-size-md);font-weight:var(--font-weight-bold);line-height:1.3}
+.card-head span{opacity:.9;font-size:var(--font-size-xs);text-align:right;flex:0 1 auto;max-width:45%}
+.card-body{padding:var(--component-card-padding)}
+.chart{position:relative;height:300px}
+.chart.tall{height:380px}
+.note{color:var(--color-text-base-muted);font-size:var(--font-size-xs);margin-top:10px;line-height:1.5}
+.warn{background:var(--color-feature-02-soft);border-radius:var(--radius-lg);padding:10px 14px;margin:0 0 var(--component-tile-padding);font-size:var(--font-size-xs)}
+.warn i{color:var(--color-feature-07)}
+.info{background:var(--color-brand-primary-soft);border-radius:var(--radius-lg);padding:10px 14px;margin:0 0 var(--component-tile-padding)}
+/* tables */
+.tbl-wrap{overflow:auto;max-height:560px}
+table{border-collapse:collapse;width:100%;font-size:var(--font-size-xs)}
+th{position:sticky;top:0;background:var(--color-surface-primary);color:var(--color-brand-primary-strong);text-align:left;font-weight:var(--font-weight-bold);padding:10px;border-bottom:2px solid var(--border-color-default);white-space:nowrap;cursor:default}
+th.sort{cursor:pointer} th.sort:hover{text-decoration:underline}
+td{padding:8px 10px;border-bottom:1px solid var(--border-color-default);vertical-align:top}
+td.n,th.n{text-align:right}
+td.n{font-family:var(--font-family-mono)}
+tr.small td{color:var(--color-text-base-muted)}
+.nowrap td{white-space:nowrap}
+.sticky1 td:first-child,.sticky1 th:first-child{position:sticky;left:0;background:var(--color-surface-primary);min-width:200px;z-index:1;box-shadow:inset -1px 0 0 var(--border-color-default)}
+.sticky1 th:first-child{z-index:2}
+.badge{display:inline-block;padding:2px 8px;border-radius:var(--radius-pill);font-size:var(--font-size-2xs);font-weight:var(--font-weight-semibold)}
+.b-ok{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong)}
+.b-warn{background:var(--color-feature-02-soft);color:var(--color-text-base-primary)}
+.b-no{background:var(--color-surface-secondary);color:var(--color-text-base-secondary)}
+.b-blue{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.heat td.h{text-align:center;font-family:var(--font-family-mono)}
+.tools{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.tools input{font:inherit;border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:7px 10px;min-width:260px}
+.tools select{font:inherit;border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:6px 8px}
+/* statistics blocks (Stats & method page) */
+.stat{border:1px solid var(--border-color-default);border-radius:var(--radius-lg);padding:var(--component-tile-padding);margin-bottom:12px}
+.stat h4{margin:0 0 6px;font-family:var(--font-family-heading)}
+.stat .reading{font-size:var(--font-size-md);font-weight:var(--font-weight-semibold);margin:6px 0}
+.page{display:none}
+.page.show{display:block}
+ul.rules{margin:0;padding-left:18px;line-height:1.7}
+/* "Numbers behind this chart" panels (added automatically by draw()) */
+details.chart-data{margin-top:12px;border-top:1px solid var(--border-color-default);padding-top:8px}
+details.chart-data summary{cursor:pointer;font-weight:var(--font-weight-semibold);color:var(--color-brand-primary-strong);display:flex;align-items:center;gap:10px;font-size:var(--font-size-xs)}
+details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
+.btn-mini{border:0;border-radius:var(--radius-md);padding:3px 8px;font:inherit;font-size:var(--font-size-2xs);background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong);cursor:pointer}
+/* insight cards */
+.ins .card-body{display:flex;flex-direction:column;gap:8px}
+.ins h4{margin:0;font-family:var(--font-family-heading);font-size:var(--font-size-lg)}
+.ins p{margin:0;line-height:1.6}
+.ins-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ins-link{cursor:pointer;color:var(--color-brand-primary-strong);font-size:var(--font-size-xs);font-weight:var(--font-weight-semibold)}
+@media (max-width:1100px){.g2,.g3{grid-template-columns:1fr}.shell{grid-template-columns:1fr}.side{position:static;height:auto}}
+/* ---- additions for this page ---- */
+.code{font-family:var(--font-family-mono);font-size:var(--font-size-2xs);background:var(--color-surface-secondary);border-radius:var(--radius-md);padding:1px 6px;white-space:nowrap}
+.idtag{font-family:var(--font-family-mono);font-weight:var(--font-weight-bold);color:var(--color-brand-primary-strong)}
+a.jump{cursor:pointer;color:var(--color-brand-primary-strong);text-decoration:underline dotted}
+tr.hl td{background:var(--color-feature-02-soft)!important;transition:background .3s}
+.k-act{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.k-profile{background:var(--color-surface-secondary);color:var(--color-text-base-secondary)}
+.k-late{background:var(--color-feature-07-soft);color:var(--color-text-base-primary)}
+.badge{white-space:nowrap}
+.tbl-wrap.full{max-height:none}
+.tbl-wrap.full .code{white-space:normal}
+.tbl-wrap.full td:nth-child(2){min-width:130px}
+.legend-row{display:flex;flex-wrap:wrap;gap:16px;font-size:var(--font-size-xs);color:var(--color-text-base-secondary);margin:0 0 var(--component-tile-padding)}
+.legend-row span{display:flex;align-items:center;gap:6px}
+.legend-row i.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.chart.xtall{height:440px}
+.wrap-cell{min-width:220px;white-space:normal}
+@media print{.side,.topbar,details.chart-data,.no-print{display:none!important}.shell{grid-template-columns:1fr}.main{padding:0}.card{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- ================= sidebar ================= -->
+  <aside class="side">
+    <div class="brand"><!--__LOGO__--><small id="brandSub"></small></div>
+    <div class="nav-label">Workspace</div>
+    <nav class="nav">
+      <a data-page="signs" class="active"><i class="fa-solid fa-triangle-exclamation"></i>Warning signs</a>
+      <a data-page="dict"><i class="fa-solid fa-book"></i>Data dictionary</a>
+    </nav>
+    <div class="nav-label">Method</div>
+    <nav class="nav">
+      <a data-page="method"><i class="fa-solid fa-clipboard-check"></i>Method &amp; QA</a>
+    </nav>
+    <div class="side-box">
+      <div class="nav-label" style="margin:0"><i class="fa-solid fa-file-export"></i> Data</div>
+      <button class="btn btn-teal" id="btnSigns"><i class="fa-solid fa-file-csv"></i>Warning signs (CSV)</button>
+      <button class="btn btn-blue" id="btnDict"><i class="fa-solid fa-file-csv"></i>Data dictionary (CSV)</button>
+    </div>
+    <div class="side-foot"><i class="fa-solid fa-database"></i> <span id="sourceTxt"></span>, to <span id="extractTxt"></span><br>Built <span id="builtTxt"></span></div>
+  </aside>
+
+  <!-- ================= main ================= -->
+  <main class="main">
+    <div class="topbar">
+      <div class="crumbs"><span id="crumbRoot"></span> &nbsp;<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>&nbsp; <b id="crumbPage">Warning signs</b></div>
+      <div class="grow"></div>
+      <div class="chip"><i class="fa-regular fa-calendar"></i><span id="dateChip"></span></div>
+    </div>
+    <div class="page-head">
+      <div><h1 id="pageTitle">Warning signs</h1><p id="pageSub"></p></div>
+    </div>
+
+    <!-- ================= Page 1: warning signs (the one-pager) ================= -->
+    <section class="page show" id="p-signs">
+      <div class="info" id="signsInfo"></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="legend-row" id="kindLegend"></div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Warning signs: 5+ staff</h3><span id="h5">times as likely to churn</span></div>
+          <div class="card-body"><div class="chart xtall"><canvas id="cSigns5"></canvas></div><div class="note" id="nSigns5"></div></div></div>
+        <div class="card"><div class="card-head"><h3>Warning signs: 1–4 staff</h3><span id="h1">times as likely to churn</span></div>
+          <div class="card-body"><div class="chart xtall"><canvas id="cSigns1"></canvas></div><div class="note" id="nSigns1"></div></div></div>
+      </div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Two signs together: 5+ staff</h3><span>share that went on to churn</span></div>
+          <div class="card-body"><div class="chart xtall"><canvas id="cCombo5"></canvas></div><div class="note" id="nCombo5"></div></div></div>
+        <div class="card"><div class="card-head"><h3>Two signs together: 1–4 staff</h3><span>share that went on to churn</span></div>
+          <div class="card-body"><div class="chart xtall"><canvas id="cCombo1"></canvas></div><div class="note" id="nCombo1"></div></div></div>
+      </div>
+      <div class="warn" id="signsWarn"></div>
+    </section>
+
+    <!-- ================= Page 2: data dictionary ================= -->
+    <section class="page" id="p-dict">
+      <div class="info"><i class="fa-solid fa-route"></i> <b>How to trace any number on the Warning signs page:</b> the code on each bar (for example <span class="idtag">A1</span>)
+        is an <b>indicator</b> below. Each indicator is a test on one <b>feature</b>, each feature is built from <b>timeline columns</b>, and each timeline column comes from a <b>source file</b>.
+        Click a code or a column name to jump to its row. Clicking a bar on the Warning signs page also brings you here.</div>
+      <div class="card"><div class="card-head"><h3>What counts as churn</h3><span>the outcome every chart measures</span></div>
+        <div class="card-body"><div class="tbl-wrap" id="tOutcome"></div><div class="note" id="nOutcome"></div></div></div>
+      <div class="card"><div class="card-head"><h3>1 · Indicators on the Warning signs page</h3><span>each is a yes/no test at the snapshot</span></div>
+        <div class="card-body"><div class="tbl-wrap full" id="tInd"></div><div class="note">"How common" is the share of client-months where the sign was present. A sign that most clients have is not used in the two-signs charts, because it is the normal state rather than a warning.</div></div></div>
+      <div class="card"><div class="card-head"><h3>2 · Features</h3><span>what each client looked like at the snapshot</span></div>
+        <div class="card-body"><div class="tbl-wrap full" id="tFeat"></div><div class="note">"Per 10 staff" divides by staff at the snapshot, so large and small clients compare fairly. Windows end the day before the snapshot, so no feature uses anything from the 3 months being predicted.</div></div></div>
+      <div class="card"><div class="card-head"><h3>3 · Timeline columns</h3><span>one row per client per day with any event</span></div>
+        <div class="card-body"><div class="tbl-wrap" id="tTl"></div></div></div>
+      <div class="card"><div class="card-head"><h3>4 · Source files</h3><span>as loaded, before any cleaning</span></div>
+        <div class="card-body"><div class="tbl-wrap" id="tSrc"></div></div></div>
+    </section>
+
+    <!-- ================= Method and QA ================= -->
+    <section class="page" id="p-method">
+      <div class="card"><div class="card-head"><h3>How the numbers are worked out</h3><span>definitions</span></div>
+        <div class="card-body" id="methodBox"></div></div>
+      <div class="card"><div class="card-head"><h3>Reconciliation</h3><span>exits in the window to seats counted as churn</span></div>
+        <div class="card-body"><div class="tbl-wrap" id="tQa"></div><div class="note">Each "of which" line is a separate group of exits; together they add up to the total.</div></div></div>
+    </section>
+  </main>
+</div>
+
+<!-- embedded data (built by .claude/skills/cs-dashboard/scripts/build_dashboard.py) -->
+<script id="data" type="application/json">/*__DATA__*/</script>
+
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = id => document.getElementById(id);
+
+// ---- palette (brand order) and fixed colour per kind of sign
+const PALETTE = ['#007AFF', '#00AB9C', '#FFC426', '#E34678', '#4121A9', '#AA67FD', '#F46600', '#36D6E7', '#87DD7D', '#50505C'];
+const GREY = '#C9D2E1';
+const KIND_COLOUR = {act: '#007AFF', profile: '#50505C', late: '#F46600'};
+const KIND_NAME = {act: 'Early sign we can act on', profile: 'Client profile', late: 'Late stage: client already leaving'};
+const MONTHS_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const monLbl = ym => MONTHS_ABBR[+ym.slice(5, 7) - 1] + ' ' + ym.slice(0, 4);
+
+// ---- formatting
+const sum = a => a.reduce((s, x) => s + x, 0);
+const fmt = (v, d = 0) => v === null || v === undefined || Number.isNaN(v) ? '–' : Number(v).toLocaleString('en-AU', {minimumFractionDigits: d, maximumFractionDigits: d});
+const pct = (v, d = 1) => v === null || v === undefined || Number.isNaN(v) ? '–' : (100 * v).toFixed(d) + '%';
+const xfmt = v => v === null || v === undefined ? '–' : Number(v).toFixed(1) + 'x';
+const esc = s => String(s ?? '').replace(/[&<>"]/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[ch]));
+function wrapWords(s, w) { const out = []; let line = ''; for (const word of String(s).split(' ')) { if ((line + ' ' + word).trim().length > w && line) { out.push(line); line = word; } else line = (line + ' ' + word).trim(); } if (line) out.push(line); return out; }
+
+// ---- Chart.js house style, plus two small plugins: value labels at the bar ends and a reference line
+Chart.defaults.font.family = 'Manrope, Segoe UI, Arial, sans-serif';
+Chart.defaults.color = '#737C90';
+Chart.defaults.borderColor = '#DCE3EE';
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.maintainAspectRatio = false;
+const pctAxis = {ticks: {callback: v => pct(v, 0)}, beginAtZero: true};
+Chart.register({id: 'barLabels', afterDatasetsDraw(chart, args, o) {
+  if (!o || !o.text) return; const ctx = chart.ctx; ctx.save(); ctx.textBaseline = 'middle';
+  chart.data.datasets.forEach((ds, di) => { const meta = chart.getDatasetMeta(di); if (meta.hidden) return;
+    meta.data.forEach((bar, i) => { const t = o.text(di, i); if (!t) return; ctx.font = (t.bold ? '700 ' : '500 ') + '11px Manrope, sans-serif';
+      ctx.fillStyle = t.colour || '#1F2533'; ctx.fillText(t.text, Math.max(bar.x, chart.scales.x.getPixelForValue(t.at ?? 0)) + 6, bar.y); }); });
+  ctx.restore(); }});
+Chart.register({id: 'refLine', afterDatasetsDraw(chart, args, o) {
+  if (!o || o.value === undefined || o.value === null) return; const x = chart.scales.x.getPixelForValue(o.value), {top, bottom} = chart.chartArea, ctx = chart.ctx;
+  ctx.save(); ctx.strokeStyle = o.colour || '#1F2533'; ctx.lineWidth = 1.2; ctx.setLineDash(o.dash || []); ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke();
+  if (o.label) { ctx.setLineDash([]); ctx.fillStyle = '#737C90'; ctx.font = '11px Manrope, sans-serif'; ctx.textBaseline = 'bottom'; ctx.fillText(o.label, x + 4, top - 2); }
+  ctx.restore(); }});
+
+const DATA_OPEN = false;   // "Numbers behind this chart" panels start closed on this exec page
+const charts = {};
+function draw(id, cfg) {
+  const scales = (cfg.options && cfg.options.scales) || {};
+  const isPct = Object.values(scales).some(sc => sc.ticks && sc.ticks.callback);
+  if (charts[id]) charts[id].destroy(); charts[id] = new Chart($(id), cfg); chartData(id, cfg, isPct);
+}
+const dataClosed = {};
+function chartData(id, cfg, isPct) {
+  const body = $(id).closest('.card-body');
+  let box = body.querySelector('details.chart-data');
+  if (!box) {
+    box = document.createElement('details'); box.className = 'chart-data'; box.open = DATA_OPEN;
+    box.innerHTML = '<summary>Numbers behind this chart <button class="btn-mini" type="button">CSV</button></summary><div class="tbl-wrap"></div>';
+    box.ontoggle = () => { dataClosed[id] = !box.open; };
+    body.appendChild(box);
+  }
+  const show = v => v === null || v === undefined || Number.isNaN(v) ? '–' : isPct ? pct(v) : Number.isInteger(v) ? fmt(v) : fmt(v, 2);
+  const sets = cfg.data.datasets, labels = cfg.data.labels.map(l => Array.isArray(l) ? l.join(' ') : l);
+  const cols = [{k: 'label', label: ''}, ...sets.map((d, j) => ({k: 'd' + j, label: esc(d.label) + (isPct ? ' (%)' : ''), n: 1, f: show}))];
+  const rows = labels.map((l, i) => Object.assign({label: l}, ...sets.map((d, j) => ({['d' + j]: d.data[i]}))));
+  table(box.querySelector('.tbl-wrap'), cols, rows);
+  box.querySelector('button').onclick = e => { e.preventDefault(); e.stopPropagation();
+    download(id + '_numbers.csv', rows.map(r => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, isPct && k !== 'label' && typeof v === 'number' ? +(100 * v).toFixed(2) : v]))),
+      cols.map(c => ({k: c.k, label: c.label.replace(/&amp;/g, '&') || 'group'}))); };
+}
+function table(el, cols, rows, opts = {}) {
+  let h = '<table><thead><tr>' + cols.map(c => `<th class="${c.n ? 'n' : ''}">${c.label}</th>`).join('') + '</tr></thead><tbody>';
+  h += rows.map(r => `<tr${opts.rowId ? ` id="${opts.rowId(r)}"` : ''} class="${r._small ? 'small' : ''}">` + cols.map(c => `<td class="${c.n ? 'n' : ''} ${c.cls || ''}">${c.f ? c.f(r[c.k], r) : esc(r[c.k])}</td>`).join('') + '</tr>').join('');
+  el.innerHTML = h + '</tbody></table>';
+}
+function download(name, rows, cols) {
+  const q = v => { const s = v === null || v === undefined ? '' : String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const csv = [cols.map(c => q(c.label)).join(','), ...rows.map(r => cols.map(c => q(r[c.k])).join(','))].join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'})); a.download = name; a.click();
+}
+const kpiTiles = items => items.map(([cls, ic, l, v, s]) => `<div class="kpi ${cls}"><div class="kpi-top"><span class="kpi-icon"><i class="fa-solid ${ic}"></i></span>${esc(l)}</div><div class="kpi-value">${v}</div><div class="kpi-sub">${s}</div></div>`).join('');
+
+// ---- lookups
+const M = D.meta;
+const IND = Object.fromEntries(D.indicators.map(r => [r.id, r]));
+const BAND = Object.fromEntries(D.bands.map(r => [r.band, r]));
+const B5 = '5+ staff', B1 = '1–4 staff';
+const KIND_SHORT = {act: 'Early sign', profile: 'Profile', late: 'Late stage'};
+const kindBadge = k => `<span class="badge k-${k}" title="${esc(KIND_NAME[k])}">${esc(KIND_SHORT[k])}</span>`;
+const shownShort = s => s.replace('Warning signs ranked', 'Ranked chart').replace(/^Combinations \((.*)\)$/, 'Pairs chart, $1');
+const idLink = id => `<a class="jump idtag" data-target="ind-${id}">${id}</a>`;
+const brk = s => esc(s).replace(/_/g, '_<wbr>');   // long column names wrap only at underscores
+const featLink = f => `<a class="jump code" data-target="feat-${f}">${brk(f)}</a>`;
+const colLink = c => c.startsWith('(') ? esc(c) : `<a class="jump code" data-target="tl-${c}">${esc(c)}</a>`;
+
+// ---- header text: every date comes from the data
+document.title = M.title;
+$('brandSub').textContent = M.subtitle; $('crumbRoot').textContent = M.title; $('sourceTxt').textContent = M.source;
+$('extractTxt').textContent = new Date(M.extract).toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric'});
+$('builtTxt').textContent = M.generated.slice(0, 10);
+$('dateChip').textContent = 'Data to ' + $('extractTxt').textContent;
+
+// ---- page switching (no filters: every number is a result of the analysis, so nothing on the page recalculates)
+const TITLES = {signs: 'Warning signs', dict: 'Data dictionary', method: 'Method and QA'};
+let page = 'signs';
+document.querySelectorAll('.nav a').forEach(a => a.onclick = () => go(a.dataset.page));
+function go(p) {
+  page = p;
+  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('active', a.dataset.page === p));
+  document.querySelectorAll('.page').forEach(s => s.classList.toggle('show', s.id === 'p-' + p));
+  $('pageTitle').textContent = TITLES[p]; $('crumbPage').textContent = TITLES[p];
+  render();
+}
+function jump(target) {   // go to the dictionary row with this id and highlight it
+  if (page !== 'dict') go('dict');
+  const row = $(target); if (!row) return;
+  row.scrollIntoView({behavior: 'smooth', block: 'center'});
+  row.classList.add('hl'); setTimeout(() => row.classList.remove('hl'), 2200);
+}
+document.addEventListener('click', e => { const a = e.target.closest('a.jump'); if (a) { e.preventDefault(); jump(a.dataset.target); } });
+function render() {
+  const months = sum(D.bands.map(b => b.client_months)), clients = sum(D.bands.map(b => b.clients));
+  $('pageSub').textContent = `${fmt(months)} client-months · monthly snapshots ${monLbl(M.first_month)} to ${monLbl(M.last_month)} · churn measured over the next ${Math.round(M.horizon_days / 30)} months`;
+  ({signs: rSigns, dict: rDict, method: rMethod})[page]();
+}
+
+// ---------------- Page 1: warning signs
+const signOrder = () => {   // within each kind, strongest first for clients with 5+ staff (signs that are not clear go last)
+  const s5 = D.signs.filter(s => s.band === B5);
+  return ['act', 'profile', 'late'].flatMap(k => s5.filter(s => IND[s.id].kind === k).sort((a, b) => (b.clear ? b.x : 0) - (a.clear ? a.x : 0)).map(s => s.id));
+};
+function signsChart(canvas, band, order, xmax) {
+  const rows = order.map(id => D.signs.find(s => s.id === id && s.band === band));
+  draw(canvas, {type: 'bar',
+    data: {labels: rows.map(r => wrapWords(`${r.id} · ${IND[r.id].name}`, 34)),
+           datasets: [{label: 'Times as likely to churn', data: rows.map(r => r.x), backgroundColor: rows.map(r => r.clear ? KIND_COLOUR[IND[r.id].kind] : GREY), barPercentage: 0.8}]},
+    options: {indexAxis: 'y', layout: {padding: {right: 90, top: 14}},
+      onClick: (e, els) => { if (els.length) jump('ind-' + rows[els[0].index].id); },
+      onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+      plugins: {legend: {display: false},
+        tooltip: {callbacks: {label: c => { const r = rows[c.dataIndex]; return [`${xfmt(r.x)} as likely (95% range ${xfmt(r.lo)} to ${xfmt(r.hi)})`, `churn ${pct(r.churn_with)} with the sign vs ${pct(r.churn_without)} without`, `${fmt(r.months_with)} client-months with the sign`]; }}},
+        barLabels: {text: (di, i) => { const r = rows[i]; return r.clear ? {text: xfmt(r.x) + (r.x < 1 ? ' (less churn)' : ''), bold: true, at: 1} : {text: 'not clear', colour: '#737C90', at: 1}; }},
+        refLine: {value: 1, label: '1x = no difference'}},
+      scales: {x: {min: 0, max: xmax, title: {display: true, text: 'times as likely to churn'}}, y: {ticks: {autoSkip: false, font: {size: 11}}}}}});
+  const b = BAND[band];
+  return `Each bar compares client-months where the sign was present with those where it wasn't: 2x means twice as likely to ${esc(b.outcome)} within 3 months (normally ${pct(b.base_rate)}). Grey = not a clear signal (its 95% range crosses 1x). Click a bar to see how the sign is defined.`;
+}
+function comboChart(canvas, band) {
+  const rows = D.combos.filter(c => c.band === band);
+  if (!rows.length) return 'No pair of signs is clearly stronger together for this group.';
+  draw(canvas, {type: 'bar',
+    data: {labels: rows.map(r => [...wrapWords(`${r.id1} ${IND[r.id1].name}`, 34), ...wrapWords(`+ ${r.id2} ${IND[r.id2].name}`, 34)]),
+           datasets: [{label: 'First sign on its own', data: rows.map(r => r.only1), backgroundColor: GREY},
+                      {label: 'Second sign on its own', data: rows.map(r => r.only2), backgroundColor: '#8D97AB'},
+                      {label: 'Both together', data: rows.map(r => r.both), backgroundColor: PALETTE[3]}]},
+    options: {indexAxis: 'y', layout: {padding: {right: 40, top: 14}},
+      onClick: (e, els) => { if (els.length) { const r = rows[els[0].index]; jump('ind-' + (els[0].datasetIndex === 1 ? r.id2 : r.id1)); } },
+      plugins: {legend: {position: 'bottom'},
+        tooltip: {callbacks: {afterBody: items => { const r = rows[items[0].dataIndex]; return [`Neither sign: ${pct(r.neither)}`, `${fmt(r.months_both)} client-months with both`]; }}},
+        barLabels: {text: (di, i) => { const r = rows[i], v = [r.only1, r.only2, r.both][di]; return {text: pct(v, 0), bold: di === 2}; }},
+        refLine: {value: BAND[band].base_rate, dash: [4, 4], colour: '#737C90', label: `all clients ${pct(BAND[band].base_rate, 0)}`}},
+      scales: {x: pctAxis, y: {ticks: {autoSkip: false, font: {size: 11}}}}}});
+  const best = rows[0];
+  return `Share that went on to ${esc(BAND[band].outcome)} within 3 months. Shown: pairs where both together is clearly higher than the stronger sign on its own, and at least one sign is something we can act on. `
+    + `Strongest: ${idLink(best.id1)} + ${idLink(best.id2)}, ${pct(best.both, 0)} with both vs ${pct(Math.max(best.only1, best.only2), 0)} for either alone. Dashed line = all clients in the group.`;
+}
+function rSigns() {
+  const b5 = BAND[B5], b1 = BAND[B1];
+  $('signsInfo').innerHTML = `<i class="fa-solid fa-circle-info"></i> <b>What comes before a client churns.</b> Churn means a client with <b>5+ staff</b> loses <b>${pct(M.high_churn, 0)}+ of its seats</b>, or a client with <b>1–4 staff</b> loses <b>all</b> its seats, within 3 months. `
+    + `Seats lost are exits that weren't replaced; exits for <b>business reasons</b> (restructures, slowdowns, budget cuts) are market churn and are not counted. Codes such as <span class="idtag">A1</span> are defined on the <a class="jump" data-target="ind-A1">Data dictionary</a> page.`;
+  const s5 = D.signs.filter(s => s.band === B5 && s.clear && IND[s.id].kind === 'act').sort((a, b) => b.x - a.x);
+  const c5 = D.combos.filter(c => c.band === B5).sort((a, b) => b.both - a.both)[0];
+  $('kpis').innerHTML = kpiTiles([
+    ['k-blue', 'fa-building', 'Clients with 5+ staff', pct(b5.base_rate), `of client-months lose ${pct(M.high_churn, 0)}+ of seats within 3 months · ${fmt(b5.clients)} clients`],
+    ['k-teal', 'fa-user', 'Clients with 1–4 staff', pct(b1.base_rate), `of client-months lose all seats within 3 months · ${fmt(b1.clients)} clients`],
+    ['k-yellow', 'fa-triangle-exclamation', 'Strongest early signs (5+ staff)', s5.length ? xfmt(s5[0].x) : '–', s5.slice(0, 2).map(s => `${idLink(s.id)} ${esc(IND[s.id].name)} (${xfmt(s.x)})`).join(' and ') + ' as likely to churn'],
+    ['k-pink', 'fa-layer-group', 'Two signs together (5+ staff)', c5 ? pct(c5.both, 0) : '–', c5 ? `churn when ${idLink(c5.id1)} and ${idLink(c5.id2)} happen together, vs ${pct(Math.max(c5.only1, c5.only2), 0)} for either alone` : ''],
+  ]);
+  $('kindLegend').innerHTML = Object.entries(KIND_NAME).map(([k, n]) => `<span><i class="sw" style="background:${KIND_COLOUR[k]}"></i>${esc(n)}</span>`).join('') + `<span><i class="sw" style="background:${GREY}"></i>Not a clear signal</span>`;
+  const order = signOrder(), xmax = Math.ceil(Math.max(...D.signs.filter(s => s.clear).map(s => s.x)) + 0.5);
+  $('nSigns5').innerHTML = signsChart('cSigns5', B5, order, xmax);
+  $('nSigns1').innerHTML = signsChart('cSigns1', B1, order, xmax);
+  $('nCombo5').innerHTML = comboChart('cCombo5', B5);
+  $('nCombo1').innerHTML = comboChart('cCombo1', B1);
+  $('signsWarn').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <b>Read with care.</b> These signs come <i>before</i> churn; the analysis does not show they cause it. `
+    + `Orange signs mean the client has usually already decided. As a model, the signs rank clients better than chance but are not precise enough to name who will leave: `
+    + `accuracy (AUC, 0.5 = coin flip, 1 = perfect) is ${fmt(b5.auc_full, 2)} for clients with 5+ staff and ${fmt(b1.auc_full, 2)} for 1–4 staff, on months the model never saw.`;
+}
+
+// ---------------- Page 2: data dictionary
+function rDict() {
+  table($('tOutcome'), [
+    {k: 'band', label: 'Clients with'}, {k: 'outcome', label: 'Churn means (within 3 months)'},
+    {k: 'outcome_col', label: 'Column', f: v => `<span class="code">${esc(v)}</span>`},
+    {k: 'clients', label: 'Clients', n: 1, f: v => fmt(v)}, {k: 'client_months', label: 'Client-months', n: 1, f: v => fmt(v)},
+    {k: 'churned_months', label: 'Churned', n: 1, f: v => fmt(v)}, {k: 'base_rate', label: 'Churn rate', n: 1, f: v => pct(v)}], D.bands);
+  $('nOutcome').innerHTML = `A <b>snapshot</b> is a client on the 1st of a month (${monLbl(M.first_month)} to ${monLbl(M.last_month)}); a client-month is one snapshot. `
+    + `<b>Seats lost</b> = exits in the next ${M.horizon_days} days that are not record-only, not replaced, and not for ${M.outcome_exclude.map(c => `<span class="code">${esc(c)}</span>`).join(', ')}. `
+    + `Clients with 1–4 staff are measured on losing every seat, because one exit at a 2-person client is already 50%. A client is placed in a group by its staff on the snapshot day, so it can move between groups.`;
+  table($('tInd'), [
+    {k: 'id', label: 'Code', f: v => `<span class="idtag">${v}</span>`}, {k: 'name', label: 'Indicator'}, {k: 'kind', label: 'Type', f: v => kindBadge(v)},
+    {k: 'test', label: 'Present when', cls: 'wrap-cell'}, {k: 'feature', label: 'Feature', f: v => featLink(v)},
+    {k: 'shown_in', label: 'Shown in', f: v => v.length ? v.map(s => `<span style="white-space:nowrap">${esc(shownShort(s))}</span>`).join('<br>') : '<span class="note">dictionary only</span>'},
+    {k: 'p5', label: 'How common<br>5+ staff', n: 1, f: v => pct(v, 0)}, {k: 'p1', label: 'How common<br>1–4 staff', n: 1, f: v => pct(v, 0)}],
+    D.indicators.map(r => ({...r, p5: r.prevalence[B5], p1: r.prevalence[B1]})), {rowId: r => 'ind-' + r.id});
+  table($('tFeat'), [
+    {k: 'feature', label: 'Feature', f: v => `<span class="code">${esc(v)}</span>`}, {k: 'label', label: 'Meaning'}, {k: 'how', label: 'How it is built', cls: 'wrap-cell'},
+    {k: 'window', label: 'Looks back'}, {k: 'built_from', label: 'Timeline columns', f: v => v.map(colLink).join('<br>')},
+    {k: 'indicators', label: 'Indicators', f: v => v.map(idLink).join(' ') || '–'}, {k: 'models', label: 'In models'}],
+    D.features, {rowId: r => 'feat-' + r.feature});
+  table($('tTl'), [
+    {k: 'field', label: 'Column', f: v => `<span class="code">${esc(v)}</span>`}, {k: 'definition', label: 'Definition', cls: 'wrap-cell'},
+    {k: 'source', label: 'Source'}, {k: 'derivation', label: 'How it is derived', cls: 'wrap-cell'}], D.timeline, {rowId: r => 'tl-' + r.field});
+  table($('tSrc'), [
+    {k: 'dataset', label: 'Dataset'}, {k: 'source', label: 'File · tab'}, {k: 'rows', label: 'Rows', n: 1, f: v => fmt(v)},
+    {k: 'date column', label: 'Date column'}, {k: 'min date', label: 'From'}, {k: 'max date', label: 'To'}], D.sources);
+}
+
+// ---------------- Method and QA
+function rMethod() {
+  const b5 = BAND[B5], b1 = BAND[B1];
+  $('methodBox').innerHTML = `<ul class="rules">
+    <li><b>Times as likely:</b> the churn rate among client-months with the sign, divided by the rate among client-months without it. Months where the sign's source has no data are left out.</li>
+    <li><b>Clear signal:</b> the 95% range of that ratio does not cross 1x. The range comes from resampling whole clients 500 times, because one client's months are not independent. Signs seen in fewer than ${M.min_event_months} client-months are not rated.</li>
+    <li><b>Two signs together:</b> the churn rate when both signs were present, compared with each sign on its own (without the other). A pair is shown when "both" is clearly above the stronger sign alone (95% range above 1), it was seen in at least ${M.min_pair_months} client-months, at least one sign is an early sign we can act on, and neither sign is present in more than ${pct(M.max_prevalence, 0)} of client-months.</li>
+    <li><b>Types of sign:</b> <i>early signs we can act on</i> (attendance, staff events, payments) can happen while the client is still committed; <i>client profile</i> describes the account; <i>late stage</i> means the client has usually already started to leave.</li>
+    <li><b>Accuracy:</b> a model using every sign was trained on earlier snapshots (ending ${M.horizon_days} days before the test months, so no outcome overlaps them) and tested on snapshots from ${monLbl(M.test_from.slice(0, 7))} to ${monLbl(M.last_month)}, months it never saw. AUC (0.5 = coin flip, 1 = perfect): 5+ staff ${fmt(b5.auc_full, 2)} (early signs only ${fmt(b5.auc_early, 2)}), 1–4 staff ${fmt(b1.auc_full, 2)} (early signs only ${fmt(b1.auc_early, 2)}). On clients the model had never seen: ${fmt(b5.auc_full_new_clients, 2)} and ${fmt(b1.auc_full_new_clients, 2)}.</li>
+    <li><b>Associations, not causes.</b> The signs come before churn; this does not show that they cause it.</li></ul>`;
+  table($('tQa'), [{k: 'step', label: 'Step', f: v => esc(v).replace(/^ +/, m => '&nbsp;'.repeat(m.length * 2))}, {k: 'rows', label: 'Count', n: 1, f: v => fmt(v)}], D.qa);
+}
+
+// ---- exports
+$('btnSigns').onclick = () => download('churn_warning_signs.csv',
+  D.signs.map(s => ({...s, name: IND[s.id].name, kind: KIND_NAME[IND[s.id].kind]})),
+  [{k: 'id', label: 'code'}, {k: 'name', label: 'indicator'}, {k: 'kind', label: 'type'}, {k: 'band', label: 'clients with'}, {k: 'x', label: 'times as likely'},
+   {k: 'lo', label: '95% range low'}, {k: 'hi', label: '95% range high'}, {k: 'clear', label: 'clear signal'}, {k: 'churn_with', label: 'churn with'},
+   {k: 'churn_without', label: 'churn without'}, {k: 'months_with', label: 'client-months with'}]);
+$('btnDict').onclick = () => download('churn_data_dictionary.csv',
+  D.indicators.map(r => ({...r, built_from: (D.features.find(f => f.feature === r.feature) || {built_from: []}).built_from.join('; '), shown_in: r.shown_in.join('; ')})),
+  [{k: 'id', label: 'code'}, {k: 'name', label: 'indicator'}, {k: 'kind_name', label: 'type'}, {k: 'test', label: 'present when'}, {k: 'feature', label: 'feature'},
+   {k: 'feature_label', label: 'feature meaning'}, {k: 'built_from', label: 'timeline columns'}, {k: 'shown_in', label: 'shown in'}]);
+
+render();
+</script>
+</body>
+</html>

@@ -4,9 +4,9 @@
     (from the News Scraper folder)
 
 Labels, merged (a label in gold_identity.csv wins over gold_events.csv for the same article):
-  gold_identity.csv  company_id + dedupe_key -> about_company. From `nlp label` sheets labelled by Claude from the headline
+  gold_identity.csv  company_id + dedupe_key -> about_company_claude_labelled. From `nlp label` sheets labelled by Claude from the headline
                      and lead (16 Nov 2026): 10 sample companies, and 18 small companies from the 100-company test database.
-  gold_events.csv    company name + headline -> about_company (headline only). Matched to stored articles by exact headline.
+  gold_events.csv    company name + headline -> about_company_claude_labelled (headline only). Matched to stored articles by exact headline.
 
 It runs the same judging as `export` (pipeline.judge_all), so it measures exactly what export would write. A label is only
 scored when its article is in the database, inside the lookback window and judged; the rest are listed as "not scored".
@@ -46,12 +46,12 @@ def load_labels(db_path):
         if not found:
             missing["gold_events.csv"] += 1
         for k in found:
-            labels[(cid, k)] = {"about": r["about_company"].strip().lower() == "yes", "title": r["title"], "from": "gold_events.csv"}
+            labels[(cid, k)] = {"about": r["about_company_claude_labelled"].strip().lower() == "yes", "title": r["title"], "from": "gold_events.csv"}
     for r in csv.DictReader(open(os.path.join(HERE, "gold_identity.csv"), encoding="utf-8-sig")):
         if r["dedupe_key"] not in keys:
             missing["gold_identity.csv"] += 1
             continue
-        labels[(r["company_id"], r["dedupe_key"])] = {"about": r["about_company"] == "yes", "title": r["title"], "from": "gold_identity.csv"}
+        labels[(r["company_id"], r["dedupe_key"])] = {"about": r["about_company_claude_labelled"] == "yes", "title": r["title"], "from": "gold_identity.csv"}
     return labels, missing
 
 
