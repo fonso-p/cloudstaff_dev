@@ -27,6 +27,7 @@ build-backend = "uv_build"
 dev = [
     "ipykernel>=7.4.0",
     "jupyterlab>=4.6.4",
+    "nbstripout>=0.9.2",
 ]
 # client_growth_project: extra modelling, statistics and Excel automation packages
 client-growth = [

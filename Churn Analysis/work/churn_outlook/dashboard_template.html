@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<!-- Fonts, icons and Chart.js load from CDNs. No data is sent anywhere: the data is embedded below. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=Chivo+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ---- Cloudstaff Design System tokens (assets/tokens.css, inlined at build time) ---- */
+/*__TOKENS__*/
+
+/* ---- Dashboard layout (uses design-system tokens only) ---- */
+*{box-sizing:border-box}
+body{margin:0;background:var(--color-surface-page);color:var(--color-text-base-primary);font-family:var(--font-family-body);font-size:var(--font-size-sm)}
+h1,h2,h3{font-family:var(--font-family-heading);margin:0}
+.mono,.num{font-family:var(--font-family-mono)}
+.shell{display:grid;grid-template-columns:16rem minmax(0,1fr);min-height:100vh}
+/* sidebar */
+.side{background:var(--color-surface-primary);border-right:1px solid var(--border-color-default);padding:var(--component-card-padding);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:var(--component-tile-padding)}
+.brand{display:flex;flex-direction:column;gap:4px;padding-bottom:var(--component-tile-padding)}
+.brand svg{width:150px;height:auto}
+.brand small{color:var(--color-text-base-muted)}
+.nav-label{font-family:var(--font-family-mono);font-size:var(--font-size-xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-base-muted);margin:8px 0 4px}
+.nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-lg);color:var(--color-text-base-primary);text-decoration:none;font-weight:var(--font-weight-medium);cursor:pointer}
+.nav a i{width:18px;text-align:center;color:var(--color-text-base-secondary)}
+.nav a:hover{background:var(--color-surface-secondary)}
+.nav a.active{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.nav a.active i{color:var(--color-brand-primary-strong)}
+.side-box{border:1px solid var(--border-color-default);border-radius:var(--radius-xl);padding:var(--component-tile-padding);display:flex;flex-direction:column;gap:8px}
+.btn{display:flex;align-items:center;gap:8px;border:0;border-radius:var(--radius-lg);padding:10px 12px;font:inherit;font-weight:var(--font-weight-semibold);cursor:pointer}
+.btn-teal{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong)}
+.btn-blue{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.side-foot{margin-top:auto;color:var(--color-text-base-muted);font-size:var(--font-size-xs)}
+/* main */
+.main{padding:var(--component-pane-padding);min-width:0}
+.topbar{display:flex;align-items:center;gap:16px;padding-bottom:var(--component-card-padding);border-bottom:1px solid var(--border-color-default);margin-bottom:var(--component-card-padding)}
+.crumbs{color:var(--color-text-base-muted);font-size:var(--font-size-md)}
+.crumbs b{color:var(--color-text-base-primary)}
+.topbar .grow{flex:1}
+.chip{display:flex;align-items:center;gap:8px;font-weight:var(--font-weight-semibold)}
+.chip i{color:var(--color-brand-primary)}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--border-color-default);border-radius:var(--radius-lg);padding:8px 12px;background:var(--color-surface-primary);min-width:240px}
+.search input{border:0;outline:0;font:inherit;width:100%;background:transparent}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:var(--component-tile-padding);flex-wrap:wrap}
+.page-head h1{font-size:var(--font-size-3xl)}
+.page-head p{margin:6px 0 0;color:var(--color-text-base-secondary);font-size:var(--font-size-md)}
+/* filters: one panel, one or more labelled rows */
+.filters{display:flex;flex-direction:column;gap:10px;background:var(--color-surface-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-xl);padding:var(--component-tile-padding);margin-bottom:var(--component-card-padding);box-shadow:var(--shadow-sm)}
+.filters label{display:flex;flex-direction:column;gap:4px;font-size:var(--font-size-xs);color:var(--color-text-base-muted);font-weight:var(--font-weight-semibold)}
+.filters select{font:inherit;color:var(--color-text-base-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:7px 10px;background:var(--color-surface-primary);min-width:120px;max-width:220px}
+.filters .reset{align-self:flex-end}
+.frow{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.frow + .frow{border-top:1px solid var(--border-color-default);padding-top:10px}
+.frow-label{width:100%;font-family:var(--font-family-mono);font-size:var(--font-size-2xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-brand-primary-strong);font-weight:var(--font-weight-semibold)}
+.frow-note{font-size:var(--font-size-xs);color:var(--color-text-base-muted)}
+.frow-note:empty{display:none}
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--component-tile-padding);margin-bottom:var(--component-card-padding)}
+.kpi{border-radius:var(--radius-xl);padding:var(--component-tile-padding);display:flex;flex-direction:column;gap:10px}
+.kpi-top{display:flex;align-items:center;gap:10px;font-weight:var(--font-weight-semibold);font-size:var(--font-size-sm);line-height:1.3}
+.kpi-icon{width:40px;height:40px;border-radius:var(--radius-lg);display:grid;place-items:center;color:var(--color-surface-primary);flex:none}
+.kpi-value{font-family:var(--font-family-heading);font-size:var(--font-size-3xl);font-weight:var(--font-weight-bold)}
+.kpi-sub{color:var(--color-text-base-secondary)}
+.k-blue{background:var(--color-brand-primary-soft)} .k-blue .kpi-icon{background:var(--color-brand-primary)}
+.k-teal{background:var(--color-feature-01-soft)} .k-teal .kpi-icon{background:var(--color-feature-01)}
+.k-yellow{background:var(--color-feature-02-soft)} .k-yellow .kpi-icon{background:var(--color-feature-02)}
+.k-pink{background:var(--color-feature-03-soft)} .k-pink .kpi-icon{background:var(--color-feature-03)}
+.k-purple{background:var(--color-feature-05-soft)} .k-purple .kpi-icon{background:var(--color-feature-05)}
+.k-indigo{background:var(--color-feature-04-soft)} .k-indigo .kpi-icon{background:var(--color-feature-04)}
+/* cards with a solid blue header bar */
+.grid{display:grid;gap:var(--component-card-padding);margin-bottom:var(--component-card-padding)}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:3fr 2fr}
+.card{background:var(--color-surface-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm);overflow:hidden;min-width:0}
+.page > .card{margin-bottom:var(--component-card-padding)}
+.card-head{background:var(--color-brand-primary-strong);color:var(--color-surface-primary);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px var(--component-card-padding)}
+.card-head h3{font-size:var(--font-size-md);font-weight:var(--font-weight-bold);line-height:1.3}
+.card-head span{opacity:.9;font-size:var(--font-size-xs);text-align:right;flex:0 1 auto;max-width:45%}
+.card-body{padding:var(--component-card-padding)}
+.chart{position:relative;height:300px}
+.chart.tall{height:380px}
+.note{color:var(--color-text-base-muted);font-size:var(--font-size-xs);margin-top:10px;line-height:1.5}
+.warn{background:var(--color-feature-02-soft);border-radius:var(--radius-lg);padding:10px 14px;margin:0 0 var(--component-tile-padding);font-size:var(--font-size-xs)}
+.warn i{color:var(--color-feature-07)}
+.info{background:var(--color-brand-primary-soft);border-radius:var(--radius-lg);padding:10px 14px;margin:0 0 var(--component-tile-padding)}
+/* tables */
+.tbl-wrap{overflow:auto;max-height:560px}
+table{border-collapse:collapse;width:100%;font-size:var(--font-size-xs)}
+th{position:sticky;top:0;background:var(--color-surface-primary);color:var(--color-brand-primary-strong);text-align:left;font-weight:var(--font-weight-bold);padding:10px;border-bottom:2px solid var(--border-color-default);white-space:nowrap;cursor:default}
+th.sort{cursor:pointer} th.sort:hover{text-decoration:underline}
+td{padding:8px 10px;border-bottom:1px solid var(--border-color-default);vertical-align:top}
+td.n,th.n{text-align:right}
+td.n{font-family:var(--font-family-mono)}
+tr.small td{color:var(--color-text-base-muted)}
+.nowrap td{white-space:nowrap}
+.sticky1 td:first-child,.sticky1 th:first-child{position:sticky;left:0;background:var(--color-surface-primary);min-width:200px;z-index:1;box-shadow:inset -1px 0 0 var(--border-color-default)}
+.sticky1 th:first-child{z-index:2}
+.badge{display:inline-block;padding:2px 8px;border-radius:var(--radius-pill);font-size:var(--font-size-2xs);font-weight:var(--font-weight-semibold)}
+.b-ok{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong)}
+.b-warn{background:var(--color-feature-02-soft);color:var(--color-text-base-primary)}
+.b-no{background:var(--color-surface-secondary);color:var(--color-text-base-secondary)}
+.b-blue{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.heat td.h{text-align:center;font-family:var(--font-family-mono)}
+.tools{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.tools input{font:inherit;border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:7px 10px;min-width:260px}
+.tools select{font:inherit;border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:6px 8px}
+/* statistics blocks (Stats & method page) */
+.stat{border:1px solid var(--border-color-default);border-radius:var(--radius-lg);padding:var(--component-tile-padding);margin-bottom:12px}
+.stat h4{margin:0 0 6px;font-family:var(--font-family-heading)}
+.stat .reading{font-size:var(--font-size-md);font-weight:var(--font-weight-semibold);margin:6px 0}
+.page{display:none}
+.page.show{display:block}
+ul.rules{margin:0;padding-left:18px;line-height:1.7}
+/* "Numbers behind this chart" panels (added automatically by draw()) */
+details.chart-data{margin-top:12px;border-top:1px solid var(--border-color-default);padding-top:8px}
+details.chart-data summary{cursor:pointer;font-weight:var(--font-weight-semibold);color:var(--color-brand-primary-strong);display:flex;align-items:center;gap:10px;font-size:var(--font-size-xs)}
+details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
+.btn-mini{border:0;border-radius:var(--radius-md);padding:3px 8px;font:inherit;font-size:var(--font-size-2xs);background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong);cursor:pointer}
+/* insight cards */
+.ins .card-body{display:flex;flex-direction:column;gap:8px}
+.ins h4{margin:0;font-family:var(--font-family-heading);font-size:var(--font-size-lg)}
+.ins p{margin:0;line-height:1.6}
+.ins-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ins-link{cursor:pointer;color:var(--color-brand-primary-strong);font-size:var(--font-size-xs);font-weight:var(--font-weight-semibold)}
+@media (max-width:1100px){.g2,.g3{grid-template-columns:1fr}.shell{grid-template-columns:1fr}.side{position:static;height:auto}}
+/* ---- additions for this page ---- */
+.code{font-family:var(--font-family-mono);font-size:var(--font-size-2xs);background:var(--color-surface-secondary);border-radius:var(--radius-md);padding:1px 6px}
+.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+.chart.xtall{height:420px}
+.legend-row{display:flex;flex-wrap:wrap;gap:22px;font-size:var(--font-size-sm);font-weight:var(--font-weight-semibold);margin:0 0 14px;padding:10px 14px;background:var(--color-surface-secondary);border-radius:var(--radius-lg)}
+.legend-row span{display:flex;align-items:center;gap:6px}
+.legend-row i.sw{width:16px;height:16px;border-radius:4px;display:inline-block}
+@media (max-width:1100px){.kpis{grid-template-columns:1fr 1fr}}
+/* client scores page */
+.reason{display:block;line-height:1.45;margin:2px 0}
+.reason b{font-family:var(--font-family-mono);font-weight:var(--font-weight-semibold)}
+.reason.up b{color:#C2185B}
+.reason.down b{color:var(--color-brand-secondary-strong)}
+.reason i.sw{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px}
+.scorebar{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.scorebar span{display:inline-block;height:8px;border-radius:4px;background:#E34678;min-width:2px}
+#tScores tbody tr{cursor:pointer}
+#tScores tbody tr:hover td{background:var(--color-surface-secondary)}
+#tScores tbody tr.sel td{background:var(--color-brand-primary-soft)}
+#tScores td{white-space:normal}
+.modelbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 var(--component-tile-padding);font-weight:var(--font-weight-semibold)}
+.seg{display:inline-flex;border:1px solid var(--border-color-default);border-radius:var(--radius-pill);overflow:hidden;background:var(--color-surface-primary)}
+.seg button{font:inherit;font-size:var(--font-size-sm);border:0;background:transparent;padding:8px 16px;cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--color-text-base-primary)}
+.seg button+button{border-left:1px solid var(--border-color-default)}
+.seg button.on{background:var(--color-brand-primary-strong);color:var(--color-surface-primary)}
+.seg i.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+details.howto{background:var(--color-brand-primary-soft);border-radius:var(--radius-lg);padding:10px 14px;margin-bottom:14px;line-height:1.6}
+details.howto summary{cursor:pointer;font-weight:var(--font-weight-semibold);color:var(--color-brand-primary-strong)}
+details.howto ul{margin:8px 0 0;padding-left:18px}
+.tools label{display:flex;align-items:center;gap:6px;font-size:var(--font-size-xs);font-weight:var(--font-weight-semibold)}
+.detail-head{display:flex;flex-wrap:wrap;gap:18px;margin-bottom:12px;font-size:var(--font-size-sm)}
+.detail-head b{font-family:var(--font-family-mono)}
+@media print{.side,.topbar,details.chart-data{display:none!important}.shell{grid-template-columns:1fr}.main{padding:0}.card{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="brand"><!--__LOGO__--><small id="brandSub"></small></div>
+    <div class="nav-label">Workspace</div>
+    <nav class="nav">
+      <a data-page="risk" class="active"><i class="fa-solid fa-chart-line"></i>Seats at risk</a>
+      <a data-page="drivers"><i class="fa-solid fa-layer-group"></i>Where risk comes from</a>
+      <a data-page="capacity"><i class="fa-solid fa-users-viewfinder"></i>Retention capacity</a>
+      <a data-page="scores"><i class="fa-solid fa-magnifying-glass-chart"></i>Client scores</a>
+    </nav>
+    <div class="nav-label">Method</div>
+    <nav class="nav"><a data-page="method"><i class="fa-solid fa-clipboard-check"></i>Method &amp; QA</a></nav>
+    <div class="side-foot"><i class="fa-solid fa-database"></i> <span id="sourceTxt"></span>, to <span id="extractTxt"></span><br>Built <span id="builtTxt"></span></div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="crumbs"><span id="crumbRoot"></span> &nbsp;<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>&nbsp; <b id="crumbPage">Seats at risk</b></div>
+      <div class="grow"></div>
+      <div class="chip"><i class="fa-regular fa-calendar"></i><span id="dateChip"></span></div>
+    </div>
+    <div class="page-head"><div><h1 id="pageTitle">Seats at risk</h1></div></div>
+
+    <!-- ================= Seats at risk ================= -->
+    <section class="page show" id="p-risk">
+      <div class="info" id="riskInfo"></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="card"><div class="card-head"><h3>Forecast vs actual seats lost</h3><span>each month forecast by a model that only knew the past</span></div>
+        <div class="card-body"><div class="chart"><canvas id="cTrend"></canvas></div><div class="note" id="nTrend"></div></div></div>
+      <div class="grid g3eq" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+        <div class="card"><div class="card-head"><h3>By region</h3><span>% of seats at risk</span></div><div class="card-body"><div class="chart"><canvas id="cRegion"></canvas></div></div></div>
+        <div class="card"><div class="card-head"><h3>By client type</h3><span>% of seats at risk</span></div><div class="card-body"><div class="chart"><canvas id="cType"></canvas></div></div></div>
+        <div class="card"><div class="card-head"><h3>By client age</h3><span>% of seats at risk</span></div><div class="card-body"><div class="chart"><canvas id="cAge"></canvas></div></div></div>
+      </div>
+      <div class="note" id="nBreak" style="margin-top:-8px;margin-bottom:16px"></div>
+      <div class="warn" id="riskWarn"></div>
+    </section>
+
+    <!-- ================= Where risk comes from ================= -->
+    <section class="page" id="p-drivers">
+      <div class="info" id="drvInfo"></div>
+      <div class="card"><div class="card-head"><h3>Where the seats at risk come from</h3><span>share of the push toward churn, weighted by seats</span></div>
+        <div class="card-body"><div class="legend-row" id="drvLegend"></div><div class="chart" style="height:200px"><canvas id="cGroup"></canvas></div><div class="note" id="nGroup"></div></div></div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Top factors: clients with 5+ staff</h3><span>share of the push toward churn</span></div>
+          <div class="card-body"><div class="chart xtall"><canvas id="cF5"></canvas></div></div></div>
+        <div class="card"><div class="card-head"><h3>Top factors: clients with 1–4 staff</h3><span>share of the push toward churn</span></div>
+          <div class="card-body"><div class="chart xtall"><canvas id="cF1"></canvas></div></div></div>
+      </div>
+      <div class="warn" id="drvWarn"></div>
+    </section>
+
+    <!-- ================= Retention capacity ================= -->
+    <section class="page" id="p-capacity">
+      <div class="info" id="capInfo"></div>
+      <div class="kpis" id="capKpis"></div>
+      <div class="card"><div class="card-head"><h3>Share of seats lost a monthly review list would have reached</h3><span>clients ranked by expected seats lost</span></div>
+        <div class="card-body"><div class="chart xtall"><canvas id="cCap"></canvas></div><div class="note" id="nCap"></div></div></div>
+      <div class="warn" id="capWarn"></div>
+    </section>
+
+    <!-- ================= Client scores ================= -->
+    <section class="page" id="p-scores">
+      <div class="info" id="scInfo"></div>
+      <div class="modelbar"><span>Model</span><div class="seg" id="segModel"></div><span class="note" id="modelNote" style="margin:0"></span></div>
+      <div class="kpis" id="scKpis"></div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Which model ranks churners best?</h3><span>holdout months · AUC (0.5 = coin flip, about 0.7 = useful)</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cCmpAuc"></canvas></div><div class="note" id="nCmpAuc"></div></div></div>
+        <div class="card"><div class="card-head"><h3>How much churn each model's top 10% catches</h3><span>holdout months, top 10% by score each month</span></div>
+          <div class="card-body"><div class="tools"><label>Measure <select id="selCmpKey"><option value="caught_top10">Clients that churned</option><option value="seats_top10">Seats lost</option></select></label></div>
+            <div class="chart"><canvas id="cCmpTop"></canvas></div><div class="note" id="nCmpTop"></div></div></div>
+      </div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Model performance: how much churn the top of the list catches</h3><span>holdout months, ranked by score each month</span></div>
+          <div class="card-body"><div class="tools"><label>Clients <select id="selPerfBand"></select></label><label>Measure <select id="selGainKey"><option value="churners_caught">Clients that churned</option><option value="seats_caught">Seats lost</option></select></label></div>
+            <div class="chart"><canvas id="cGains"></canvas></div><div class="note" id="nGains"></div></div></div>
+        <div class="card"><div class="card-head"><h3>Model performance: month by month</h3><span>AUC on each holdout month · 0.5 = coin flip</span></div>
+          <div class="card-body"><div class="chart" style="margin-top:46px"><canvas id="cAucMonth"></canvas></div><div class="note" id="nAucMonth"></div></div></div>
+      </div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Do higher scores mean more churn?</h3><span id="calibSub"></span></div>
+          <div class="card-body"><div class="chart"><canvas id="cCalib"></canvas></div><div class="note" id="nCalib"></div></div></div>
+        <div class="card"><div class="card-head"><h3>Most common main reason among the highest scores</h3><span id="reasonSub"></span></div>
+          <div class="card-body"><div class="legend-row" id="scLegend" style="font-size:12px;gap:14px"></div><div class="tools"><select id="selReasonBand"></select></div><div class="chart"><canvas id="cReasons"></canvas></div><div class="note" id="nReasons"></div></div></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>Client scores and the reasons behind them</h3><span id="scHeadSub"></span></div>
+        <div class="card-body">
+          <details class="howto"><summary><i class="fa-solid fa-circle-question"></i> How to read "what pushes it up" and "what holds it down"</summary><div id="scHowto"></div></details>
+          <div class="tools"><label>Month <select id="selMonth"></select></label><label>Clients <select id="selBand"></select></label>
+            <label>Region <select id="selRegion"></select></label><label>Main reasons include <select id="selReason"></select></label>
+            <label>Score at least <select id="selMin"></select></label><label>What happened <select id="selOutcome"></select></label></div>
+          <div class="tools"><input id="scSearch" placeholder="Find a client ID (C-…)"><button class="btn-mini" id="scReset" type="button">Clear filters</button><button class="btn-mini" id="scCsv" type="button">CSV</button><span class="note" id="scCount" style="margin:0"></span></div>
+          <div class="tbl-wrap" id="tScores"></div><div class="note" id="nScores"></div></div></div>
+      <div class="card" id="detailCard"><div class="card-head"><h3 id="detailTitle">Why this score</h3><span>every factor's contribution, in percentage points</span></div>
+        <div class="card-body"><div class="detail-head" id="detailHead"></div>
+          <div class="tools"><label><input type="checkbox" id="chkCmp"> Show all three models side by side</label></div>
+          <div class="chart" id="detailBox" style="height:640px"><canvas id="cDetail"></canvas></div><div class="note" id="nDetail"></div></div></div>
+      <div class="warn" id="scWarn"></div>
+    </section>
+
+    <!-- ================= Method and QA ================= -->
+    <section class="page" id="p-method">
+      <div class="card"><div class="card-head"><h3>How the numbers are worked out</h3><span>definitions</span></div><div class="card-body" id="methodBox"></div></div>
+      <div class="card"><div class="card-head"><h3>Backtest accuracy</h3><span>forecast totals vs actual, out of time</span></div><div class="card-body"><div class="tbl-wrap" id="tAcc"></div></div></div>
+      <div class="card"><div class="card-head"><h3>Client-score models compared</h3><span>holdout months · all trained the same way</span></div><div class="card-body"><div class="tbl-wrap" id="tModels"></div><div class="note" id="nModels"></div></div></div>
+      <div class="card"><div class="card-head"><h3>Seats at risk today, every group</h3><span>grey = under the minimum group size</span></div><div class="card-body"><div class="tbl-wrap" id="tRisk"></div></div></div>
+      <div class="card"><div class="card-head"><h3>Row counts</h3><span>what each number is built from</span></div><div class="card-body"><div class="tbl-wrap" id="tQa"></div></div></div>
+    </section>
+  </main>
+</div>
+
+<script id="data" type="application/json">/*__DATA__*/</script>
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = id => document.getElementById(id);
+const PALETTE = ['#007AFF', '#00AB9C', '#FFC426', '#E34678', '#4121A9', '#AA67FD', '#F46600', '#36D6E7', '#87DD7D', '#50505C'];
+const GREY = '#C9D2E1';
+const SCOPE_COLOUR = {'All clients': '#1F2533', '5+ staff': '#007AFF', '1–4 staff': '#00AB9C'};
+const GROUP_COLOUR = {'Client profile': '#50505C', 'Late stage (client already leaving)': '#F46600', 'Attendance': '#007AFF', 'Payments': '#FFC426', 'Staff exits and resignations': '#AA67FD'};
+const MONTHS_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const monLbl = ym => MONTHS_ABBR[+ym.slice(5, 7) - 1] + ' ' + ym.slice(0, 4);
+const fmt = (v, d = 0) => v === null || v === undefined || Number.isNaN(v) ? '–' : Number(v).toLocaleString('en-AU', {minimumFractionDigits: d, maximumFractionDigits: d});
+const pct = (v, d = 1) => v === null || v === undefined || Number.isNaN(v) ? '–' : (100 * v).toFixed(d) + '%';
+const esc = s => String(s ?? '').replace(/[&<>"]/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[ch]));
+function wrapWords(s, w) { const out = []; let line = ''; for (const word of String(s).split(' ')) { if ((line + ' ' + word).trim().length > w && line) { out.push(line); line = word; } else line = (line + ' ' + word).trim(); } if (line) out.push(line); return out; }
+
+Chart.defaults.font.family = 'Manrope, Segoe UI, Arial, sans-serif';
+Chart.defaults.color = '#737C90';
+Chart.defaults.borderColor = '#DCE3EE';
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.maintainAspectRatio = false;
+const pctAxis = {ticks: {callback: v => pct(v, 0)}, beginAtZero: true};
+Chart.register({id: 'barLabels', afterDatasetsDraw(chart, args, o) {
+  if (!o || !o.text) return; const ctx = chart.ctx; ctx.save(); ctx.textBaseline = 'middle';
+  chart.data.datasets.forEach((ds, di) => { const meta = chart.getDatasetMeta(di); if (meta.hidden) return;
+    meta.data.forEach((bar, i) => { const t = o.text(di, i); if (!t) return; ctx.font = (t.bold ? '700 ' : '500 ') + '11px Manrope, sans-serif';
+      ctx.fillStyle = t.colour || '#1F2533'; ctx.textAlign = t.left ? 'right' : 'left'; ctx.fillText(t.text, t.left ? bar.x - 6 : bar.x + 6, bar.y); }); });
+  ctx.restore(); }});
+
+const charts = {};
+function draw(id, cfg) {
+  const scales = (cfg.options && cfg.options.scales) || {};
+  const isPct = Object.values(scales).some(sc => sc.ticks && sc.ticks.callback);
+  if (charts[id]) charts[id].destroy(); charts[id] = new Chart($(id), cfg); chartData(id, cfg, isPct);
+}
+function chartData(id, cfg, isPct) {
+  const body = $(id).closest('.card-body');
+  let box = body.querySelector('details.chart-data');
+  if (!box) {
+    box = document.createElement('details'); box.className = 'chart-data'; box.open = false;
+    box.innerHTML = '<summary>Numbers behind this chart <button class="btn-mini" type="button">CSV</button></summary><div class="tbl-wrap"></div>';
+    body.appendChild(box);
+  }
+  const show = v => v === null || v === undefined || Number.isNaN(v) ? '–' : isPct ? pct(v) : Number.isInteger(v) ? fmt(v) : fmt(v, 1);
+  const sets = cfg.data.datasets, labels = cfg.data.labels.map(l => Array.isArray(l) ? l.join(' ') : l);
+  const cols = [{k: 'label', label: ''}, ...sets.map((d, j) => ({k: 'd' + j, label: esc(d.label) + (isPct ? ' (%)' : ''), n: 1, f: show}))];
+  const rows = labels.map((l, i) => Object.assign({label: l}, ...sets.map((d, j) => ({['d' + j]: d.data[i]}))));
+  table(box.querySelector('.tbl-wrap'), cols, rows);
+  box.querySelector('button').onclick = e => { e.preventDefault(); e.stopPropagation();
+    download(id + '_numbers.csv', rows.map(r => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, isPct && k !== 'label' && typeof v === 'number' ? +(100 * v).toFixed(2) : v]))),
+      cols.map(c => ({k: c.k, label: c.label.replace(/&amp;/g, '&') || 'group'}))); };
+}
+function table(el, cols, rows) {
+  let h = '<table><thead><tr>' + cols.map(c => `<th class="${c.n ? 'n' : ''}">${c.label}</th>`).join('') + '</tr></thead><tbody>';
+  h += rows.map(r => `<tr class="${r._small ? 'small' : ''}">` + cols.map(c => `<td class="${c.n ? 'n' : ''}">${c.f ? c.f(r[c.k], r) : esc(r[c.k])}</td>`).join('') + '</tr>').join('');
+  el.innerHTML = h + '</tbody></table>';
+}
+function download(name, rows, cols) {
+  const q = v => { const s = v === null || v === undefined ? '' : String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const csv = [cols.map(c => q(c.label)).join(','), ...rows.map(r => cols.map(c => q(r[c.k])).join(','))].join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'})); a.download = name; a.click();
+}
+const kpiTiles = items => items.map(([cls, ic, l, v, s]) => `<div class="kpi ${cls}"><div class="kpi-top"><span class="kpi-icon"><i class="fa-solid ${ic}"></i></span>${esc(l)}</div><div class="kpi-value">${v}</div><div class="kpi-sub">${s}</div></div>`).join('');
+
+// ---- header text from the data
+const M = D.meta, N = D.now;
+const asOf = new Date(M.as_of).toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric'});
+document.title = M.title;
+$('brandSub').textContent = M.subtitle; $('crumbRoot').textContent = M.title; $('sourceTxt').textContent = M.source;
+$('extractTxt').textContent = new Date(M.extract).toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric'});
+$('builtTxt').textContent = M.generated.slice(0, 10);
+$('dateChip').textContent = 'Data to ' + $('extractTxt').textContent;
+const acc = Object.fromEntries(D.accuracy.map(r => [r.scope, r]));
+const capAt = (scope, n) => D.capacity.find(c => c.scope === scope && c.n === n);
+
+const TITLES = {risk: 'Seats at risk', drivers: 'Where risk comes from', capacity: 'Retention capacity', scores: 'Client scores', method: 'Method and QA'};
+let page = 'risk';
+document.querySelectorAll('.nav a').forEach(a => a.onclick = () => go(a.dataset.page));
+function go(p) {
+  page = p;
+  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('active', a.dataset.page === p));
+  document.querySelectorAll('.page').forEach(s => s.classList.toggle('show', s.id === 'p-' + p));
+  $('pageTitle').textContent = TITLES[p]; $('crumbPage').textContent = TITLES[p];
+  render();
+}
+function render() { ({risk: rRisk, drivers: rDrivers, capacity: rCapacity, scores: rScores, method: rMethod})[page](); }
+
+// ---------------- Seats at risk
+function breakdownChart(id, name) {
+  const rows = D.risk_now.filter(r => r.breakdown === name).sort((a, b) => b.share_of_seats - a.share_of_seats);
+  draw(id, {type: 'bar', data: {labels: rows.map(r => [r.group, `${fmt(r.clients)} clients`]),
+    datasets: [{label: 'Share of seats at risk', data: rows.map(r => r.share_of_seats), backgroundColor: rows.map(r => r.small ? GREY : PALETTE[0])}]},
+    options: {indexAxis: 'y', layout: {padding: {right: 70}}, plugins: {legend: {display: false},
+      tooltip: {callbacks: {label: c => { const r = rows[c.dataIndex]; return [`${pct(r.share_of_seats)} of ${fmt(r.seats)} seats`, `about ${fmt(r.seats_at_risk)} seats at risk`]; }}},
+      barLabels: {text: (di, i) => ({text: `${pct(rows[i].share_of_seats)} · ${fmt(rows[i].seats_at_risk)} seats`, bold: !rows[i].small})}},
+      scales: {x: pctAxis, y: {ticks: {font: {size: 11}}}}}});
+}
+function rRisk() {
+  const band = D.risk_now.filter(r => r.breakdown === 'size band');
+  const b5 = band.find(r => r.group === '5+ staff'), b1 = band.find(r => r.group === '1–4 staff'), a = acc['All clients'];
+  $('riskInfo').innerHTML = `<i class="fa-solid fa-circle-info"></i> <b>How many seats are likely to be lost in the next 3 months, and where.</b> Each client's predicted seat churn × its staff, added up across the book. `
+    + `Seats lost means exits that are not replaced; exits for <b>business reasons</b> (restructures, slowdowns, budget cuts) are market churn and are not counted.`;
+  $('kpis').innerHTML = kpiTiles([
+    ['k-blue', 'fa-chair', `Seats at risk, next 3 months`, fmt(N.seats_at_risk), `${pct(N.seats_at_risk / N.seats)} of ${fmt(N.seats)} seats today (${asOf}) · recent quarters averaged ${fmt(N.recent_actual_avg)} seats lost`],
+    ['k-indigo', 'fa-building', 'Clients with 5+ staff', fmt(b5.seats_at_risk), `seats at risk · ${pct(b5.share_of_seats)} of their ${fmt(b5.seats)} seats`],
+    ['k-teal', 'fa-user', 'Clients with 1–4 staff', fmt(b1.seats_at_risk), `seats at risk · ${pct(b1.share_of_seats)} of their ${fmt(b1.seats)} seats`],
+    ['k-yellow', 'fa-bullseye', 'Forecast track record', `${fmt(a.ratio * 100)}%`, `of actual seats lost, over ${a.months} months forecast out of time · typical monthly miss ${pct(a.error, 0)}`],
+  ]);
+  const bt = s => D.backtest.filter(r => r.scope === s).sort((x, y) => x.snapshot.localeCompare(y.snapshot));
+  const all = bt('All clients');
+  draw('cTrend', {type: 'line', data: {labels: all.map(r => monLbl(r.snapshot)), datasets: [
+      {label: 'Actual seats lost', data: all.map(r => r.actual), borderColor: PALETTE[0], backgroundColor: PALETTE[0], tension: 0.2},
+      {label: 'Forecast', data: all.map(r => Math.round(r.predicted)), borderColor: PALETTE[6], backgroundColor: PALETTE[6], borderDash: [6, 4], tension: 0.2},
+      {label: 'Actual, 5+ staff', data: bt('5+ staff').map(r => r.actual), borderColor: '#9DC7FF', backgroundColor: '#9DC7FF', pointRadius: 0, borderWidth: 1.5},
+      {label: 'Actual, 1–4 staff', data: bt('1–4 staff').map(r => r.actual), borderColor: '#8FDCD3', backgroundColor: '#8FDCD3', pointRadius: 0, borderWidth: 1.5}]},
+    options: {plugins: {legend: {position: 'bottom'}}, scales: {y: {beginAtZero: true, title: {display: true, text: 'seats lost in the 3 months after the snapshot'}}}}});
+  $('nTrend').innerHTML = `Each point is a monthly snapshot: the seats clients went on to lose over the following 3 months, against what the model forecast at the time. `
+    + `Each month was forecast by a model trained only on data available by then (${monLbl(M.backtest_from)} to ${monLbl(M.backtest_to)}). `
+    + `Overall the forecast came to <b>${pct(a.ratio, 0)}</b> of the actual total, so it runs slightly low. Treat it as a floor rather than an estimate.`;
+  breakdownChart('cRegion', 'region'); breakdownChart('cType', 'client type'); breakdownChart('cAge', 'client age');
+  $('nBreak').innerHTML = `Bars show the share of each group's seats at risk over the next 3 months, with the number of seats. Grey = fewer than ${M.min_group} clients, too small to compare.`;
+  $('riskWarn').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <b>Read with care.</b> This is an estimate for the book as a whole: individual client scores are much less reliable than these totals. `
+    + `The forecast assumes the next quarter behaves like the past two years, and attendance logs are incomplete for recent months (absences end Feb 2026).`;
+}
+
+// ---------------- Where risk comes from
+function rDrivers() {
+  $('drvInfo').innerHTML = `<i class="fa-solid fa-circle-info"></i> <b>Which factors push the seat-churn forecast up, and by how much.</b> The model's contribution of every factor, for every client-month from ${monLbl(M.driver_from)} to ${monLbl(M.driver_to)}, `
+    + `counting only what pushes risk up and weighting by seats. Unlike the warning signs, each factor is measured <i>after</i> allowing for the others, so overlapping signs (late arrivals and absences often come together) are not counted twice.`;
+  const groups = Object.keys(GROUP_COLOUR), bands = ['5+ staff', '1–4 staff'];
+  const share = (b, g) => (D.drivers_group.find(r => r.band === b && r.group === g) || {share: 0}).share;
+  $('drvLegend').innerHTML = groups.map(g => `<span><i class="sw" style="background:${GROUP_COLOUR[g]}"></i>${esc(g)}</span>`).join('');
+  draw('cGroup', {type: 'bar', data: {labels: bands.map(b => `Clients with ${b}`), datasets: groups.map(g => ({label: g, data: bands.map(b => share(b, g)), backgroundColor: GROUP_COLOUR[g]}))},
+    options: {indexAxis: 'y', plugins: {legend: {display: false}, tooltip: {callbacks: {label: c => `${c.dataset.label}: ${pct(c.raw, 0)}`}},
+      barLabels: {text: (di, i) => null}}, scales: {x: {...pctAxis, stacked: true, max: 1}, y: {stacked: true, ticks: {font: {size: 12}}}}}});
+  const top = b => groups.map(g => [g, share(b, g)]).sort((x, y) => y[1] - x[1]);
+  const t5 = top('5+ staff'), t1 = top('1–4 staff');
+  $('nGroup').innerHTML = `Each bar adds up to 100% of what pushes that group's risk up. For clients with 5+ staff the largest share is <b>${esc(t5[0][0].toLowerCase())}</b> (${pct(t5[0][1], 0)}), then ${esc(t5[1][0].toLowerCase())} (${pct(t5[1][1], 0)}); `
+    + `for clients with 1–4 staff, ${esc(t1[0][0].toLowerCase())} (${pct(t1[0][1], 0)}), then ${esc(t1[1][0].toLowerCase())} (${pct(t1[1][1], 0)}). `
+    + `Client profile (size, age, region, headcount trend) is who the client is; the other groups are things that happen and can be acted on.`;
+  [['cF5', '5+ staff'], ['cF1', '1–4 staff']].forEach(([id, b]) => {
+    const rows = D.drivers_factor.filter(r => r.band === b).slice(0, 10);
+    draw(id, {type: 'bar', data: {labels: rows.map(r => wrapWords(r.factor, 30)), datasets: [{label: 'Share of the push toward churn', data: rows.map(r => r.share), backgroundColor: rows.map(r => GROUP_COLOUR[r.group])}]},
+      options: {indexAxis: 'y', layout: {padding: {right: 40}}, plugins: {legend: {display: false}, barLabels: {text: (di, i) => ({text: pct(rows[i].share, 0)})}},
+        scales: {x: pctAxis, y: {ticks: {autoSkip: false, font: {size: 10.5}}}}}});
+  });
+  $('drvWarn').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <b>Read with care.</b> These shares describe what the model leans on, not what causes churn. A large share for a factor we can act on means it is a good place to look, not proof that changing it would prevent churn.`;
+}
+
+// ---------------- Retention capacity
+function rCapacity() {
+  const c25 = capAt('All clients', 25), c50 = capAt('All clients', 50), c100 = capAt('All clients', 100);
+  $('capInfo').innerHTML = `<i class="fa-solid fa-circle-info"></i> <b>If the team reviewed the N clients with the highest expected seat loss each month, how much of the churn would that list have reached?</b> `
+    + `Measured on ${monLbl(M.backtest_from)} to ${monLbl(M.backtest_to)}, each month ranked by a model that only knew the past.`;
+  $('capKpis').innerHTML = kpiTiles([
+    ['k-blue', 'fa-list-ol', 'Top 25 clients a month', pct(c25.seats_caught, 0), `of seats lost were at clients on the list (${pct(c25.random, 1)} of clients reviewed)`],
+    ['k-teal', 'fa-list-ol', 'Top 50 clients a month', pct(c50.seats_caught, 0), `of seats lost (${pct(c50.random, 1)} of clients reviewed)`],
+    ['k-indigo', 'fa-list-ol', 'Top 100 clients a month', pct(c100.seats_caught, 0), `of seats lost (${pct(c100.random, 1)} of clients reviewed)`],
+    ['k-yellow', 'fa-shuffle', 'Reviewing at random', pct(c50.random, 0), 'of seats lost would be reached by 50 random clients a month'],
+  ]);
+  const ns = [...new Set(D.capacity.map(c => c.n))].sort((x, y) => x - y);
+  const line = (scope, key, label, colour, dash) => ({label, data: ns.map(n => capAt(scope, n)[key]), borderColor: colour, backgroundColor: colour, borderDash: dash || [], tension: 0.2});
+  draw('cCap', {type: 'line', data: {labels: ns.map(String), datasets: [
+      line('All clients', 'seats_caught', 'All clients, ranked together', SCOPE_COLOUR['All clients']),
+      line('5+ staff', 'seats_caught', 'Clients with 5+ staff only', SCOPE_COLOUR['5+ staff']),
+      line('1–4 staff', 'seats_caught', 'Clients with 1–4 staff only', SCOPE_COLOUR['1–4 staff']),
+      line('All clients', 'random', 'Reviewing clients at random', GREY, [4, 4])]},
+    options: {plugins: {legend: {position: 'bottom'}}, scales: {y: {...pctAxis, max: 1, title: {display: true, text: 'share of seats lost that were on the list'}},
+      x: {title: {display: true, text: 'clients reviewed a month (highest expected seat loss first)'}}}}});
+  $('nCap').innerHTML = `Clients are ranked by <b>expected seats lost</b> (predicted seat churn × staff), so larger clients come first: the list reaches a large share of <i>seats</i> with few clients. `
+    + `It reaches a much smaller share of the <i>clients</i> that churn (top 50: ${pct(c50.churners_caught, 0)}), because most churning clients are small. The flattening curve shows where adding reviewers returns less.`;
+  $('capWarn').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <b>Read with care.</b> "Reached" means the client was on the list, not that the churn could have been prevented. The curve sizes the effort, not the saving.`;
+}
+
+// ---------------- Client scores
+const SC = D.scores, SC_BANDS = ['5+ staff', '1–4 staff'], MODELS = SC.models;
+const UP = '#E34678', DOWN = '#00AB9C';
+const MODEL_COLOUR = {'LightGBM': '#007AFF', 'Logistic regression': '#F46600', 'XGBoost': '#4121A9'};
+const MODEL_ABOUT = {
+  'LightGBM': 'gradient-boosted decision trees; the model behind the other outlook pages',
+  'Logistic regression': 'one fixed weight per factor; the simplest model to explain',
+  'XGBoost': 'gradient-boosted decision trees, a second implementation built a different way'};
+const CHURN_WORDS = {'5+ staff': `lost ${pct(M.high_churn, 0)}+ of its seats`, '1–4 staff': 'lost every seat'};
+const perfOf = (b, k) => SC.perf.find(r => r.band === b && r.model === (k || sc.model));
+const scMonths = [...new Set(SC.rows.map(r => r.month))].sort().reverse();
+const holdMonths = scMonths.filter(m => m !== SC.today).sort();
+const SC_FILTERS = {region: '', reason: '', min: 0, outcome: ''};
+const sc = {model: MODELS[0], month: scMonths[0], band: '5+ staff', q: '', sel: null, reasonBand: '5+ staff', perfBand: '5+ staff',
+  gainKey: 'churners_caught', cmpKey: 'caught_top10', cmp: false, ...SC_FILTERS};
+const mm = r => r.m[sc.model];
+const HAS_CODES = SC.rows.some(r => r.code);                       // local build only: real shortcodes added by add_shortcodes.py
+const clientLabel = r => r.code || r.id;
+const topUp = (r, n = 3) => mm(r).c.map((v, i) => [v, i]).filter(([v]) => v > 0.0005).sort((a, b) => b[0] - a[0]).slice(0, n).map(([, i]) => i);
+const outcomeKey = r => r.today ? 'unknown' : r.churned ? 'churned' : r.actual > 0 ? 'some' : 'kept';
+const monthLabel = m => m === SC.today ? `Today, ${monLbl(m)} (outcome not known yet)` : `${monLbl(m)} (holdout: outcome known)`;
+const pts = v => `${v >= 0 ? '+' : '−'}${Math.abs(v * 100).toFixed(1)} pts`;
+function reasonList(r, n, sign) {
+  const c = mm(r).c;
+  const top = c.map((v, i) => [v, i]).filter(([v]) => sign * v > 0.0005).sort((a, b) => sign * (b[0] - a[0])).slice(0, n);
+  return top.map(([v, i]) => `<span class="reason ${sign > 0 ? 'up' : 'down'}"><i class="sw" style="background:${GROUP_COLOUR[SC.groups[i]]}"></i>${esc(r.t[i])} <b>${pts(v)}</b></span>`).join('')
+    || '<span class="reason" style="color:#737C90">nothing notable</span>';
+}
+function outcomeHtml(r) {
+  if (r.today) return '<span class="badge b-no">not known yet</span>';
+  const lost = `lost ${fmt(r.actual)} seat${r.actual === 1 ? '' : 's'}`;
+  if (r.churned) return `<span class="badge b-warn">churned</span><br>${lost}`;
+  return r.actual > 0 ? `<span class="badge b-blue">some loss</span><br>${lost}` : '<span class="badge b-ok">kept all seats</span>';
+}
+const outcomeTxt = r => r.today ? 'not known yet' : r.churned ? `churned (lost ${r.actual} seats)` : r.actual > 0 ? `lost ${r.actual} seats, below the churn bar` : 'kept all seats';
+const scBase = () => SC.rows.filter(r => r.month === sc.month && r.band === sc.band && mm(r).r <= SC.top_n);
+function scRows() {
+  const q = sc.q.trim().toUpperCase();
+  return scBase().filter(r => (!q || r.id.includes(q) || (r.code || '').toUpperCase().includes(q)) && (!sc.region || (r.region || 'Unknown') === sc.region)
+      && (sc.reason === '' || topUp(r).includes(+sc.reason)) && mm(r).s >= sc.min && (!sc.outcome || outcomeKey(r) === sc.outcome))
+    .sort((a, b) => mm(a).r - mm(b).r);
+}
+function scFilters() {
+  const base = scBase(), isToday = sc.month === SC.today;
+  const opt = (v, l, cur) => `<option value="${esc(v)}" ${String(v) === String(cur) ? 'selected' : ''}>${esc(l)}</option>`;
+  const regions = [...new Set(base.map(r => r.region || 'Unknown'))].sort();
+  if (sc.region && !regions.includes(sc.region)) sc.region = '';
+  $('selRegion').innerHTML = opt('', 'All', sc.region) + regions.map(g => opt(g, `${g} (${base.filter(r => (r.region || 'Unknown') === g).length})`, sc.region)).join('');
+  const counts = SC.features.map((f, i) => base.filter(r => topUp(r).includes(i)).length);
+  if (sc.reason !== '' && !counts[+sc.reason]) sc.reason = '';
+  $('selReason').innerHTML = opt('', 'Any factor', sc.reason) + SC.features.map((f, i) => [f, i]).filter(([, i]) => counts[i] > 0)
+    .sort((a, b) => counts[b[1]] - counts[a[1]]).map(([f, i]) => opt(i, `${f} (${counts[i]})`, sc.reason)).join('');
+  $('selMin').innerHTML = [0, 0.05, 0.1, 0.2, 0.3, 0.5].map(v => opt(v, v ? pct(v, 0) : 'Any', sc.min)).join('');
+  if (isToday) sc.outcome = '';
+  $('selOutcome').disabled = isToday;
+  $('selOutcome').innerHTML = isToday ? opt('', 'Not known yet', '') : [['', 'All'], ['churned', 'Churned'], ['some', 'Lost some seats (below the churn bar)'], ['kept', 'Kept all seats']]
+    .map(([v, l]) => opt(v, v ? `${l} (${base.filter(r => outcomeKey(r) === v).length})` : l, sc.outcome)).join('');
+  $('selRegion').onchange = e => { sc.region = e.target.value; scTable(); };
+  $('selReason').onchange = e => { sc.reason = e.target.value; scTable(); };
+  $('selMin').onchange = e => { sc.min = +e.target.value; scTable(); };
+  $('selOutcome').onchange = e => { sc.outcome = e.target.value; scTable(); };
+  $('scReset').onclick = () => { Object.assign(sc, SC_FILTERS, {q: ''}); $('scSearch').value = ''; scFilters(); scTable(); };
+}
+const HOWTO_MODEL = {
+  'LightGBM': `<b>LightGBM is a set of decision trees, not one equation.</b> The same factor can add more for one client than another, because it depends on the value and on the client's other factors. The points come from <b>SHAP</b>, which splits each client's prediction fairly between the factors.`,
+  'XGBoost': `<b>XGBoost is a set of decision trees, built differently from LightGBM.</b> As with LightGBM, a factor's effect depends on the value and on the client's other factors, and the points come from <b>SHAP</b> (built into XGBoost).`,
+  'Logistic regression': `<b>Logistic regression gives each factor one fixed weight.</b> A factor's points are its weight × how far this client's value is from the average client's, so the same value always counts the same way. This is exact, and the same as SHAP for a linear model. Blank values get their own weight, and long-tailed counts are compressed first, so a value twice the average does not count exactly twice.`};
+function rScores() {
+  const p5 = perfOf('5+ staff'), p1 = perfOf('1–4 staff');
+  $('scInfo').innerHTML = `<i class="fa-solid fa-circle-info"></i> <b>Each client's score from three models, and why.</b> Every model predicts the share of a client's seats lost in the next 3 months (business-reason exits not counted), from the same factors. `
+    + `<b>Holdout months</b> (${monLbl(SC.holdout_from)} to ${monLbl(SC.holdout_to)}) were scored by models trained only on data to ${monLbl(SC.train_to)}, so you can see how the scores turned out. `
+    + `Use the <b>Model</b> switch to change the scores, reasons and lists below; the comparison charts show all three. ` + (HAS_CODES ? '<b>This copy shows real client shortcodes: keep it local, do not share it.</b>' : 'Clients appear as anonymised IDs; the key is held by the analytics team.');
+  $('segModel').innerHTML = MODELS.map(k => `<button type="button" class="${k === sc.model ? 'on' : ''}" data-k="${esc(k)}"><i class="sw" style="background:${MODEL_COLOUR[k]}"></i>${esc(k)}</button>`).join('');
+  $('segModel').querySelectorAll('button').forEach(b => b.onclick = () => { sc.model = b.dataset.k; sc.sel = null; rScores(); });
+  $('modelNote').textContent = MODEL_ABOUT[sc.model];
+  $('scKpis').innerHTML = kpiTiles([
+    ['k-indigo', 'fa-building', 'Clients with 5+ staff: top 10% scored', pct(p5.rate_top10, 0), `went on to churn (${CHURN_WORDS['5+ staff']}), against ${pct(p5.rate_all, 1)} of all · AUC ${p5.auc.toFixed(2)}`],
+    ['k-teal', 'fa-user', 'Clients with 1–4 staff: top 10% scored', pct(p1.rate_top10, 0), `went on to churn (${CHURN_WORDS['1–4 staff']}), against ${pct(p1.rate_all, 1)} of all · AUC ${p1.auc.toFixed(2)}`],
+    ['k-blue', 'fa-bullseye', 'Churners caught in the top 10%', `${pct(p5.caught_top10, 0)} · ${pct(p1.caught_top10, 0)}`, `5+ staff · 1–4 staff, holdout months (${esc(sc.model)})`],
+    ['k-yellow', 'fa-calendar-check', 'Holdout', `${fmt(p5.months)} months`, `${monLbl(SC.holdout_from)} to ${monLbl(SC.holdout_to)} · ${fmt(p5.client_months + p1.client_months)} client-months scored by each model`],
+  ]);
+  // ---- comparison of the three models
+  const bandLbl = SC_BANDS.map(b => `Clients with ${b}`);
+  draw('cCmpAuc', {type: 'bar', data: {labels: bandLbl, datasets: MODELS.map(k => ({label: k, data: SC_BANDS.map(b => perfOf(b, k).auc), backgroundColor: MODEL_COLOUR[k]}))},
+    options: {plugins: {legend: {position: 'bottom'}, tooltip: {callbacks: {label: c => `${c.dataset.label}: AUC ${c.raw.toFixed(2)}`}}},
+      scales: {y: {min: 0.5, max: 0.85, title: {display: true, text: 'AUC on the holdout'}}}}});
+  const best = b => MODELS.map(k => [k, perfOf(b, k).auc]).sort((x, y) => y[1] - x[1])[0];
+  $('nCmpAuc').innerHTML = `Best at ranking: <b>${esc(best('5+ staff')[0])}</b> for 5+ staff (${best('5+ staff')[1].toFixed(2)}) and <b>${esc(best('1–4 staff')[0])}</b> for 1–4 staff (${best('1–4 staff')[1].toFixed(2)}). `
+    + `Differences of a few hundredths are within what the holdout's small number of churners can tell apart. Method & QA has the full table.`;
+  const ck = sc.cmpKey;
+  draw('cCmpTop', {type: 'bar', data: {labels: bandLbl, datasets: MODELS.map(k => ({label: k, data: SC_BANDS.map(b => perfOf(b, k)[ck]), backgroundColor: MODEL_COLOUR[k]}))},
+    options: {plugins: {legend: {position: 'bottom'}, tooltip: {callbacks: {label: c => `${c.dataset.label}: ${pct(c.raw, 0)}`}}, barLabels: {text: (di, i) => null}},
+      scales: {y: {...pctAxis, title: {display: true, text: ck === 'seats_top10' ? 'share of seats lost' : 'share of churners'}}}}});
+  $('selCmpKey').value = ck; $('selCmpKey').onchange = e => { sc.cmpKey = e.target.value; rScores(); };
+  $('nCmpTop').innerHTML = `Reviewing the top 10% of clients by score each month, at random, would catch 10%. Each bar is how much of the ${ck === 'seats_top10' ? 'seats lost' : 'clients that churned'} that model's top 10% reached.`;
+  // gains: all three models for one band
+  $('selPerfBand').innerHTML = SC_BANDS.map(b => `<option value="${b}" ${b === sc.perfBand ? 'selected' : ''}>Clients with ${b}</option>`).join('');
+  $('selPerfBand').onchange = e => { sc.perfBand = e.target.value; rScores(); };
+  const pb = sc.perfBand, gk = sc.gainKey, gWord = gk === 'seats_caught' ? 'seats lost' : 'clients that churned';
+  const steps = [...new Set(SC.gains.map(g => g.reviewed))].sort((a, b) => a - b);
+  const gain = k => steps.map(s => (SC.gains.find(g => g.model === k && g.band === pb && g.reviewed === s) || {})[gk] ?? null);
+  draw('cGains', {type: 'line', data: {labels: steps.map(s => pct(s, 0)), datasets: [
+      ...MODELS.map(k => ({label: k, data: gain(k), borderColor: MODEL_COLOUR[k], backgroundColor: MODEL_COLOUR[k], tension: 0.2, borderWidth: k === sc.model ? 3 : 1.5, pointRadius: k === sc.model ? 3 : 0})),
+      {label: 'Reviewing at random', data: steps, borderColor: GREY, backgroundColor: GREY, borderDash: [5, 4], pointRadius: 0}]},
+    options: {plugins: {legend: {position: 'bottom'}, tooltip: {callbacks: {label: c => `${c.dataset.label}: ${pct(c.raw, 0)} of ${gWord}`}}},
+      scales: {y: {...pctAxis, max: 1, title: {display: true, text: `share of ${gWord} caught`}}, x: {title: {display: true, text: 'top share of clients reviewed each month (highest score first)'}}}}});
+  $('selGainKey').value = gk; $('selGainKey').onchange = e => { sc.gainKey = e.target.value; rScores(); };
+  const g20 = k => (SC.gains.find(g => g.model === k && g.band === pb && Math.abs(g.reviewed - 0.2) < 1e-9) || {})[gk];
+  $('nGains').innerHTML = `Clients with ${esc(pb)}: reviewing the top 20% by score each month would have reached ${MODELS.map(k => `<b>${pct(g20(k), 0)}</b> (${esc(k)})`).join(', ')} of the ${gWord}, against 20% at random. The further a line sits above the grey diagonal, the better that model ranks.`;
+  // AUC month by month: all three models for one band
+  const am = k => holdMonths.map(m => SC.auc_month.find(r => r.model === k && r.band === pb && r.month === m) || {});
+  draw('cAucMonth', {type: 'line', data: {labels: holdMonths.map(monLbl), datasets: [
+      ...MODELS.map(k => ({label: k, data: am(k).map(r => r.auc ?? null), borderColor: MODEL_COLOUR[k], backgroundColor: MODEL_COLOUR[k], tension: 0.2, borderWidth: k === sc.model ? 3 : 1.5, pointRadius: k === sc.model ? 3 : 2})),
+      {label: 'Coin flip (0.5)', data: holdMonths.map(() => 0.5), borderColor: GREY, backgroundColor: GREY, borderDash: [5, 4], pointRadius: 0},
+      {label: 'Useful (about 0.7)', data: holdMonths.map(() => 0.7), borderColor: '#FFC426', backgroundColor: '#FFC426', borderDash: [2, 3], pointRadius: 0}]},
+    options: {plugins: {legend: {position: 'bottom'}, tooltip: {callbacks: {label: c => { if (c.datasetIndex >= MODELS.length) return c.dataset.label;
+        const r = am(MODELS[c.datasetIndex])[c.dataIndex]; return `${c.dataset.label}: AUC ${fmt(r.auc, 2)} (${fmt(r.churned)} of ${fmt(r.client_months)} churned)`; }}}},
+      scales: {y: {min: 0.3, max: 1, title: {display: true, text: 'AUC: how well scores rank churners'}}}}});
+  $('nAucMonth').innerHTML = `Clients with ${esc(pb)} (switch on the left). AUC is the chance that a client who churned was scored above one who did not (0.5 = coin flip, 1 = perfect). `
+    + `Each month has only a handful of churners${pb === '5+ staff' ? ' among 5+ staff clients' : ''} (hover for counts), so single months swing; compare the levels, not the wiggles.`;
+  // tenths and reasons: the selected model
+  $('calibSub').textContent = `${sc.model} · holdout months, clients split into tenths by score`;
+  const tenths = [...Array(10).keys()].map(i => i + 1);
+  const cal = b => tenths.map(t => (SC.calib.find(r => r.model === sc.model && r.band === b && r.tenth === t) || {}).churned ?? null);
+  draw('cCalib', {type: 'bar', data: {labels: tenths.map(t => t === 10 ? '10 (highest)' : String(t)), datasets: [
+      {label: 'Clients with 5+ staff: share that churned', data: cal('5+ staff'), backgroundColor: SCOPE_COLOUR['5+ staff']},
+      {label: 'Clients with 1–4 staff: share that churned', data: cal('1–4 staff'), backgroundColor: SCOPE_COLOUR['1–4 staff']}]},
+    options: {plugins: {legend: {position: 'bottom'}}, scales: {y: {...pctAxis, title: {display: true, text: 'went on to churn'}}, x: {title: {display: true, text: 'tenth of client-months by score'}}}}});
+  $('nCalib').innerHTML = `If the scores work, the bars rise from left to right. Churn here means the client ${CHURN_WORDS['5+ staff']} (5+ staff) or ${CHURN_WORDS['1–4 staff']} (1–4 staff) within 3 months.`;
+  $('reasonSub').textContent = `${sc.model} · top 10% each holdout month`;
+  $('selReasonBand').innerHTML = SC_BANDS.map(b => `<option ${b === sc.reasonBand ? 'selected' : ''}>${b}</option>`).join('');
+  $('selReasonBand').onchange = e => { sc.reasonBand = e.target.value; rScores(); };
+  $('scLegend').innerHTML = Object.entries(GROUP_COLOUR).map(([g, c]) => `<span><i class="sw" style="background:${c}"></i>${esc(g)}</span>`).join('');
+  const rf = SC.reasons.filter(r => r.model === sc.model && r.band === sc.reasonBand).sort((a, b) => b.share - a.share).slice(0, 8);
+  draw('cReasons', {type: 'bar', data: {labels: rf.map(r => wrapWords(r.reason, 34)), datasets: [{label: 'Share of top-10% client-months where this is the No. 1 reason', data: rf.map(r => r.share), backgroundColor: rf.map(r => GROUP_COLOUR[r.group])}]},
+    options: {indexAxis: 'y', layout: {padding: {right: 40}}, plugins: {legend: {display: false}, barLabels: {text: (di, i) => ({text: pct(rf[i].share, 0)})}},
+      scales: {x: pctAxis, y: {ticks: {autoSkip: false, font: {size: 10.5}}}}}});
+  $('nReasons').innerHTML = `For ${esc(sc.model)}'s highest-scored 10% of client-months each holdout month, the factor that added the most to the score. Switch the model above to compare what each one leans on.`;
+  // the list
+  $('selMonth').innerHTML = scMonths.map(m => `<option value="${m}" ${m === sc.month ? 'selected' : ''}>${monthLabel(m)}</option>`).join('');
+  $('selBand').innerHTML = SC_BANDS.map(b => `<option value="${b}" ${b === sc.band ? 'selected' : ''}>Clients with ${b}</option>`).join('');
+  $('selMonth').onchange = e => { sc.month = e.target.value; sc.sel = null; scFilters(); scTable(); };
+  $('selBand').onchange = e => { sc.band = e.target.value; sc.sel = null; scFilters(); scTable(); };
+  $('scSearch').value = sc.q; $('scSearch').oninput = e => { sc.q = e.target.value; scTable(); };
+  $('scSearch').placeholder = HAS_CODES ? 'Find a client (shortcode or C-…)' : 'Find a client ID (C-…)';
+  const s0 = b => (SC.rows.find(r => r.band === b && !r.today) || {m: {[sc.model]: {}}}).m[sc.model].s0;
+  $('scHowto').innerHTML = `<ul>
+    <li><b>The score</b> is the model's predicted share of the client's seats lost in the next 3 months. Every client starts from the same <b>starting point</b>: the model's average client in its size band (${esc(sc.model)}: ${pct(s0('5+ staff'), 1)} for 5+ staff, ${pct(s0('1–4 staff'), 1)} for 1–4 staff).</li>
+    <li>Each factor then <b>moves the score up or down</b> from there, depending on this client's value. <b style="color:#C2185B">+ points push it up</b>: this value is linked to more churn than the average client's. <b style="color:var(--color-brand-secondary-strong)">− points hold it down</b>: linked to less. Starting point + all the points = the score. The table shows the 3 biggest pushes up and the biggest hold-down; click a row for all ${SC.features.length}.</li>
+    <li><b>Points are percentage points of the score.</b> "+5 pts" means this factor alone moved the score from, say, 10% to 15% for this client.</li>
+    <li>${HOWTO_MODEL[sc.model]}</li>
+    <li><b>All three models work in log-odds</b>, the scale logistic regression uses. Their raw contributions are in log-odds and are converted to percentage points in proportion, so they add up exactly to the score.</li>
+    <li><b>Linked, not caused.</b> A factor pushing the score up means clients like this have churned more often, not that the factor causes churn. "No data for this period" can carry points too: it means a log was not updated, and the model reacts to the blank.</li></ul>`;
+  $('chkCmp').checked = sc.cmp; $('chkCmp').onchange = e => { sc.cmp = e.target.checked; scTable(); };
+  scFilters();
+  scTable();
+  $('scWarn').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <b>Read with care.</b> A single client's score is a ranking aid, not a prediction to act on alone: most high-scored clients do not churn (see the tiles), and some churn with low scores. `
+    + `Contributions show what the model leaned on for this client, not what caused the risk. Where the three models disagree on a client, treat its score as less certain.`;
+}
+function scTable() {
+  const rows = scRows();
+  if (!rows.some(r => r.id === sc.sel)) sc.sel = rows.length ? rows[0].id : null;
+  const isToday = sc.month === SC.today;
+  $('scHeadSub').textContent = `${sc.model} · top ${SC.top_n} by score · ${monLbl(sc.month)}`;
+  const maxS = Math.max(0.01, ...rows.map(r => mm(r).s));
+  const others = r => MODELS.filter(k => k !== sc.model).map(k => `<span class="reason" style="white-space:nowrap"><i class="sw" style="background:${MODEL_COLOUR[k]}"></i>${esc(k)}: <b style="color:inherit">#${r.m[k].r}</b> · ${pct(r.m[k].s, 1)}</span>`).join('');
+  const cols = [{k: 'rank', label: '#', n: 1, f: (v, r) => fmt(mm(r).r)}, {k: 'id', label: 'Client', f: (v, r) => `<b class="mono" style="white-space:nowrap">${esc(clientLabel(r))}</b>` + (r.code ? `<br><span class="note" style="white-space:nowrap">${esc(r.id)}</span>` : '')},
+    {k: 'staff', label: 'Staff', n: 1, f: v => fmt(v)}, {k: 'region', label: 'Region'},
+    {k: 'score', label: 'Score: seats lost in 3 months', n: 1, f: (v, r) => `<div class="scorebar"><span style="width:${Math.round(70 * mm(r).s / maxS)}px"></span>${pct(mm(r).s, 1)}</div>`},
+    {k: 'seats', label: 'Expected seats lost', n: 1, f: (v, r) => fmt(mm(r).s * r.staff, 1)},
+    {k: 'up', label: 'What pushes it up', f: (v, r) => reasonList(r, 3, 1)}, {k: 'down', label: 'What holds it down', f: (v, r) => reasonList(r, 1, -1)},
+    {k: 'other', label: 'Other models (rank · score)', f: (v, r) => others(r)},
+    {k: 'actual', label: 'What happened', f: (v, r) => outcomeHtml(r)}];
+  table($('tScores'), cols, rows);
+  $('tScores').querySelectorAll('tbody tr').forEach((tr, i) => { tr.classList.toggle('sel', rows[i].id === sc.sel);
+    tr.onclick = () => { sc.sel = rows[i].id; scTable(); $('detailCard').scrollIntoView({behavior: 'smooth', block: 'start'}); }; });
+  $('scCount').textContent = `${fmt(rows.length)} of ${fmt(scBase().length)} clients shown`;
+  $('nScores').innerHTML = `Ranked by ${esc(sc.model)}. Click a row to see every factor behind its score. "Other models" shows where the other two ranked the same client that month. `
+    + (isToday ? 'Outcomes for today are not known yet.' : `Churn means the client ${CHURN_WORDS[sc.band]} within 3 months; "some loss" means seats were lost but below that bar.`);
+  $('scCsv').onclick = () => download(`client_scores_${sc.model.replace(/\W+/g, '')}_${sc.month}_${sc.band.replace(/[^0-9a-z+]/gi, '')}.csv`,
+    rows.map(r => {
+      const c = mm(r).c, top = c.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+      const rs = j => top[j] && top[j][0] > 0 ? `${r.t[top[j][1]]} (${pts(top[j][0])})` : '';
+      return {model: sc.model, rank: mm(r).r, id: r.id, code: r.code || '', month: r.month, band: r.band, region: r.region, staff: r.staff, score: +(100 * mm(r).s).toFixed(2),
+        seats: +(mm(r).s * r.staff).toFixed(2), r1: rs(0), r2: rs(1), r3: rs(2),
+        others: MODELS.filter(k => k !== sc.model).map(k => `${k} #${r.m[k].r} (${(100 * r.m[k].s).toFixed(1)}%)`).join('; '), outcome: outcomeTxt(r)}; }),
+    [{k: 'model', label: 'model'}, {k: 'rank', label: 'rank'}, ...(HAS_CODES ? [{k: 'code', label: 'shortcode'}] : []), {k: 'id', label: 'client ID'}, {k: 'month', label: 'snapshot month'}, {k: 'band', label: 'size band'}, {k: 'region', label: 'region'}, {k: 'staff', label: 'staff'},
+     {k: 'score', label: 'score (% of seats lost in 3 months)'}, {k: 'seats', label: 'expected seats lost'}, {k: 'r1', label: 'reason 1'}, {k: 'r2', label: 'reason 2'}, {k: 'r3', label: 'reason 3'},
+     {k: 'others', label: 'other models'}, {k: 'outcome', label: 'what happened'}]);
+  scDetail(rows.find(r => r.id === sc.sel));
+}
+function scDetail(r) {
+  if (!r) { $('detailTitle').textContent = 'Why this score'; $('detailHead').innerHTML = 'No client matches.'; return; }
+  const x = mm(r);
+  const order = x.c.map((v, i) => i).sort((a, b) => x.c[b] - x.c[a]);
+  const up = x.c.filter(v => v > 0).reduce((s, v) => s + v, 0), down = x.c.filter(v => v < 0).reduce((s, v) => s + v, 0);
+  $('detailTitle').textContent = `Why ${clientLabel(r)} scores ${pct(x.s, 1)} with ${sc.model} (${monLbl(r.month)}, ${r.band})`;
+  $('detailHead').innerHTML = `<span>Starting point (the model's average client with ${esc(r.band)}): <b>${pct(x.s0, 1)}</b></span>`
+    + `<span>Factors pushing up: <b style="color:#C2185B">${pts(up)}</b></span><span>Factors holding down: <b style="color:var(--color-brand-secondary-strong)">${pts(down)}</b></span>`
+    + `<span>Score: <b>${pct(x.s, 1)}</b> of ${fmt(r.staff)} seats ≈ <b>${fmt(x.s * r.staff, 1)}</b> seats</span><span>What happened: <b>${esc(outcomeTxt(r))}</b></span>`
+    + `<span>All three models: ${MODELS.map(k => `${esc(k)} <b>${pct(r.m[k].s, 1)}</b> (#${r.m[k].r})`).join(' · ')}</span>`;
+  const sets = sc.cmp
+    ? MODELS.map(k => ({label: `${k} (score ${pct(r.m[k].s, 1)})`, data: order.map(i => +(100 * r.m[k].c[i]).toFixed(2)), backgroundColor: MODEL_COLOUR[k]}))
+    : [{label: `${sc.model}: contribution to the score (percentage points)`, data: order.map(i => +(100 * x.c[i]).toFixed(2)), backgroundColor: order.map(i => x.c[i] >= 0 ? UP : DOWN)}];
+  $('detailBox').style.height = sc.cmp ? '980px' : '640px';
+  draw('cDetail', {type: 'bar', data: {labels: order.map(i => wrapWords(r.t[i], 46)), datasets: sets},
+    options: {indexAxis: 'y', layout: {padding: {left: 10, right: 60}},
+      plugins: {legend: {display: sc.cmp, position: 'top'}, tooltip: {callbacks: {title: items => r.t[order[items[0].dataIndex]],
+        label: c => { const i = order[c.dataIndex]; const k = sc.cmp ? MODELS[c.datasetIndex] : sc.model; return [`${k}: ${pts(r.m[k].c[i])} on the score`, `factor: ${SC.features[i]} (${SC.groups[i].toLowerCase()})`]; }}},
+        barLabels: {text: (di, i) => { if (sc.cmp) return null; const v = x.c[order[i]]; return Math.abs(v) < 0.0005 ? null : {text: pts(v), left: v < 0, colour: v < 0 ? '#00756B' : '#A0134A', bold: true}; }}},
+      scales: {x: {grace: '12%', title: {display: true, text: 'percentage points added to (+) or taken off (−) the score'}}, y: {ticks: {autoSkip: false, font: {size: 10.5}}}}}});
+  $('nDetail').innerHTML = `All ${SC.features.length} factors the models use, with this client's value, sorted by ${esc(sc.model)}'s contribution. Each bar is how much that factor moved the score from the starting point; together they add up to the score (${pct(x.s0, 1)} ${pts(x.s - x.s0)} = ${pct(x.s, 1)}). `
+    + (sc.cmp ? 'Side by side, bars that agree across the three models are the more trustworthy reasons.' : 'Tick "Show all three models side by side" to compare what each model leaned on for this client.');
+}
+
+// ---------------- Method and QA
+function rMethod() {
+  $('methodBox').innerHTML = `<ul class="rules">
+    <li><b>Seat churn:</b> the share of a client's seats lost in the next ${M.horizon_days} days. Seats lost = exits that are not record-only, not replaced, and not for ${M.outcome_exclude.map(c => `<span class="code">${esc(c)}</span>`).join(', ')}.</li>
+    <li><b>Model:</b> one seat-churn model per size band (LightGBM), using every warning sign, attendance, payment, staff and profile factor from the warning-signs analysis.</li>
+    <li><b>Seats at risk:</b> predicted seat churn × staff at the snapshot, added up. Today's figure scores the ${asOf} snapshot with models trained on every snapshot whose outcome is known.</li>
+    <li><b>Backtest:</b> each month from ${monLbl(M.backtest_from)} to ${monLbl(M.backtest_to)} is scored by models trained only on snapshots whose 3-month outcome was already known by then, so its accuracy is what a live forecast would have had.</li>
+    <li><b>Where risk comes from:</b> SHAP contributions of each factor to each client's forecast, over ${monLbl(M.driver_from)} to ${monLbl(M.driver_to)}. Only contributions that push risk up are counted, weighted by staff.</li>
+    <li><b>Capacity:</b> each backtest month, clients ranked by expected seats lost; the share of the seats actually lost (and of the clients that churned) at clients in the top N.</li>
+    <li><b>Client scores:</b> three models (LightGBM, logistic regression, XGBoost), each predicting the share of a client's seats lost in the next 3 months from the same ${SC.features.length} factors. The holdout months (${monLbl(SC.holdout_from)} to ${monLbl(SC.holdout_to)}) are scored by models trained only on snapshots whose outcome was known by ${monLbl(SC.train_to)}; today's scores come from models trained on every snapshot with a known outcome (LightGBM = the seats-at-risk models). The page lists each model's top ${SC.top_n} clients per size band per month; the tiles and charts use every holdout client-month.</li>
+    <li><b>Logistic regression set-up:</b> blanks filled with the training median plus a "was blank" flag, long-tailed counts compressed (signed log), all inputs standardised, region one-hot, mild L2 regularisation. It is fitted to the seat share directly (each client-month counted as lost for its share and kept for the rest).</li>
+    <li><b>Reasons:</b> for LightGBM and XGBoost, SHAP (TreeSHAP) splits each score between all ${SC.features.length} factors. For logistic regression, each factor's contribution is its weight × (this client's value − the average client's), which is exact and the same as SHAP for a linear model; a factor's "was blank" flag and region's columns are added into one contribution. All three work in log-odds, so each contribution is rescaled to percentage points in proportion; the signs are kept and they add up exactly to the score minus the starting point (the model's average client).</li>
+    <li><b>Client IDs:</b> a salted hash of the client code, the same ID every month. ${HAS_CODES ? 'This local copy also shows the real shortcode for each ID; do not share it.' : 'The key is kept outside this page by the analytics team.'}</li>
+    <li><b>Associations, not causes.</b> The model finds what tends to come before churn; it does not show what causes it.</li></ul>`;
+  table($('tModels'), [{k: 'band', label: 'Clients'}, {k: 'model', label: 'Model'}, {k: 'auc', label: 'AUC', n: 1, f: v => fmt(v, 2)},
+    {k: 'rate_top10', label: 'Top 10% that churned', n: 1, f: v => pct(v, 1)}, {k: 'rate_all', label: 'All that churned', n: 1, f: v => pct(v, 1)},
+    {k: 'caught_top10', label: 'Churners caught in top 10%', n: 1, f: v => pct(v, 0)}, {k: 'seats_top10', label: 'Seats lost caught in top 10%', n: 1, f: v => pct(v, 0)},
+    {k: 'pred_seats', label: 'Predicted seats lost', n: 1, f: v => fmt(v)}, {k: 'actual_seats', label: 'Actual seats lost', n: 1, f: v => fmt(v)}],
+    [...SC.perf].sort((a, b) => a.band.localeCompare(b.band) || SC.models.indexOf(a.model) - SC.models.indexOf(b.model)));
+  $('nModels').innerHTML = 'All three models are trained on the share of seats lost, from the same factors, and judged on whether the client went on to churn.';
+  table($('tAcc'), [{k: 'scope', label: 'Clients'}, {k: 'months', label: 'Months', n: 1, f: v => fmt(v)}, {k: 'predicted', label: 'Forecast seats lost', n: 1, f: v => fmt(v)},
+    {k: 'actual', label: 'Actual seats lost', n: 1, f: v => fmt(v)}, {k: 'ratio', label: 'Forecast ÷ actual', n: 1, f: v => pct(v, 0)}, {k: 'error', label: 'Typical monthly miss', n: 1, f: v => pct(v, 0)}], D.accuracy);
+  table($('tRisk'), [{k: 'breakdown', label: 'Breakdown'}, {k: 'group', label: 'Group'}, {k: 'clients', label: 'Clients', n: 1, f: v => fmt(v)}, {k: 'seats', label: 'Seats', n: 1, f: v => fmt(v)},
+    {k: 'seats_at_risk', label: 'Seats at risk', n: 1, f: v => fmt(v)}, {k: 'share_of_seats', label: 'Share of seats', n: 1, f: v => pct(v)}], D.risk_now.map(r => ({...r, _small: r.small})));
+  table($('tQa'), [{k: 'step', label: 'Step', f: v => esc(v).replace(/^ +/, m => '&nbsp;'.repeat(m.length * 2))}, {k: 'rows', label: 'Count', n: 1, f: v => fmt(v)}], D.qa);
+}
+
+render();
+if (document.fonts) document.fonts.ready.then(() => render());
+</script>
+</body>
+</html>

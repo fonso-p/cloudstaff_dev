@@ -137,11 +137,22 @@ tr.hl td{background:var(--color-feature-02-soft)!important;transition:background
 .k-late{background:var(--color-feature-07-soft);color:var(--color-text-base-primary)}
 .badge{white-space:nowrap}
 .tbl-wrap.full{max-height:none}
+.g3eq{grid-template-columns:repeat(3,minmax(0,1fr))}
+.sign-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.sign-panel{padding:0!important}
+.sign-panel .chart.xtall{height:540px}
+.sign-panel h4{margin:0;font-family:var(--font-family-heading);font-size:var(--font-size-md);line-height:1.35;height:2.7em;overflow:hidden}
+.sign-panel .sub{color:var(--color-text-base-muted);font-size:var(--font-size-xs);margin:2px 0 6px;min-height:3em}
+.section-h{font-size:var(--font-size-xl);margin:6px 0 var(--component-tile-padding)}
+.info:empty{display:none}
+.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+.k-indigo .kpi-sub i{opacity:.8}
+@media (max-width:1100px){.g3eq,.kpis,.sign-grid{grid-template-columns:1fr}}
 .tbl-wrap.full .code{white-space:normal}
 .tbl-wrap.full td:nth-child(2){min-width:130px}
-.legend-row{display:flex;flex-wrap:wrap;gap:16px;font-size:var(--font-size-xs);color:var(--color-text-base-secondary);margin:0 0 var(--component-tile-padding)}
+.legend-row{display:flex;flex-wrap:wrap;gap:22px;font-size:var(--font-size-sm);font-weight:var(--font-weight-semibold);color:var(--color-text-base-primary);margin:0 0 18px;padding:10px 14px;background:var(--color-surface-secondary);border-radius:var(--radius-lg)}
 .legend-row span{display:flex;align-items:center;gap:6px}
-.legend-row i.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.legend-row i.sw{width:16px;height:16px;border-radius:4px;display:inline-block}
 .chart.xtall{height:440px}
 .wrap-cell{min-width:220px;white-space:normal}
 @media print{.side,.topbar,details.chart-data,.no-print{display:none!important}.shell{grid-template-columns:1fr}.main{padding:0}.card{break-inside:avoid}}
@@ -177,26 +188,18 @@ tr.hl td{background:var(--color-feature-02-soft)!important;transition:background
       <div class="chip"><i class="fa-regular fa-calendar"></i><span id="dateChip"></span></div>
     </div>
     <div class="page-head">
-      <div><h1 id="pageTitle">Warning signs</h1><p id="pageSub"></p></div>
+      <div><h1 id="pageTitle">Warning signs</h1></div>
     </div>
 
     <!-- ================= Page 1: warning signs (the one-pager) ================= -->
     <section class="page show" id="p-signs">
       <div class="info" id="signsInfo"></div>
       <div class="kpis" id="kpis"></div>
-      <div class="legend-row" id="kindLegend"></div>
-      <div class="grid g2">
-        <div class="card"><div class="card-head"><h3>Warning signs: 5+ staff</h3><span id="h5">times as likely to churn</span></div>
-          <div class="card-body"><div class="chart xtall"><canvas id="cSigns5"></canvas></div><div class="note" id="nSigns5"></div></div></div>
-        <div class="card"><div class="card-head"><h3>Warning signs: 1–4 staff</h3><span id="h1">times as likely to churn</span></div>
-          <div class="card-body"><div class="chart xtall"><canvas id="cSigns1"></canvas></div><div class="note" id="nSigns1"></div></div></div>
-      </div>
-      <div class="grid g2">
-        <div class="card"><div class="card-head"><h3>Two signs together: 5+ staff</h3><span>share that went on to churn</span></div>
-          <div class="card-body"><div class="chart xtall"><canvas id="cCombo5"></canvas></div><div class="note" id="nCombo5"></div></div></div>
-        <div class="card"><div class="card-head"><h3>Two signs together: 1–4 staff</h3><span>share that went on to churn</span></div>
-          <div class="card-body"><div class="chart xtall"><canvas id="cCombo1"></canvas></div><div class="note" id="nCombo1"></div></div></div>
-      </div>
+      <div class="card"><div class="card-head"><h3>Warning signs, ranked</h3><span>× the typical client's risk · same signs, same order, in all three segments</span></div>
+        <div class="card-body"><div class="legend-row" id="kindLegend"></div><div class="sign-grid" id="signGrid"></div><div class="note" id="signNote"></div></div></div>
+      <h2 class="section-h">Two signs together</h2>
+      <div class="info" id="comboMissing"></div>
+      <div class="grid" id="comboCards"></div>
       <div class="warn" id="signsWarn"></div>
     </section>
 
@@ -211,8 +214,8 @@ tr.hl td{background:var(--color-feature-02-soft)!important;transition:background
         <div class="card-body"><div class="tbl-wrap full" id="tInd"></div><div class="note">"How common" is the share of client-months where the sign was present. A sign that most clients have is not used in the two-signs charts, because it is the normal state rather than a warning.</div></div></div>
       <div class="card"><div class="card-head"><h3>2 · Features</h3><span>what each client looked like at the snapshot</span></div>
         <div class="card-body"><div class="tbl-wrap full" id="tFeat"></div><div class="note">"Per 10 staff" divides by staff at the snapshot, so large and small clients compare fairly. Windows end the day before the snapshot, so no feature uses anything from the 3 months being predicted.</div></div></div>
-      <div class="card"><div class="card-head"><h3>3 · Timeline columns</h3><span>one row per client per day with any event</span></div>
-        <div class="card-body"><div class="tbl-wrap" id="tTl"></div></div></div>
+      <div class="card"><div class="card-head"><h3>3 · Timeline columns and their sources</h3><span>the file, tab and columns each one is built from</span></div>
+        <div class="card-body"><div class="tbl-wrap full" id="tTl"></div><div class="note">The timeline has one row per client per day with any event. The last rows are client details read straight from the engagement list (client age, region, client type).</div></div></div>
       <div class="card"><div class="card-head"><h3>4 · Source files</h3><span>as loaded, before any cleaning</span></div>
         <div class="card-body"><div class="tbl-wrap" id="tSrc"></div></div></div>
     </section>
@@ -310,15 +313,17 @@ const kpiTiles = items => items.map(([cls, ic, l, v, s]) => `<div class="kpi ${c
 // ---- lookups
 const M = D.meta;
 const IND = Object.fromEntries(D.indicators.map(r => [r.id, r]));
-const BAND = Object.fromEntries(D.bands.map(r => [r.band, r]));
-const B5 = '5+ staff', B1 = '1–4 staff';
+const SEG = D.segments;                                         // in display order: 5+ staff (20%+), 5+ staff (to 0), 1–4 staff (to 0)
+const SEG_TILE = ['k-blue', 'k-indigo', 'k-teal'], SEG_ICON = ['fa-building', 'fa-building-circle-xmark', 'fa-user'];
 const KIND_SHORT = {act: 'Early sign', profile: 'Profile', late: 'Late stage'};
 const kindBadge = k => `<span class="badge k-${k}" title="${esc(KIND_NAME[k])}">${esc(KIND_SHORT[k])}</span>`;
-const shownShort = s => s.replace('Warning signs ranked', 'Ranked chart').replace(/^Combinations \((.*)\)$/, 'Pairs chart, $1');
+const segTitle = name => (SEG.find(g => g.segment === name) || {title: name}).title;
+const shownShort = s => s.replace('Warning signs ranked', 'Ranked charts').replace(/^Combinations \((.*)\)$/, (m, g) => 'Pairs chart: ' + segTitle(g).replace('Clients with ', ''));
 const idLink = id => `<a class="jump idtag" data-target="ind-${id}">${id}</a>`;
 const brk = s => esc(s).replace(/_/g, '_<wbr>');   // long column names wrap only at underscores
 const featLink = f => `<a class="jump code" data-target="feat-${f}">${brk(f)}</a>`;
 const colLink = c => c.startsWith('(') ? esc(c) : `<a class="jump code" data-target="tl-${c}">${esc(c)}</a>`;
+const rate = v => pct(v, v !== null && v < 0.1 ? 1 : 0);      // small rates (churn to 0) need a decimal
 
 // ---- header text: every date comes from the data
 document.title = M.title;
@@ -346,98 +351,144 @@ function jump(target) {   // go to the dictionary row with this id and highlight
 }
 document.addEventListener('click', e => { const a = e.target.closest('a.jump'); if (a) { e.preventDefault(); jump(a.dataset.target); } });
 function render() {
-  const months = sum(D.bands.map(b => b.client_months)), clients = sum(D.bands.map(b => b.clients));
-  $('pageSub').textContent = `${fmt(months)} client-months · monthly snapshots ${monLbl(M.first_month)} to ${monLbl(M.last_month)} · churn measured over the next ${Math.round(M.horizon_days / 30)} months`;
+  const months = sum(SEG.filter(g => g.segment === g.band).map(g => g.client_months));   // each band counted once
+  // (no page subline: client-month counts confused executive readers; they are on the Data dictionary page)
   ({signs: rSigns, dict: rDict, method: rMethod})[page]();
 }
 
 // ---------------- Page 1: warning signs
-const signOrder = () => {   // within each kind, strongest first for clients with 5+ staff (signs that are not clear go last)
-  const s5 = D.signs.filter(s => s.band === B5);
-  return ['act', 'profile', 'late'].flatMap(k => s5.filter(s => IND[s.id].kind === k).sort((a, b) => (b.clear ? b.x : 0) - (a.clear ? a.x : 0)).map(s => s.id));
+const signsOf = seg => D.signs.filter(s => s.segment === seg);
+const signOrder = () => {   // within each kind, strongest first for the first segment (signs that are not clear go last)
+  const s0 = signsOf(SEG[0].segment);
+  return ['act', 'profile', 'late'].flatMap(k => s0.filter(s => IND[s.id].kind === k).sort((a, b) => (b.clear ? b.x : 0) - (a.clear ? a.x : 0)).map(s => s.id));
 };
-function signsChart(canvas, band, order, xmax) {
-  const rows = order.map(id => D.signs.find(s => s.id === id && s.band === band));
+function clearestSign(seg) {   // the strongest clear early sign we can act on; failing that, the strongest clear sign of any kind
+  const c = signsOf(seg).filter(s => s.clear && s.x > 1).sort((a, b) => b.x_typical - a.x_typical);
+  return c.find(s => IND[s.id].kind === 'act') || c[0];
+}
+function signsChart(canvas, g, order, xmax) {
+  const rows = order.map(id => D.signs.find(s => s.id === id && s.segment === g.segment));
+  const X = r => r.x_typical;                                    // displayed: x the typical client in this segment
   draw(canvas, {type: 'bar',
-    data: {labels: rows.map(r => wrapWords(`${r.id} · ${IND[r.id].name}`, 34)),
-           datasets: [{label: 'Times as likely to churn', data: rows.map(r => r.x), backgroundColor: rows.map(r => r.clear ? KIND_COLOUR[IND[r.id].kind] : GREY), barPercentage: 0.8}]},
-    options: {indexAxis: 'y', layout: {padding: {right: 90, top: 14}},
+    data: {labels: rows.map(r => wrapWords(`${r.id} · ${IND[r.id].name}`, 21)),
+           datasets: [{label: "× the typical client's risk", data: rows.map(r => X(r) === null ? 0 : Math.min(X(r), xmax)), backgroundColor: rows.map(r => r.clear ? KIND_COLOUR[IND[r.id].kind] : GREY), barPercentage: 0.8}]},
+    options: {indexAxis: 'y', layout: {padding: {left: 6, right: 92, top: 14}},
       onClick: (e, els) => { if (els.length) jump('ind-' + rows[els[0].index].id); },
       onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
       plugins: {legend: {display: false},
-        tooltip: {callbacks: {label: c => { const r = rows[c.dataIndex]; return [`${xfmt(r.x)} as likely (95% range ${xfmt(r.lo)} to ${xfmt(r.hi)})`, `churn ${pct(r.churn_with)} with the sign vs ${pct(r.churn_without)} without`, `${fmt(r.months_with)} client-months with the sign`]; }}},
-        barLabels: {text: (di, i) => { const r = rows[i]; return r.clear ? {text: xfmt(r.x) + (r.x < 1 ? ' (less churn)' : ''), bold: true, at: 1} : {text: 'not clear', colour: '#737C90', at: 1}; }},
-        refLine: {value: 1, label: '1x = no difference'}},
-      scales: {x: {min: 0, max: xmax, title: {display: true, text: 'times as likely to churn'}}, y: {ticks: {autoSkip: false, font: {size: 11}}}}}});
-  const b = BAND[band];
-  return `Each bar compares client-months where the sign was present with those where it wasn't: 2x means twice as likely to ${esc(b.outcome)} within 3 months (normally ${pct(b.base_rate)}). Grey = not a clear signal (its 95% range crosses 1x). Click a bar to see how the sign is defined.`;
+        tooltip: {callbacks: {title: items => `${rows[items[0].dataIndex].id} · ${IND[rows[items[0].dataIndex].id].name}`,
+          label: c => { const r = rows[c.dataIndex]; if (!r.churn_with) return ['No churn seen with this sign'];
+            const verdict = r.clear ? 'clear signal' : r.status === 'too few' ? 'too few churned clients to tell' : 'not clear: could be chance';
+            return [`${xfmt(X(r))} the typical client's risk (${verdict})`, `churn ${rate(r.churn_with)} with the sign · typical client ${rate(g.base_rate)} · without the sign ${rate(r.churn_without)}`,
+              ...(r.lo_typical !== null ? [`95% range ${xfmt(r.lo_typical)} to ${xfmt(r.hi_typical)}`] : []), `${fmt(r.months_with)} client-months with the sign`]; }}},
+        barLabels: {text: (di, i) => { const r = rows[i];
+          if (!r.churn_with) return {text: 'no churn seen', colour: '#737C90', at: 1};
+          if (r.clear) return {text: `${xfmt(X(r))} · ${rate(r.churn_with)}`, bold: true, at: 1};
+          return {text: `${xfmt(X(r))} ${r.status === 'too few' ? 'too few' : 'unclear'}`, colour: '#737C90', at: 1}; }},
+        refLine: {value: 1, label: `typical client ${rate(g.base_rate)}`}},
+      scales: {x: {min: 0, max: xmax, title: {display: true, text: "× the typical client's risk"}}, y: {ticks: {autoSkip: false, font: {size: 10}}}}}});
+  return g.has_model ? '' : `<b>Inconclusive:</b> only ${fmt(g.churned_clients)} clients churned to 0, so most of these ratios are too uncertain to call. Shown for completeness; only the coloured bars are clear.`;
 }
-function comboChart(canvas, band) {
-  const rows = D.combos.filter(c => c.band === band);
-  if (!rows.length) return 'No pair of signs is clearly stronger together for this group.';
+function comboChart(canvas, g) {
+  const rows = D.combos.filter(c => c.segment === g.segment);
+  $(canvas).parentElement.style.display = rows.length ? '' : 'none';
+  if (!rows.length) return `<b>No pair of signs is clearly stronger together.</b> Only ${fmt(g.churned_clients)} clients went on to ${esc(g.outcome)} in the window: too few to tell whether two signs together add anything.`;
+  const xv = (v, r) => g.base_rate > 0 ? v / g.base_rate : null;      // x the typical client in this segment (same baseline as the ranked chart)
+  const xmaxC = Math.ceil(Math.max(...rows.map(r => xv(r.both, r) || 0)) + 0.5);
   draw(canvas, {type: 'bar',
-    data: {labels: rows.map(r => [...wrapWords(`${r.id1} ${IND[r.id1].name}`, 34), ...wrapWords(`+ ${r.id2} ${IND[r.id2].name}`, 34)]),
-           datasets: [{label: 'First sign on its own', data: rows.map(r => r.only1), backgroundColor: GREY},
-                      {label: 'Second sign on its own', data: rows.map(r => r.only2), backgroundColor: '#8D97AB'},
-                      {label: 'Both together', data: rows.map(r => r.both), backgroundColor: PALETTE[3]}]},
-    options: {indexAxis: 'y', layout: {padding: {right: 40, top: 14}},
+    data: {labels: rows.map(r => [...wrapWords(`${r.id1} ${IND[r.id1].name}`, 24), ...wrapWords(`+ ${r.id2} ${IND[r.id2].name}`, 24)]),
+           datasets: [{label: 'First sign alone', data: rows.map(r => xv(r.only1, r)), backgroundColor: GREY},
+                      {label: 'Second sign alone', data: rows.map(r => xv(r.only2, r)), backgroundColor: '#8D97AB'},
+                      {label: 'Both together', data: rows.map(r => xv(r.both, r)), backgroundColor: rows.map(r => r.conclusive ? PALETTE[3] : '#F2A9C0')}]},
+    options: {indexAxis: 'y', layout: {padding: {left: 6, right: 40, top: 14}},
       onClick: (e, els) => { if (els.length) { const r = rows[els[0].index]; jump('ind-' + (els[0].datasetIndex === 1 ? r.id2 : r.id1)); } },
       plugins: {legend: {position: 'bottom'},
-        tooltip: {callbacks: {afterBody: items => { const r = rows[items[0].dataIndex]; return [`Neither sign: ${pct(r.neither)}`, `${fmt(r.months_both)} client-months with both`]; }}},
-        barLabels: {text: (di, i) => { const r = rows[i], v = [r.only1, r.only2, r.both][di]; return {text: pct(v, 0), bold: di === 2}; }},
-        refLine: {value: BAND[band].base_rate, dash: [4, 4], colour: '#737C90', label: `all clients ${pct(BAND[band].base_rate, 0)}`}},
-      scales: {x: pctAxis, y: {ticks: {autoSkip: false, font: {size: 11}}}}}});
+        tooltip: {callbacks: {label: c => { const r = rows[c.dataIndex], v = [r.only1, r.only2, r.both][c.datasetIndex];
+            return `${c.dataset.label}: ${xfmt(xv(v, r))} the typical client's risk (churn ${rate(v)})`; },
+          afterBody: items => { const r = rows[items[0].dataIndex]; return [`Typical client (1x): churn ${rate(g.base_rate)}`, `Neither sign: churn ${rate(r.neither)}`, `${fmt(r.months_both)} client-months with both`]; }}},
+        barLabels: {text: (di, i) => { const r = rows[i], v = [r.only1, r.only2, r.both][di]; return {text: di === 2 ? `${xfmt(xv(v, r))} · ${rate(v)}` : xfmt(xv(v, r)), bold: di === 2, at: 1}; }},
+        refLine: {value: 1, label: `typical client ${rate(g.base_rate)}`}},
+      scales: {x: {min: 0, max: xmaxC, title: {display: true, text: "× the typical client's risk"}}, y: {ticks: {autoSkip: false, font: {size: 10}}}}}});
   const best = rows[0];
-  return `Share that went on to ${esc(BAND[band].outcome)} within 3 months. Shown: pairs where both together is clearly higher than the stronger sign on its own, and at least one sign is something we can act on. `
-    + `Strongest: ${idLink(best.id1)} + ${idLink(best.id2)}, ${pct(best.both, 0)} with both vs ${pct(Math.max(best.only1, best.only2), 0)} for either alone. Dashed line = all clients in the group.`;
+  if (!best.conclusive) return `<b>Inconclusive.</b> No pair is clearly stronger together: only ${fmt(g.churned_clients)} clients went on to ${esc(g.outcome)}, so each pair rests on a handful of exits. `
+    + `Shown for completeness: the pairs with the highest churn (at least ${M.min_pair_months} client-months with both signs). Highest: ${idLink(best.id1)} + ${idLink(best.id2)}, ${xfmt(xv(best.both, best))} the typical client's risk with both. Baseline (1x) = the typical client in the segment.`;
+  return `Risk of going on to ${esc(g.outcome)} within 3 months, as a multiple of the <b>typical client</b> in the segment (the 1x baseline, ${rate(g.base_rate)} churn). `
+    + `Strongest: ${idLink(best.id1)} + ${idLink(best.id2)}, ${xfmt(xv(best.both, best))} with both vs ${xfmt(xv(Math.max(best.only1, best.only2), best))} for the stronger sign alone. `
+    + `Shown: pairs clearly stronger together, with at least one sign we can act on. Hover a bar for the underlying churn rates.`;
+}
+function signPanels() {   // one panel per segment inside one card; the first carries the full sign names
+  return SEG.map((g, i) => `<div class="card-body sign-panel"><h4>${esc(g.title)}</h4>`
+    + `<div class="sub">churn = ${esc(g.outcome.replace('their', 'its'))} in 3 months · typical client ${rate(g.base_rate)} · ${fmt(g.churned_clients)} clients did</div>`
+    + `<div class="chart xtall"><canvas id="cS${i}"></canvas></div><div class="note" id="ncS${i}"></div></div>`).join('');
+}
+function comboCards(segs) {
+  return segs.map(g => { const i = SEG.indexOf(g), inc = D.combos.some(c => c.segment === g.segment && !c.conclusive);
+    return `<div class="card"><div class="card-head"><h3>${esc(g.title)}</h3><span>${inc ? 'inconclusive · too few exits' : "× the typical client's risk"}</span></div>`
+    + `<div class="card-body"><div class="chart xtall"><canvas id="cC${i}"></canvas></div><div class="note" id="ncC${i}"></div></div></div>`; }).join('');
 }
 function rSigns() {
-  const b5 = BAND[B5], b1 = BAND[B1];
-  $('signsInfo').innerHTML = `<i class="fa-solid fa-circle-info"></i> <b>What comes before a client churns.</b> Churn means a client with <b>5+ staff</b> loses <b>${pct(M.high_churn, 0)}+ of its seats</b>, or a client with <b>1–4 staff</b> loses <b>all</b> its seats, within 3 months. `
+  $('signsInfo').innerHTML = `<i class="fa-solid fa-circle-info"></i> <b>What comes before a client churns, in three segments.</b> `
+    + SEG.map(g => `<b>${esc(g.title)}</b>: the client goes on to ${esc(g.outcome)} within 3 months`).join('; ') + '. '
     + `Seats lost are exits that weren't replaced; exits for <b>business reasons</b> (restructures, slowdowns, budget cuts) are market churn and are not counted. Codes such as <span class="idtag">A1</span> are defined on the <a class="jump" data-target="ind-A1">Data dictionary</a> page.`;
-  const s5 = D.signs.filter(s => s.band === B5 && s.clear && IND[s.id].kind === 'act').sort((a, b) => b.x - a.x);
-  const c5 = D.combos.filter(c => c.band === B5).sort((a, b) => b.both - a.both)[0];
-  $('kpis').innerHTML = kpiTiles([
-    ['k-blue', 'fa-building', 'Clients with 5+ staff', pct(b5.base_rate), `of client-months lose ${pct(M.high_churn, 0)}+ of seats within 3 months · ${fmt(b5.clients)} clients`],
-    ['k-teal', 'fa-user', 'Clients with 1–4 staff', pct(b1.base_rate), `of client-months lose all seats within 3 months · ${fmt(b1.clients)} clients`],
-    ['k-yellow', 'fa-triangle-exclamation', 'Strongest early signs (5+ staff)', s5.length ? xfmt(s5[0].x) : '–', s5.slice(0, 2).map(s => `${idLink(s.id)} ${esc(IND[s.id].name)} (${xfmt(s.x)})`).join(' and ') + ' as likely to churn'],
-    ['k-pink', 'fa-layer-group', 'Two signs together (5+ staff)', c5 ? pct(c5.both, 0) : '–', c5 ? `churn when ${idLink(c5.id1)} and ${idLink(c5.id2)} happen together, vs ${pct(Math.max(c5.only1, c5.only2), 0)} for either alone` : ''],
-  ]);
-  $('kindLegend').innerHTML = Object.entries(KIND_NAME).map(([k, n]) => `<span><i class="sw" style="background:${KIND_COLOUR[k]}"></i>${esc(n)}</span>`).join('') + `<span><i class="sw" style="background:${GREY}"></i>Not a clear signal</span>`;
-  const order = signOrder(), xmax = Math.ceil(Math.max(...D.signs.filter(s => s.clear).map(s => s.x)) + 0.5);
-  $('nSigns5').innerHTML = signsChart('cSigns5', B5, order, xmax);
-  $('nSigns1').innerHTML = signsChart('cSigns1', B1, order, xmax);
-  $('nCombo5').innerHTML = comboChart('cCombo5', B5);
-  $('nCombo1').innerHTML = comboChart('cCombo1', B1);
+  $('kpis').innerHTML = kpiTiles(SEG.map((g, i) => {
+    const top = clearestSign(g.segment);
+    const sign = top ? `Clearest ${IND[top.id].kind === 'act' ? 'early ' : ''}sign: ${idLink(top.id)} ${esc(IND[top.id].name)} (${xfmt(top.x_typical)} the typical client's risk)` : 'No clear sign';
+    return [SEG_TILE[i], SEG_ICON[i], g.title, rate(g.base_rate),
+      `of client-months go on to ${esc(g.outcome)} within 3 months: the <b>typical client</b>, the 1x baseline in the charts · ${fmt(g.churned_clients)} of ${fmt(g.clients)} clients did<br>${sign}`
+      + (g.has_model ? '' : '<br><i>Too few exits for a model: warning signs only</i>')];
+  }));
+  $('kindLegend').innerHTML = Object.entries(KIND_NAME).map(([k, n]) => `<span><i class="sw" style="background:${KIND_COLOUR[k]}"></i>${esc(n)}</span>`).join('')
+    + `<span><i class="sw" style="background:${GREY}"></i>Not a clear signal, or too few to tell</span>`
+    + `<span><i class="sw" style="background:#1F2533;width:3px;border-radius:0"></i>Baseline (1x): the typical client in the segment</span>`;
+  const withPairs = SEG.filter(g => D.combos.some(c => c.segment === g.segment)), noPairs = SEG.filter(g => !withPairs.includes(g));
+  if (!$('cS0')) {
+    $('signGrid').innerHTML = signPanels();
+    $('comboCards').innerHTML = comboCards(withPairs);
+    $('comboCards').className = 'grid ' + (withPairs.length === 3 ? 'g3eq' : withPairs.length === 2 ? 'g2' : '');   // one card per segment that has pairs to show
+  }
+  const order = signOrder(), xmax = Math.min(10, Math.ceil(Math.max(...D.signs.filter(s => s.x_typical !== null).map(s => s.x_typical)) + 0.5));   // grey (inconclusive) values shown too, capped at 10x
+  SEG.forEach((g, i) => { $('ncS' + i).innerHTML = signsChart('cS' + i, g, order, xmax); });
+  withPairs.forEach(g => { const i = SEG.indexOf(g); $('ncC' + i).innerHTML = comboChart('cC' + i, g); });
+  $('signNote').innerHTML = '<b>Baseline (1x) = the typical client in the segment</b>, the churn rate on its headline tile. Each bar is the churn rate of clients with the sign as a multiple of that: 2x = twice the typical client&#39;s risk, and the label shows the rate itself (2.2x · 12% means 12% churned). '
+    + '<b>Coloured</b> = a clear signal. <b>Grey</b> = shown for completeness but inconclusive: "unclear" means the 95% range crosses 1x (could be chance), "too few" means fewer than '
+    + `${D.min_event_churned} churned client-months had the sign. Bars above 10x are cut at 10x. Click any bar for its definition.`;
+  $('comboMissing').innerHTML = noPairs.map(g => `<i class="fa-solid fa-circle-info"></i> <b>${esc(g.title)}:</b> no pair of signs is clearly stronger together. Only ${fmt(g.churned_clients)} clients went on to ${esc(g.outcome)}, too few to tell whether two signs together add anything.`).join('<br>');
+  const modelled = SEG.filter(g => g.has_model), unmodelled = SEG.filter(g => !g.has_model);
   $('signsWarn').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <b>Read with care.</b> These signs come <i>before</i> churn; the analysis does not show they cause it. `
     + `Orange signs mean the client has usually already decided. As a model, the signs rank clients better than chance but are not precise enough to name who will leave: `
-    + `accuracy (AUC, 0.5 = coin flip, 1 = perfect) is ${fmt(b5.auc_full, 2)} for clients with 5+ staff and ${fmt(b1.auc_full, 2)} for 1–4 staff, on months the model never saw.`;
+    + `accuracy (AUC, 0.5 = coin flip, 1 = perfect) on months the models never saw is ${modelled.map(g => { const v = Object.values(g.auc_models); return `${fmt(Math.min(...v), 2)}–${fmt(Math.max(...v), 2)} for ${esc(g.title.replace('Clients with ', 'clients with '))}`; }).join(' and ')} across the three models. `
+    + unmodelled.map(g => `${esc(g.title)} has no model: only ${fmt(g.churned_clients)} clients churned to 0, too few to train or test one.`).join(' ');
 }
 
 // ---------------- Page 2: data dictionary
 function rDict() {
   table($('tOutcome'), [
-    {k: 'band', label: 'Clients with'}, {k: 'outcome', label: 'Churn means (within 3 months)'},
+    {k: 'title', label: 'Segment', f: v => `<b style="white-space:nowrap">${esc(v)}</b>`}, {k: 'outcome', label: 'Churn means<br>(within 3 months)'},
     {k: 'outcome_col', label: 'Column', f: v => `<span class="code">${esc(v)}</span>`},
     {k: 'clients', label: 'Clients', n: 1, f: v => fmt(v)}, {k: 'client_months', label: 'Client-months', n: 1, f: v => fmt(v)},
-    {k: 'churned_months', label: 'Churned', n: 1, f: v => fmt(v)}, {k: 'base_rate', label: 'Churn rate', n: 1, f: v => pct(v)}], D.bands);
+    {k: 'churned_months', label: 'Churned<br>client-months', n: 1, f: v => fmt(v)}, {k: 'churned_clients', label: 'Clients<br>that churned', n: 1, f: v => fmt(v)},
+    {k: 'base_rate', label: 'Churn rate', n: 1, f: v => rate(v)},
+    {k: 'has_model', label: 'Model', f: v => v ? '<span class="badge b-ok">yes</span>' : '<span class="badge b-no" title="too few exits to train or test a model">no</span>'}], SEG);
   $('nOutcome').innerHTML = `A <b>snapshot</b> is a client on the 1st of a month (${monLbl(M.first_month)} to ${monLbl(M.last_month)}); a client-month is one snapshot. `
     + `<b>Seats lost</b> = exits in the next ${M.horizon_days} days that are not record-only, not replaced, and not for ${M.outcome_exclude.map(c => `<span class="code">${esc(c)}</span>`).join(', ')}. `
-    + `Clients with 1–4 staff are measured on losing every seat, because one exit at a 2-person client is already 50%. A client is placed in a group by its staff on the snapshot day, so it can move between groups.`;
+    + `<b>Churn to 0</b> (<span class="code">full_exit_next_3m</span>) = no staff left at the end of the 3 months, with at least one counted seat lost. Churn to 0 for 5+ staff is part of churn by 20%+, not separate from it. `
+    + `A client is placed in a size group by its staff on the snapshot day, so it can move between groups.`;
   table($('tInd'), [
     {k: 'id', label: 'Code', f: v => `<span class="idtag">${v}</span>`}, {k: 'name', label: 'Indicator'}, {k: 'kind', label: 'Type', f: v => kindBadge(v)},
     {k: 'test', label: 'Present when', cls: 'wrap-cell'}, {k: 'feature', label: 'Feature', f: v => featLink(v)},
     {k: 'shown_in', label: 'Shown in', f: v => v.length ? v.map(s => `<span style="white-space:nowrap">${esc(shownShort(s))}</span>`).join('<br>') : '<span class="note">dictionary only</span>'},
     {k: 'p5', label: 'How common<br>5+ staff', n: 1, f: v => pct(v, 0)}, {k: 'p1', label: 'How common<br>1–4 staff', n: 1, f: v => pct(v, 0)}],
-    D.indicators.map(r => ({...r, p5: r.prevalence[B5], p1: r.prevalence[B1]})), {rowId: r => 'ind-' + r.id});
+    D.indicators.map(r => ({...r, p5: r.prevalence['5+ staff'], p1: r.prevalence['1–4 staff']})), {rowId: r => 'ind-' + r.id});
   table($('tFeat'), [
     {k: 'feature', label: 'Feature', f: v => `<span class="code">${esc(v)}</span>`}, {k: 'label', label: 'Meaning'}, {k: 'how', label: 'How it is built', cls: 'wrap-cell'},
     {k: 'window', label: 'Looks back'}, {k: 'built_from', label: 'Timeline columns', f: v => v.map(colLink).join('<br>')},
     {k: 'indicators', label: 'Indicators', f: v => v.map(idLink).join(' ') || '–'}, {k: 'models', label: 'In models'}],
     D.features, {rowId: r => 'feat-' + r.feature});
   table($('tTl'), [
-    {k: 'field', label: 'Column', f: v => `<span class="code">${esc(v)}</span>`}, {k: 'definition', label: 'Definition', cls: 'wrap-cell'},
-    {k: 'source', label: 'Source'}, {k: 'derivation', label: 'How it is derived', cls: 'wrap-cell'}], D.timeline, {rowId: r => 'tl-' + r.field});
+    {k: 'field', label: 'Column', f: v => `<span class="code">${brk(v)}</span>`}, {k: 'definition', label: 'Definition', cls: 'wrap-cell'},
+    {k: 'source_file', label: 'Source file · tab', f: v => `<b>${esc(v)}</b>`}, {k: 'source_columns', label: 'Source column(s)', cls: 'wrap-cell'},
+    {k: 'matched_on', label: 'Tied to the client by', cls: 'wrap-cell'}, {k: 'derivation', label: 'How it is derived', cls: 'wrap-cell'}],
+    D.timeline, {rowId: r => 'tl-' + r.field});
   table($('tSrc'), [
     {k: 'dataset', label: 'Dataset'}, {k: 'source', label: 'File · tab'}, {k: 'rows', label: 'Rows', n: 1, f: v => fmt(v)},
     {k: 'date column', label: 'Date column'}, {k: 'min date', label: 'From'}, {k: 'max date', label: 'To'}], D.sources);
@@ -445,21 +496,24 @@ function rDict() {
 
 // ---------------- Method and QA
 function rMethod() {
-  const b5 = BAND[B5], b1 = BAND[B1];
+  const modelled = SEG.filter(g => g.has_model), unmodelled = SEG.filter(g => !g.has_model);
   $('methodBox').innerHTML = `<ul class="rules">
-    <li><b>Times as likely:</b> the churn rate among client-months with the sign, divided by the rate among client-months without it. Months where the sign's source has no data are left out.</li>
-    <li><b>Clear signal:</b> the 95% range of that ratio does not cross 1x. The range comes from resampling whole clients 500 times, because one client's months are not independent. Signs seen in fewer than ${M.min_event_months} client-months are not rated.</li>
-    <li><b>Two signs together:</b> the churn rate when both signs were present, compared with each sign on its own (without the other). A pair is shown when "both" is clearly above the stronger sign alone (95% range above 1), it was seen in at least ${M.min_pair_months} client-months, at least one sign is an early sign we can act on, and neither sign is present in more than ${pct(M.max_prevalence, 0)} of client-months.</li>
+    <li><b>× the typical client's risk (what the charts show):</b> the churn rate among client-months with the sign (or, in the pairs chart, with that combination), divided by the segment's overall churn rate, the number on its headline tile. Every chart uses this one baseline. Months where the sign's source has no data are left out.</li>
+    <li><b>Clear signal:</b> decided by comparing client-months <i>with</i> the sign against those <i>without</i> it: the 95% range of that ratio does not cross 1x. The range comes from resampling whole clients 500 times, because one client's months are not independent. A sign is <b>too few to tell</b> when it was seen in fewer than ${M.min_event_months} client-months, or fewer than ${D.min_event_churned} of those went on to churn.</li>
+    <li><b>Two signs together:</b> the churn rate when both signs were present, compared with each sign on its own (without the other). A pair is shown when "both" is clearly above the stronger sign alone (95% range above 1), it was seen in at least ${M.min_pair_months} client-months with at least ${D.min_event_churned} churned, at least one sign is an early sign we can act on, and neither sign is present in more than ${pct(M.max_prevalence, 0)} of client-months.</li>
     <li><b>Types of sign:</b> <i>early signs we can act on</i> (attendance, staff events, payments) can happen while the client is still committed; <i>client profile</i> describes the account; <i>late stage</i> means the client has usually already started to leave.</li>
-    <li><b>Accuracy:</b> a model using every sign was trained on earlier snapshots (ending ${M.horizon_days} days before the test months, so no outcome overlaps them) and tested on snapshots from ${monLbl(M.test_from.slice(0, 7))} to ${monLbl(M.last_month)}, months it never saw. AUC (0.5 = coin flip, 1 = perfect): 5+ staff ${fmt(b5.auc_full, 2)} (early signs only ${fmt(b5.auc_early, 2)}), 1–4 staff ${fmt(b1.auc_full, 2)} (early signs only ${fmt(b1.auc_early, 2)}). On clients the model had never seen: ${fmt(b5.auc_full_new_clients, 2)} and ${fmt(b1.auc_full_new_clients, 2)}.</li>
+    <li><b>Accuracy:</b> three models (LightGBM, logistic regression, XGBoost), each predicting the share of seats lost from all factors, were trained on earlier snapshots (ending ${M.horizon_days} days before the test months, so no outcome overlaps them) and tested on snapshots from ${monLbl(M.test_from.slice(0, 7))} to ${monLbl(M.last_month)}, months it never saw. AUC (0.5 = coin flip, 1 = perfect): `
+      + modelled.map(g => `${esc(g.title)}: ${Object.entries(g.auc_models).map(([k, v]) => `${esc(k)} ${fmt(v, 2)}`).join(', ')} (on clients they had never seen: ${Object.values(g.auc_models_new_clients).map(v => fmt(v, 2)).join(', ')})`).join('; ') + `.</li>
+    ${unmodelled.map(g => `<li><b>${esc(g.title)}:</b> only ${fmt(g.churned_clients)} clients (${fmt(g.churned_months)} client-months) churned to 0 in the window, too few to train or test a model. It has warning signs only, with wide ranges: treat them as indicative.</li>`).join('')}
     <li><b>Associations, not causes.</b> The signs come before churn; this does not show that they cause it.</li></ul>`;
   table($('tQa'), [{k: 'step', label: 'Step', f: v => esc(v).replace(/^ +/, m => '&nbsp;'.repeat(m.length * 2))}, {k: 'rows', label: 'Count', n: 1, f: v => fmt(v)}], D.qa);
 }
 
 // ---- exports
 $('btnSigns').onclick = () => download('churn_warning_signs.csv',
-  D.signs.map(s => ({...s, name: IND[s.id].name, kind: KIND_NAME[IND[s.id].kind]})),
-  [{k: 'id', label: 'code'}, {k: 'name', label: 'indicator'}, {k: 'kind', label: 'type'}, {k: 'band', label: 'clients with'}, {k: 'x', label: 'times as likely'},
+  D.signs.map(s => ({...s, name: IND[s.id].name, kind: KIND_NAME[IND[s.id].kind], segment: segTitle(s.segment)})),
+  [{k: 'id', label: 'code'}, {k: 'name', label: 'indicator'}, {k: 'kind', label: 'type'}, {k: 'segment', label: 'segment'}, {k: 'x_typical', label: 'x the typical client'},
+   {k: 'lo_typical', label: 'range low (x typical)'}, {k: 'hi_typical', label: 'range high (x typical)'}, {k: 'x', label: 'with vs without (verdict test)'},
    {k: 'lo', label: '95% range low'}, {k: 'hi', label: '95% range high'}, {k: 'clear', label: 'clear signal'}, {k: 'churn_with', label: 'churn with'},
    {k: 'churn_without', label: 'churn without'}, {k: 'months_with', label: 'client-months with'}]);
 $('btnDict').onclick = () => download('churn_data_dictionary.csv',
@@ -468,6 +522,8 @@ $('btnDict').onclick = () => download('churn_data_dictionary.csv',
    {k: 'feature_label', label: 'feature meaning'}, {k: 'built_from', label: 'timeline columns'}, {k: 'shown_in', label: 'shown in'}]);
 
 render();
+// labels are measured before the web font arrives; redraw once it has, so long labels are not clipped
+if (document.fonts) document.fonts.ready.then(() => render());
 </script>
 </body>
 </html>

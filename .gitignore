@@ -51,3 +51,8 @@ Client Extraction (CS Jobs)/**/*.xlsx
 Client Extraction (CS Jobs)/**/*.xls
 Client Extraction (CS Jobs)/**/*.csv
 Client Extraction (CS Jobs)/**/*.jsonl
+
+# Churn Analysis: built dashboards and their data are saved locally (Desktop/Projects/Churn Analysis/Dashboards),
+# never in the repo. These guard against old paths. Built by Churn Analysis/work/build_dashboards.py
+Churn Analysis/outputs/
+Churn Analysis/data/
