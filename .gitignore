@@ -56,3 +56,11 @@ Client Extraction (CS Jobs)/**/*.jsonl
 # never in the repo. These guard against old paths. Built by Churn Analysis/work/build_dashboards.py
 Churn Analysis/outputs/
 Churn Analysis/data/
+
+# Lickimat: client data and built dashboards live on the Desktop (Projects/Client/Lickimat), never in the repo.
+# These guard against copies. Built by Lickimat/prep.py + cs-dashboard build_dashboard.py
+Lickimat/data/
+Lickimat/outputs/
+Lickimat/**/*.xlsx
+Lickimat/**/*.json
+Lickimat/**/*_Dashboard.html

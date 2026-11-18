@@ -446,7 +446,7 @@ def _export_rest(out_dir, ctx):
             "company_website_articles": sum(e["source"] == "newsroom" for e in evs),
             "possible_matches_to_review": sum(r["company_id"] == cid for r in review),
             "name_type": matchers[cid].name_type,
-            "profile_status": cards[cid].get("status", "not built"),
+            "profile_status": http.tidy_status(cards[cid].get("status", "not built")),
             "profile_keywords": "; ".join(cards[cid].get("keywords", [])[:8]),
             "sources_ok": ";".join(s for s, st in statuses.items() if st == "ok"),
             "sources_error": ";".join(s for s, st in statuses.items() if st == "error"),

@@ -28,6 +28,7 @@ PART 2: build_dashboard/build_dashboard.py                                      
 | Path | What it is |
 |---|---|
 | `format data/format_priority_data.ipynb` | Part 1: the whole pipeline, one stage per notebook section. Committed without outputs |
+| `format data/priority_scoring.py` | **The scoring settings and formulas** (the four profiles, `FIT`, `NEWS_STRENGTH`, `RECENCY`, `TRIGGER_FAMILY`, `BDM_MIN_SCORE`, `ACT_NOW_TARGET_SHARE`, and `xl_round()` … `score_accounts()`). Moved out of the notebook on 2026-11-18 so `../apollo_lead_grading/` scores leads with the same code. The notebook imports it in §0b; its stage 8 keeps only `score()`. Both golden tests pass unchanged, and the scored output was checked identical before and after the move. Two optional extras used only by `../apollo_lead_grading/` (the notebook sets neither, so its scores are unchanged): a per-row `news_strength_factor` (blank = 1) to halve medium / low confidence or parent-company news, which then never triggers Act now; and a profile's `news_strength_extra` for event types not in `NEWS_STRENGTH` (Contract / partnership win 0.5, Product launch 0.3). After each change the golden tests passed and the notebook's scored output was checked identical to before |
 | `format data/BUSINESS_RULES.md` | Business rules, assumptions, data catalogue |
 | `format data/PIPELINE.md` | This guide |
 | `build_dashboard/build_dashboard.py` | Part 2: validates the processed JSON and builds the page |
@@ -108,7 +109,7 @@ so stages can be rerun or tested one at a time.
 
 ## 5. Where each rule lives in the code
 
-All rules are data (dicts, lists, constants) in notebook §0a–§0b, not buried in functions. Only the dashboard display mapping
+All rules are data (dicts, lists, constants) in notebook §0a–§0b, not buried in functions. **Exception (2026-11-18):** the scoring settings (`SCORING_*`, `FIT`, `NEWS_STRENGTH`, `RECENCY`, `TRIGGER_FAMILY`, `BDM_MIN_SCORE`, `ACT_NOW_TARGET_SHARE`) are in `priority_scoring.py`, imported in §0b; change them there. Only the dashboard display mapping
 (`DASH_RENAME`, `DASH_ROW_FIELDS`, `SEAT_BAND_LABELS`) sits in §11, next to the code that uses it. To change a rule, change it
 there and update BUSINESS_RULES.md.
 

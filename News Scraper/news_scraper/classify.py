@@ -16,6 +16,9 @@ PE_FIRMS = (r"(kkr|blackstone|carlyle|tpg|bain capital|advent international|eqt|
             r"warburg pincus|pacific equity partners|bgh capital|quadrant private equity|anchorage capital|adamantem|five v)")
 
 # Each category is a list of patterns (case-insensitive), joined with OR. The first category that matches wins.
+CONTRACT = "Contract / partnership win"            # added 18 Nov 2026
+LAUNCH = "Product launch"                          # added 18 Nov 2026
+
 RULES = [
     ("PE buyout", [
         r"private equity", r"\bbuy-?out\b", r"majority stake",
@@ -29,6 +32,8 @@ RULES = [
         r"\b(mega|capital|equity|funding|growth|venture|seed) raise\b",                         # "mega raise", "seed raise"
         r"[$£€][\d.,]+\s*(k|m|mn|bn|b|million|billion)\b\s+raise\b",                            # "$320 million raise"
         r"\b(lands?|bags?|nabs?|clos(es|ed)|complet(es|ed)) .{0,30}(funding|investment round|capital raise)",
+        # added 18 Nov 2026 (missed on UK care news): "McGoff Group secures £13m Virgin Money backing for new operator"
+        r"\bsecures? .{0,40}\b(backing|financing|debt facility|growth capital|credit facility)\b",
     ]),
     ("Restructuring", [
         r"restructur", r"lay-?offs?\b|lays off|laying off|laid\s*-?\s*off", r"job cuts?\b", r"redundanc", r"downsiz",
@@ -46,6 +51,9 @@ RULES = [
         r"\btak(e|es|ing) (a )?([\w-]+ )?(stake|shareholding) in\b|minority investment in|complet(es|ed) (its |an )?investment in",
         r"\b(sells?|sold|selling|divests?|divested|offloads?|offloaded) (its |a |the |their )?([\w-]+ )?(stake|business|division|unit|arm|subsidiary|shareholding)\b",
         r"stake sale|\bdivest", r"\bspin-?off\b|\bspun off\b|\bdemerg",
+        # added 18 Nov 2026: "Belmont Healthcare adds six homes to portfolio", "rapid growth and £1 care home acquisitions"
+        r"\badds? (\w+ )?(homes|sites|clinics|practices|locations|services|businesses|firms) to (its |the )?portfolio\b",
+        r"\bacquisitions\b",
     ]),
     ("Leadership change", [
         # "appoint" alone also means a company appointed as distributor, contractor or partner: require a role nearby
@@ -58,6 +66,12 @@ RULES = [
         EXEC + r"\b.{0,40}\b(exits?|departs?|quits?|leaves|leaving|to leave|retires?|retiring|ousted|sacked|fired|replaced)\b",
         r"\b(exits?|departs?|leaves|quits?|retires?)\b.{0,40}\bafter (\d+|two|three|four|five|six|seven|eight|nine|ten) years\b",
         r"\b(leadership|executive|board|management) (shake-?up|reshuffle|overhaul|changes?)\b",
+        # added 18 Nov 2026: "names new commercial lead", "lines up growth with new head of commercial",
+        # "strengthens leadership team", "founder on management rejig"
+        r"\b(names?|named|appoints?|welcomes?|hires?|announces?) (a |its |their )?new [\w ]{0,25}\b(" + EXEC + "|" + ROLE + r")\b",
+        r"\bnew " + EXEC + r"\b",
+        r"\b(strengthens?|bolsters?|expands?|grows?|builds?|adds? to) (its |the |their )?(leadership|senior leadership|executive|management|board) team\b",
+        r"\b(management|leadership|board) (rejig|restructure|reshape)\b",
     ]),
     ("Expansion / new office", [
         r"expand(s|ed)? (into|to|in|its|operations|presence|footprint|team)", r"expansion (into|to|in|plans?|drive|push)\b",
@@ -69,6 +83,25 @@ RULES = [
         r"to (create|hire) \d+|hiring \d+",
         r"hiring (spree|push|drive|blitz)|recruitment drive|(ramps?|steps?) up (its )?hiring|"
         r"(boosts?|grows?|doubles?|triples?) (its )?(headcount|workforce|team|staff)\b",
+        # added 18 Nov 2026: "takes 3,442 sq ft office", "outlines £550m development pipeline", "to deliver 80-bed scheme"
+        r"\btakes? [\d,]+ ?sq\.? ?ft\b|\b[\d,]+ ?sq\.? ?ft (office|space|unit|hq|headquarters)\b",
+        r"\bdevelopment pipeline\b|\bpipeline of (new )?(homes|sites|schemes|locations)\b",
+        r"\b\d+-bed (scheme|home|care home|development|facility|unit)\b",
+        r"\b(plans?|deliver|build|develop|open)s? (a |its )?new (care home|home|site|facility|clinic|scheme)\b",
+    ]),
+    # Added 18 Nov 2026 (requested): growth signals that were "Other". After every other category, so "acquires" or
+    # "opens office" win when both appear.
+    (CONTRACT, [
+        r"\b(wins?|won|secures?|secured|awarded|lands?|landed|bags?|bagged)\b.{0,40}\b(contract|tender|framework|deal with|account)\b",
+        r"\bnames? .{0,40}\bas (its |their |the |a )?([\w-]+ ){0,3}(provider|partner|supplier|vendor)\b",
+        r"\bselects?\b.{0,40}\bas (its |their |the )?([\w-]+ )?(provider|partner|supplier|vendor|platform)\b",
+        r"\b(partners?|partnered|partnering|teams? up|teamed up|joins? forces|collaborates?) with\b|\bpartnership (with|between)\b",
+        r"\bstrategic partner(ship)?\b",
+    ]),
+    (LAUNCH, [
+        r"\b(launch(es|ed)?|unveils?|unveiled|introduces?|introduced|debuts?|rolls? out|releases?|released)\b.{0,90}"
+        r"\b(platform|product|app|tool|service|feature|solution|suite|range|offering|software)\b",
+        r"\bnew (platform|product|app|service|solution|offering)\b",
     ]),
 ]
 _RULES = [(cat, re.compile("|".join(f"(?:{p})" for p in pats), re.I)) for cat, pats in RULES]
@@ -82,7 +115,15 @@ NOT = {
                                 r"cut (staff|workers'?) (hours|pay)|closes? (the )?(gap|deal|round|day|week|session)", re.I),
     "Leadership change": re.compile(r"appoint\w*\b.{0,40}\b(distributor|reseller|supplier|stockist|wholesaler|(head )?contractor|builder)\b|"
                                     r"\b(deputy|vice) (pm|prime minister|mayor|premier|minister|governor|sheriff)\b", re.I),
-    "Expansion / new office": re.compile(r"helps? .{0,40}expand|how to expand|tips", re.I),
+    "Expansion / new office": re.compile(r"helps? .{0,40}expand|how to expand|tips|"
+                                         r"expand(s|ed|ing)? (its |their |the )?(partnership|alliance|collaboration|relationship|deal)", re.I),
+    CONTRACT: re.compile(r"contract (dispute|row|lawsuit|terminat|cancel|breach|ends?|expir)|loses? .{0,20}contract|"
+                         r"partners? with (charit|local school|the community)|\bcharity partner|"
+                         # sponsorships are marketing spend, not a business win ("Stoke City name Royston Jones as official
+                         # diamond partners", "Leicestershire CCC welcomes Midlands Care as official partner")
+                         r"\bsponsor|official (\w+ )?partners?\b|\b(fc|ccc|cricket|football|rugby|stadium|racecourse)\b", re.I),
+    LAUNCH: re.compile(r"launch(es|ed)? .{0,30}(appeal|fundrais|challenge|campaign|investigation|probe|inquiry|consultation|"
+                       r"petition|review of|lawsuit|bid for|cycle|walk|run)\b", re.I),
 }
 # SEO company-profile pages (Tracxn, CB Insights and the like): not news, dropped entirely
 PROFILE = re.compile(r"how many employees|list of investors|funding rounds? &|how much did .{0,40}raise|funding & key investors|company profile|"
@@ -110,7 +151,8 @@ def split_layoffs(cat, title):
 
 
 DEFAULT_STRENGTH = {"Funding round": 1.0, "PE buyout": 1.0, "M&A": 0.8, "Expansion / new office": 0.7, "Restructuring": 0.5,
-                    LAYOFFS_CAT: 0.5, "Leadership change": 0.3, OTHER: 0.3, "None": 0.0}
+                    LAYOFFS_CAT: 0.5, "Leadership change": 0.3, CONTRACT: 0.5, LAUNCH: 0.3, OTHER: 0.3, "None": 0.0}
+NEW_CATEGORIES = (CONTRACT, LAUNCH)                # not in scoring_settings.json yet: their defaults above are used
 DEFAULT_RECENCY = [(30, 1.0), (90, 0.7), (180, 0.4), (None, 0.0)]
 
 
@@ -122,6 +164,7 @@ def load_settings(path):
     strength = {r["label"]: float(r["value"]) for r in rows if r["kind"] == "news"} or DEFAULT_STRENGTH
     if LAYOFFS_CAT not in strength and "Restructuring" in strength:   # settings written before Layoffs existed
         strength = {**strength, LAYOFFS_CAT: strength["Restructuring"]}
+    strength = {**{c: DEFAULT_STRENGTH[c] for c in NEW_CATEGORIES}, **strength}   # settings written before 18 Nov 2026
     rec = []
     for r in (r for r in rows if r["kind"] == "recency"):
         m = re.search(r"(\d+)\D*$", r["label"])

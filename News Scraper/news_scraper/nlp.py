@@ -543,7 +543,8 @@ def zs_best(zs, scope="company"):
 # ================================================================ labelling sheet + training
 LABEL_COLS = ["dedupe_key", "company_id", "company_name", "bucket", "title", "lead", "url", "rule_category", "nlp_event", "zs_label", "zs_score",
               "entity_check", "rule_verdict", "about_company", "category", "notes"]
-CATEGORIES = ["Funding round", "PE buyout", "M&A", "Expansion / new office", "Restructuring", "Leadership change", "Other / Unclassified"]
+CATEGORIES = ["Funding round", "PE buyout", "M&A", "Expansion / new office", "Restructuring", "Leadership change",
+              "Contract / partnership win", "Product launch", "Other / Unclassified"]   # last two added 18 Nov 2026
 
 
 def label_sheet(events, review, out_path, n=200, seed=7):

@@ -11,6 +11,7 @@ Companies without a website get an empty card ("no website"); matching then reli
 import datetime as dt
 import json
 import re
+import threading
 import urllib.robotparser
 from urllib.parse import urljoin, urlparse
 
@@ -38,14 +39,25 @@ best-in-class all-in-one end-to-end easy-to-use award-winning cloud-based cloud 
 contact support pricing plans plan features feature resources blog news careers partners partner integrations integration download demo""".split())
 
 
+_ROBOTS = {}                      # base -> parsed robots.txt, or None when there is none (fetched once per host per run)
+_ROBOTS_LOCK = threading.Lock()
+
+
 def _robots_ok(base, url):
-    rp = urllib.robotparser.RobotFileParser()
-    try:
-        r = http.get(base + "/robots.txt", interval=1.0, retries=0)
-        rp.parse(r.text.splitlines())
-    except http.FetchError:
-        return True                                            # no robots.txt: allowed
-    return rp.can_fetch("*", url)
+    base = base.lower().rstrip("/")
+    with _ROBOTS_LOCK:
+        known = base in _ROBOTS
+        rp = _ROBOTS.get(base)
+    if not known:
+        rp = urllib.robotparser.RobotFileParser()
+        try:
+            r = http.get(base + "/robots.txt", interval=1.0, retries=0)
+            rp.parse(r.text.splitlines())
+        except http.FetchError:
+            rp = None                                          # no robots.txt: allowed
+        with _ROBOTS_LOCK:
+            _ROBOTS[base] = rp
+    return rp is None or rp.can_fetch("*", url)
 
 
 def _meta(soup, *names):
@@ -104,7 +116,7 @@ def keywords(texts, name):
 
 
 def build(company):
-    """The card as a dict. Never raises: a failure comes back as status 'error: ...'."""
+    """The card as a dict. Never raises: a failure comes back as status 'site unreachable: <reason>'."""
     card = {"status": "", "built_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"), "site_name": "", "description": "",
             "legal_name": "", "alt_names": [], "ticker": "", "people": [], "city": "", "keywords": [], "pages": []}
     if not company.domain:
@@ -133,7 +145,7 @@ def build(company):
             except http.FetchError:
                 continue
     except http.FetchError as e:
-        card["status"] = f"error: {e}"[:200]
+        card["status"] = f"site unreachable: {http.reason(e)}"
         return card
 
     for url, html in pages:

@@ -25,7 +25,18 @@ competitor_client_extraction.ipynb   # main pipeline (rule-based extraction + re
 qwen_client.py                       # reusable Ollama/Qwen client module (stdlib only)
 review_suggestions.py                # uses qwen_client to pre-fill review suggestions
 CLAUDE.md                            # this file
+export_client_map.py                 # after the notebook: writes DATA_DIR/competitor_clients.csv (company names only)
 ```
+
+**`export_client_map.py` (added 18 Nov 2026)** turns the notebook's output into a reusable map for other projects:
+one row per competitor × client (`client_name`, `name_key` from `shared/company_keys.py`, `competitor`, row counts,
+`client_locations`, `source` = extracted / campaign field, `status` = confirmed / pending, `extracted_on`). Competitors'
+own names and brands are dropped (`COMPETITOR_BRANDS`: "The Outsourced Accountant", "Outsource Accountant",
+"MAG Solutions"…). No candidate data leaves the notebook. Read by `Marketing Intelligence/apollo_lead_grading`
+(Competitor client points). First full run (18 Nov): 18,302 rows → 2,060 extracted pairs; map 3,359 rows, 2,931 clients
+(1,433 confirmed); 569 Company texts waiting in Needs Review, 1,862 client names undecided in the terms file.
+Matched to the Priority Score's accounts: 12 confirmed (all existing Cloudstaff clients, e.g. Alexilum / TOA Global,
+HaloMD / Emapta, VikingCloud / KMC), 25 pending; no HubSpot New Logo prospect and no Apollo UK lead.
 
 Data (`DATA_DIR`, hardcoded in notebook Step 1 and `review_suggestions.py`):
 `C:\Users\Alfonso(FonsoP)Panli\Desktop\Projects\Competitor Analysis (client scrape)\data\`
@@ -200,7 +211,10 @@ extraction**, otherwise the score would always be 100%.
    - Needs Review decisions don't accumulate: Step 5 reads ONE reviewed file, and reviewed texts
      drop off the next Needs Review sheet, so pointing at round 2's file loses round 1. Needs a
      persistent decisions ledger (like the terms file).
-   - Use `Work History Campaign` as a second client source.
+   - Use `Work History Campaign` as a second client source. **Partly done (18 Nov 2026)** in
+     `export_client_map.py` (outside the notebook): campaign values on competitor rows, minus noise
+     ("Healthcare Account", "others"…) and competitor names / brands, exported as `source = campaign field`,
+     `status = pending`. The notebook itself is unchanged.
    - Client Summary counts rows, not distinct JXID.
    - Client Implied sheet is too big on the full export to act on.
    - Ollama is not installed on the user's machine yet.

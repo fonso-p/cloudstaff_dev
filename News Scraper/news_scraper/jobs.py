@@ -347,7 +347,7 @@ def check_company(company):
             return snap
         home = http.get(base, interval=1.0, retries=1)
     except http.FetchError as e:
-        snap["status"] = f"error: {e}"[:200]
+        snap["status"] = f"site unreachable: {http.reason(e)}"
         return snap
     pages = [(home.url, home.text)]
     soup = BeautifulSoup(home.text, "html.parser")
@@ -620,7 +620,8 @@ def run_jobs(companies, db_path, workers=6, log=print, browser=True):
             try:
                 snap = f.result()
             except Exception as e:                       # one bad page must not stop the run
-                snap = {"status": f"error: {e}"[:200], "method": "", "careers_url": "", "board_url": "", "postings": [], "note": ""}
+                snap = {"status": "check failed", "method": "", "careers_url": "", "board_url": "", "postings": [],
+                        "note": f"{type(e).__name__}: {e}"[:200]}
             snaps.append((c, snap))
             status[snap["status"].split(":")[0]] += 1
             if i % 25 == 0 or i == len(companies):
@@ -651,6 +652,7 @@ def job_rows(store, company_id, today):
     if not snaps:
         return {"jobs_status": "not checked"}, []
     checked, status, method, careers, board, n_open, n30, n_dated, depts, note = snaps[0]
+    status = http.tidy_status(status)
     fields = {"jobs_status": status, "jobs_method": method, "careers_url": careers or "", "open_roles": n_open if n_open is not None else ""}
     if status != "ok":
         # unknown, not zero: many careers pages load their roles with JavaScript, which a plain fetch can't see.

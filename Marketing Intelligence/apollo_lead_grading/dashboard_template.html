@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<!-- Fonts, icons and Chart.js load from CDNs. No data is sent anywhere: the data is embedded below. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=Chivo+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ---- Cloudstaff Design System tokens (assets/tokens.css, inlined at build time) ---- */
+/*__TOKENS__*/
+
+/* ---- Dashboard layout (uses design-system tokens only) ---- */
+*{box-sizing:border-box}
+body{margin:0;background:var(--color-surface-page);color:var(--color-text-base-primary);font-family:var(--font-family-body);font-size:var(--font-size-sm)}
+h1,h2,h3{font-family:var(--font-family-heading);margin:0}
+.mono,.num{font-family:var(--font-family-mono)}
+.shell{display:grid;grid-template-columns:16rem minmax(0,1fr);min-height:100vh}
+/* sidebar */
+.side{background:var(--color-surface-primary);border-right:1px solid var(--border-color-default);padding:var(--component-card-padding);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:var(--component-tile-padding)}
+.brand{display:flex;flex-direction:column;gap:4px;padding-bottom:var(--component-tile-padding)}
+.brand svg{width:150px;height:auto}
+.brand small{color:var(--color-text-base-muted)}
+.nav-label{font-family:var(--font-family-mono);font-size:var(--font-size-xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-base-muted);margin:8px 0 4px}
+.nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-lg);color:var(--color-text-base-primary);text-decoration:none;font-weight:var(--font-weight-medium);cursor:pointer}
+.nav a i{width:18px;text-align:center;color:var(--color-text-base-secondary)}
+.nav a:hover{background:var(--color-surface-secondary)}
+.nav a.active{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.nav a.active i{color:var(--color-brand-primary-strong)}
+.side-box{border:1px solid var(--border-color-default);border-radius:var(--radius-xl);padding:var(--component-tile-padding);display:flex;flex-direction:column;gap:8px}
+.btn{display:flex;align-items:center;gap:8px;border:0;border-radius:var(--radius-lg);padding:10px 12px;font:inherit;font-weight:var(--font-weight-semibold);cursor:pointer}
+.btn-teal{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong)}
+.btn-blue{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.side-foot{margin-top:auto;color:var(--color-text-base-muted);font-size:var(--font-size-xs)}
+/* main */
+.main{padding:var(--component-pane-padding);min-width:0}
+.topbar{display:flex;align-items:center;gap:16px;padding-bottom:var(--component-card-padding);border-bottom:1px solid var(--border-color-default);margin-bottom:var(--component-card-padding)}
+.crumbs{color:var(--color-text-base-muted);font-size:var(--font-size-md)}
+.crumbs b{color:var(--color-text-base-primary)}
+.topbar .grow{flex:1}
+.chip{display:flex;align-items:center;gap:8px;font-weight:var(--font-weight-semibold)}
+.chip i{color:var(--color-brand-primary)}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--border-color-default);border-radius:var(--radius-lg);padding:8px 12px;background:var(--color-surface-primary);min-width:240px}
+.search input{border:0;outline:0;font:inherit;width:100%;background:transparent}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:var(--component-tile-padding);flex-wrap:wrap}
+.page-head h1{font-size:var(--font-size-3xl)}
+.page-head p{margin:6px 0 0;color:var(--color-text-base-secondary);font-size:var(--font-size-md)}
+/* filters: one panel, one or more labelled rows */
+.filters{display:flex;flex-direction:column;gap:10px;background:var(--color-surface-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-xl);padding:var(--component-tile-padding);margin-bottom:var(--component-card-padding);box-shadow:var(--shadow-sm)}
+.filters label{display:flex;flex-direction:column;gap:4px;font-size:var(--font-size-xs);color:var(--color-text-base-muted);font-weight:var(--font-weight-semibold)}
+.filters select{font:inherit;color:var(--color-text-base-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:7px 10px;background:var(--color-surface-primary);min-width:120px;max-width:220px}
+.filters .reset{align-self:flex-end}
+.frow{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.frow + .frow{border-top:1px solid var(--border-color-default);padding-top:10px}
+.frow-label{width:100%;font-family:var(--font-family-mono);font-size:var(--font-size-2xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-brand-primary-strong);font-weight:var(--font-weight-semibold)}
+.frow-note{font-size:var(--font-size-xs);color:var(--color-text-base-muted)}
+.frow-note:empty{display:none}
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--component-tile-padding);margin-bottom:var(--component-card-padding)}
+.kpi{border-radius:var(--radius-xl);padding:var(--component-tile-padding);display:flex;flex-direction:column;gap:10px}
+.kpi-top{display:flex;align-items:center;gap:10px;font-weight:var(--font-weight-semibold);font-size:var(--font-size-sm);line-height:1.3}
+.kpi-icon{width:40px;height:40px;border-radius:var(--radius-lg);display:grid;place-items:center;color:var(--color-surface-primary);flex:none}
+.kpi-value{font-family:var(--font-family-heading);font-size:var(--font-size-3xl);font-weight:var(--font-weight-bold)}
+.kpi-sub{color:var(--color-text-base-secondary)}
+.k-blue{background:var(--color-brand-primary-soft)} .k-blue .kpi-icon{background:var(--color-brand-primary)}
+.k-teal{background:var(--color-feature-01-soft)} .k-teal .kpi-icon{background:var(--color-feature-01)}
+.k-yellow{background:var(--color-feature-02-soft)} .k-yellow .kpi-icon{background:var(--color-feature-02)}
+.k-pink{background:var(--color-feature-03-soft)} .k-pink .kpi-icon{background:var(--color-feature-03)}
+.k-purple{background:var(--color-feature-05-soft)} .k-purple .kpi-icon{background:var(--color-feature-05)}
+.k-indigo{background:var(--color-feature-04-soft)} .k-indigo .kpi-icon{background:var(--color-feature-04)}
+/* cards with a solid blue header bar */
+.grid{display:grid;gap:var(--component-card-padding);margin-bottom:var(--component-card-padding)}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:3fr 2fr}
+.card{background:var(--color-surface-primary);border:1px solid var(--border-color-default);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm);overflow:hidden;min-width:0}
+.page > .card{margin-bottom:var(--component-card-padding)}
+.card-head{background:var(--color-brand-primary-strong);color:var(--color-surface-primary);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px var(--component-card-padding)}
+.card-head h3{font-size:var(--font-size-md);font-weight:var(--font-weight-bold);line-height:1.3}
+.card-head span{opacity:.9;font-size:var(--font-size-xs);text-align:right;flex:0 1 auto;max-width:45%}
+.card-body{padding:var(--component-card-padding)}
+.chart{position:relative;height:300px}
+.chart.tall{height:380px}
+.note{color:var(--color-text-base-muted);font-size:var(--font-size-xs);margin-top:10px;line-height:1.5}
+.warn{background:var(--color-feature-02-soft);border-radius:var(--radius-lg);padding:10px 14px;margin:0 0 var(--component-tile-padding);font-size:var(--font-size-xs)}
+.warn i{color:var(--color-feature-07)}
+.info{background:var(--color-brand-primary-soft);border-radius:var(--radius-lg);padding:10px 14px;margin:0 0 var(--component-tile-padding)}
+/* tables */
+.tbl-wrap{overflow:auto;max-height:560px}
+table{border-collapse:collapse;width:100%;font-size:var(--font-size-xs)}
+th{position:sticky;top:0;background:var(--color-surface-primary);color:var(--color-brand-primary-strong);text-align:left;font-weight:var(--font-weight-bold);padding:10px;border-bottom:2px solid var(--border-color-default);white-space:nowrap;cursor:default}
+th.sort{cursor:pointer} th.sort:hover{text-decoration:underline}
+td{padding:8px 10px;border-bottom:1px solid var(--border-color-default);vertical-align:top}
+td.n,th.n{text-align:right}
+td.n{font-family:var(--font-family-mono)}
+tr.small td{color:var(--color-text-base-muted)}
+.nowrap td{white-space:nowrap}
+.sticky1 td:first-child,.sticky1 th:first-child{position:sticky;left:0;background:var(--color-surface-primary);min-width:200px;z-index:1;box-shadow:inset -1px 0 0 var(--border-color-default)}
+.sticky1 th:first-child{z-index:2}
+.badge{display:inline-block;padding:2px 8px;border-radius:var(--radius-pill);font-size:var(--font-size-2xs);font-weight:var(--font-weight-semibold)}
+.b-ok{background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong)}
+.b-warn{background:var(--color-feature-02-soft);color:var(--color-text-base-primary)}
+.b-no{background:var(--color-surface-secondary);color:var(--color-text-base-secondary)}
+.b-blue{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.heat td.h{text-align:center;font-family:var(--font-family-mono)}
+.tools{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.tools input{font:inherit;border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:7px 10px;min-width:260px}
+.tools select{font:inherit;border:1px solid var(--border-color-default);border-radius:var(--radius-md);padding:6px 8px}
+/* statistics blocks (Stats & method page) */
+.stat{border:1px solid var(--border-color-default);border-radius:var(--radius-lg);padding:var(--component-tile-padding);margin-bottom:12px}
+.stat h4{margin:0 0 6px;font-family:var(--font-family-heading)}
+.stat .reading{font-size:var(--font-size-md);font-weight:var(--font-weight-semibold);margin:6px 0}
+.page{display:none}
+.page.show{display:block}
+ul.rules{margin:0;padding-left:18px;line-height:1.7}
+/* "Numbers behind this chart" panels (added automatically by draw()) */
+details.chart-data{margin-top:12px;border-top:1px solid var(--border-color-default);padding-top:8px}
+details.chart-data summary{cursor:pointer;font-weight:var(--font-weight-semibold);color:var(--color-brand-primary-strong);display:flex;align-items:center;gap:10px;font-size:var(--font-size-xs)}
+details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
+.btn-mini{border:0;border-radius:var(--radius-md);padding:3px 8px;font:inherit;font-size:var(--font-size-2xs);background:var(--color-feature-01-soft);color:var(--color-brand-secondary-strong);cursor:pointer}
+/* insight cards */
+.ins .card-body{display:flex;flex-direction:column;gap:8px}
+.ins h4{margin:0;font-family:var(--font-family-heading);font-size:var(--font-size-lg)}
+.ins p{margin:0;line-height:1.6}
+.ins-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ins-link{cursor:pointer;color:var(--color-brand-primary-strong);font-size:var(--font-size-xs);font-weight:var(--font-weight-semibold)}
+@media (max-width:1100px){.g2,.g3{grid-template-columns:1fr}.shell{grid-template-columns:1fr}.side{position:static;height:auto}}
+/* ---- lead grading additions ---- */
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.b-pink{background:var(--color-feature-03-soft);color:var(--color-text-base-primary)}
+.b-purple{background:var(--color-feature-05-soft);color:var(--color-text-base-primary)}
+.grade{display:inline-block;min-width:64px;text-align:center;padding:3px 8px;border-radius:var(--radius-pill);font-weight:var(--font-weight-bold);font-size:var(--font-size-2xs)}
+.g-t1{background:var(--color-brand-primary);color:var(--color-surface-primary)}
+.g-t2{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
+.g-t3{background:var(--color-surface-secondary);color:var(--color-text-base-secondary)}
+.g-x{background:var(--color-feature-03-soft);color:var(--color-text-base-primary)}
+.g-cf{background:var(--color-feature-02-soft);color:var(--color-text-base-primary)}
+/* parent-company news: same chip, marked with a small group icon and a dashed outline */
+.b-parent{background:var(--color-surface-primary);color:var(--color-text-base-secondary);border:1px dashed var(--border-color-default)}
+.b-parent i{font-size:9px;margin-right:3px;color:var(--color-brand-primary)}
+.b-warn i{font-size:9px;margin-right:3px;opacity:.7}
+.b-service{background:var(--color-surface-primary);color:var(--color-brand-secondary-strong);border:1px solid var(--color-feature-01-soft)}
+#tLeads tbody tr{cursor:pointer}
+/* other news events: same family as a scored event, outlined (no points) */
+.b-news{background:var(--color-surface-primary);color:var(--color-brand-secondary-strong);border:1px solid var(--color-feature-01-soft)}
+.has-pop{cursor:help}
+.has-pop i.fa-newspaper{font-size:9px;margin-left:3px;opacity:.6}
+.pop{display:none;position:fixed;z-index:50;max-height:60vh;overflow:auto;padding:8px 10px;background:var(--color-surface-primary);color:var(--color-text-base-primary);
+  border:1px solid var(--border-color-default);border-radius:var(--radius-md);box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:var(--font-size-xs);line-height:1.45;pointer-events:none}
+.pop-item+.pop-item{margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color-default)}
+.pop-date{display:block;font-weight:var(--font-weight-semibold);color:var(--color-text-base-secondary);font-size:var(--font-size-2xs)}
+.pop-src{display:block;color:var(--color-text-base-secondary);font-size:var(--font-size-2xs)}
+#tLeads tbody tr:hover td{background:var(--color-surface-secondary)}
+.detail h4{margin:16px 0 6px;font-family:var(--font-family-heading)}
+.detail h4:first-child{margin-top:0}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px 18px}
+.kv div{font-size:var(--font-size-xs)} .kv b{display:block;color:var(--color-text-base-muted);font-weight:var(--font-weight-semibold)}
+.pts td{padding:5px 10px}
+a.ext{color:var(--color-brand-primary-strong)}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="brand"><!--__LOGO__--><small id="brandSub"></small></div>
+    <div class="nav-label">Workspace</div>
+    <nav class="nav">
+      <a data-page="leads" class="active"><i class="fa-solid fa-ranking-star"></i>Graded leads</a>
+      <a data-page="overview"><i class="fa-solid fa-chart-column"></i>Grades overview</a>
+      <a data-page="gathered"><i class="fa-solid fa-database"></i>Data gathered</a>
+      <a data-page="fit"><i class="fa-solid fa-people-arrows"></i>Fit and market</a>
+    </nav>
+    <div class="nav-label">Method</div>
+    <nav class="nav">
+      <a data-page="method"><i class="fa-solid fa-scale-balanced"></i>How grading works</a>
+      <a data-page="qa"><i class="fa-solid fa-clipboard-check"></i>QA and data checks</a>
+    </nav>
+    <div class="side-box">
+      <div class="nav-label" style="margin:0"><i class="fa-solid fa-file-export"></i> Data</div>
+      <button class="btn btn-teal" id="btnCsv"><i class="fa-solid fa-file-csv"></i>Export leads (CSV)</button>
+      <button class="btn btn-blue" id="btnCsvC"><i class="fa-solid fa-address-book"></i>Export contacts (CSV)</button>
+    </div>
+    <div class="side-foot"><i class="fa-solid fa-database"></i> <span id="sourceTxt"></span>, exported <span id="extractTxt"></span><br>Graded <span id="builtTxt"></span> · list owner: <span id="teamTxt"></span></div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="crumbs"><span id="crumbRoot"></span> &nbsp;<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>&nbsp; <b id="crumbPage">Graded leads</b></div>
+      <div class="grow"></div>
+      <div class="chip"><i class="fa-regular fa-calendar"></i><span id="dateChip"></span></div>
+      <div class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="topSearch" placeholder="Search companies or contacts"></div>
+    </div>
+    <div class="page-head"><div><h1 id="pageTitle">Graded leads</h1><p id="pageSub"></p></div></div>
+
+    <div class="filters" id="filters">
+      <div class="frow"><span class="frow-label">Which leads</span>
+        <label>Apollo list<select id="fList"></select></label>
+        <label>Grade<select id="fGrade"></select></label>
+        <label>Act now<select id="fAct"><option value="All">All leads</option><option value="yes">Act now only</option></select></label>
+        <label>Hiring<select id="fHire"><option value="All">All</option><option value="new">New roles in the last 30 days</option><option value="open">Any open roles</option><option value="none">No open roles</option><option value="unknown">Careers page not read</option></select></label>
+        <label>Service line<select id="fService"></select></label>
+        <label>Apollo funding<select id="fApollo"><option value="All">All</option><option value="any">Has an Apollo label</option><option value="matches the news">Matches the news</option><option value="news shows a different event">News shows a different event</option><option value="not in the news">Not in the news</option><option value="news only">Deal in the news, no Apollo label</option></select></label>
+        <label>Industry<select id="fTarget"><option value="All">All</option><option value="on">In the list's target industry</option><option value="off">Check fit (other industry)</option></select></label>
+        <button class="btn btn-blue reset" id="btnReset"><i class="fa-solid fa-rotate-left"></i>Reset</button>
+      </div>
+      <div class="frow-note" id="filterNote"></div>
+    </div>
+
+    <!-- ================= Graded leads ================= -->
+    <section class="page show" id="p-leads">
+      <div class="kpis" id="kpisLeads"></div>
+      <div class="card"><div class="card-head"><h3>Leads, best first</h3><span id="leadsSub"></span></div><div class="card-body">
+        <div class="note" style="margin:0 0 10px">Why shows signals only: <span class="badge b-ok">scored signal</span> event, or hiring of roles we fill ·
+          <span class="badge b-news">other news event</span> a different kind of event, no points (only the strongest counts); hover a <i class="fa-regular fa-newspaper"></i> chip for its headlines ·
+          <span class="badge b-blue">hiring / filing</span> no points (older or on-site hiring, Companies House changes) ·
+          <span class="badge b-parent"><i class="fa-solid fa-sitemap"></i>parent</span> parent company's event ·
+          <span class="badge b-warn"><i class="fa-solid fa-database"></i>Apollo funding</span> undated, no points ·
+          <span class="badge b-purple">fit</span> clearly above the usual rate · <span class="badge b-pink">check</span> needs a look.
+          What the company does (service lines, software, group) is in its profile: click a row. Readiness (0–4) only orders equal scores.</div>
+        <div class="tools"><input id="listSearch" placeholder="Search company, city, contact, reason"><span class="note" style="margin:0">Click a row for the evidence, the score and the contacts. Click a column header to sort.</span></div>
+        <div class="tbl-wrap" id="tLeads"></div></div></div>
+      <div class="card" id="detailCard" style="display:none"><div class="card-head"><h3 id="detailTitle"></h3><span id="detailSub"></span></div><div class="card-body detail" id="detailBody"></div></div>
+    </section>
+
+    <!-- ================= Grades overview ================= -->
+    <section class="page" id="p-overview">
+      <div class="kpis" id="kpisOver"></div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Grade by Apollo list</h3><span>leads</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cGrade"></canvas></div><div class="note">Tiers are ranks within each Apollo list (separate campaigns): the top 10% of a list are Tier 1, the next 30% Tier 2. Equal scores and readiness share the higher tier, so a tier can be larger than its share. Check fit = outside the list's target industry, scored but not tiered. Excluded = in administration, liquidation or strike-off.</div></div></div>
+        <div class="card"><div class="card-head"><h3>Where the points come from</h3><span>average points per lead, by list</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cPts"></canvas></div><div class="note" id="ptsNote"></div></div></div>
+      </div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Priority score distribution</h3><span>leads per score band</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cScore"></canvas></div><div class="note">Most leads sit in a narrow band because little is known about them yet: no website activity, and news for only a few. The spread grows as signals are added.</div></div></div>
+        <div class="card"><div class="card-head"><h3>Lead readiness</h3><span>leads by readiness points (0–4), by list</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cReady"></canvas></div><div class="note">Readiness breaks ties between equal scores and never adds points. One point each: an Apollo funding label, a decision-maker with a verified email, news or own-website posts in the last 180 days, and being in the list's target industry.</div></div></div>
+      </div>
+    </section>
+
+    <!-- ================= Data gathered ================= -->
+    <section class="page" id="p-gathered">
+      <div class="info" id="gatherInfo"></div>
+      <div class="kpis" id="kpisGather"></div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>News: what the search found</h3><span>companies, by list</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cNews"></canvas></div><div class="note">"Found" = at least one article confirmed to be about the company (including its own news page). "Checked, nothing found" is a real zero. "Not checked" means the search failed or didn't run, so it counts as unknown.</div></div></div>
+        <div class="card"><div class="card-head"><h3>News events found</h3><span>strongest event per company</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cEvents"></canvas></div><div class="note">One event per company: the high-confidence event first, then the strongest by type × recency. Medium and low confidence count at half strength in the score.</div></div></div>
+      </div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Companies House and the Gazette</h3><span>companies, by list</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cFilings"></canvas></div><div class="note">Matched by exact legal name in the November Companies House file. "Not found" is mostly a trading name that differs from the legal name, not a missing company.</div></div></div>
+        <div class="card"><div class="card-head"><h3>Careers pages and job feeds</h3><span>companies, by list</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cJobs"></canvas></div><div class="note">Only "ok" gives a count of open roles. "No roles found" often means the page loads its list with JavaScript or links to a job board, so it is unknown, not zero.</div></div></div>
+      </div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Open roles, in bands</h3><span>companies whose careers page was read, by list</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cHire"></canvas></div><div class="note">Roles open on the company's own careers page or job system on the day of the run. Job boards (Indeed, LinkedIn, NHS Jobs) are not read, so a company can be hiring and still show "no open roles" here.</div></div></div>
+        <div class="card"><div class="card-head"><h3>How recent the hiring is</h3><span>companies with open roles, by newest posting</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cHireRec"></canvas></div><div class="note">From each role's posted date. The score counts roles posted in the last 30 days (20+ = full hiring points); older open roles show as a reason but earn no points.</div></div></div>
+      </div>
+      <div class="grid g2">
+        <div class="card"><div class="card-head"><h3>Apollo funding against the news</h3><span>companies with an Apollo label, by type</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cFund"></canvas></div><div class="note">Apollo gives the type of the latest funding but no date or amount. "Matches the news" = the news found the same kind of event (e.g. Apollo M&amp;A, news: bought by…). "News shows a different event" = both have something, but not the same (e.g. Apollo Debt Financing, news: PE buyout). "Not in the news" = nothing to date it. Apollo funding earns no points either way; how to reconcile the two is still open.</div></div></div>
+        <div class="card"><div class="card-head"><h3>Contacts in the export</h3><span>people, by seniority and list</span></div>
+          <div class="card-body"><div class="chart"><canvas id="cContacts"></canvas></div><div class="note">All emails in these exports are marked Verified by Apollo (ZeroBounce). Decision-makers = owner, founder, C-suite, partner, VP or director.</div></div></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>Coverage by source</h3><span>companies in the current filters</span></div><div class="card-body"><div class="tbl-wrap" id="tCoverage"></div><div class="note">Every source is recorded per company, so a failed check never reads as "nothing found".</div></div></div>
+    </section>
+
+    <!-- ================= Fit and market ================= -->
+    <section class="page" id="p-fit">
+      <div class="warn" id="fitWarn"></div>
+      <div class="card"><div class="card-head"><h3>Service lines found on their websites</h3><span>companies, by list · no points</span></div>
+        <div class="card-body"><div class="tbl-wrap" id="tService"></div><div class="note" id="serviceNote"></div></div></div>
+      <div class="card"><div class="card-head"><h3>Fit profile used, by industry</h3><span>Client Propensity, industry only</span></div>
+        <div class="card-body"><div class="tbl-wrap" id="tFit"></div><div class="note">The chance that a new client like this reaches 5+ seats in a year, 10+ in two years, or adds a second department in a year, from past Cloudstaff clients in the same industry (all countries). Bands are relative: High = top third of past new clients.</div></div></div>
+      <div class="card"><div class="card-head"><h3>Market trend (context only)</h3><span>News Scraper segment mode · not in the score</span></div>
+        <div class="card-body"><div class="tbl-wrap" id="tTrend"></div><div class="note">How UK news for each sector leans, from News Scraper segment mode: 0.5 is neutral, above means more growth, labour-shortage and offshoring stories. Context only, not in the score: tiers rank within each list, where every lead shares the same trend, so it could not change anyone\'s rank.</div></div></div>
+      <div class="card"><div class="card-head"><h3>Leads by industry</h3><span>Apollo industry → Cloudstaff industry group</span></div><div class="card-body"><div class="tbl-wrap" id="tInd"></div><div class="note">Target industry is decided by activity codes (Apollo US SIC / NAICS and the Companies House UK SIC), with Apollo's one-word industry only as a fallback: e.g. Coxbench Hall Residential Care Home is "individual &amp; family services" in Apollo but SIC 8052 (nursing care). Companies whose codes show another trade (furniture, building, staffing, design) are "Check fit".</div></div></div>
+    </section>
+
+    <!-- ================= Method ================= -->
+    <section class="page" id="p-method">
+      <div class="card"><div class="card-head"><h3>How a lead is graded</h3><span>same Priority Score as the HubSpot prospects</span></div><div class="card-body" id="methodBody"></div></div>
+      <div class="card"><div class="card-head"><h3>Points available (New Logo)</h3><span>from the live scoring profile</span></div><div class="card-body"><div class="tbl-wrap" id="tPoints"></div></div></div>
+    </section>
+
+    <!-- ================= QA ================= -->
+    <section class="page" id="p-qa">
+      <div class="card"><div class="card-head"><h3>Reconciliation</h3><span>Apollo rows to graded leads</span></div><div class="card-body"><div class="tbl-wrap" id="tQa"></div></div></div>
+      <div class="card"><div class="card-head"><h3>Inputs used in this run</h3><span>files and versions</span></div><div class="card-body"><div class="tbl-wrap" id="tInputs"></div></div></div>
+    </section>
+  </main>
+</div>
+
+<script id="data" type="application/json">/*__DATA__*/</script>
+
+<script>
+// ---- shared helpers, from the cs-dashboard skill template (keep in step with it)
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = id => document.getElementById(id);
+
+// ---- palette: brand order. Same category = same colour on every chart.
+const PALETTE = ['#007AFF', '#00AB9C', '#FFC426', '#E34678', '#4121A9', '#AA67FD', '#F46600', '#36D6E7', '#87DD7D', '#50505C'];
+const GREY = '#C9D2E1';                                      // small n, "stayed", "other"
+const REGIONS = [...new Set(D.rows.map(r => r.region))].sort();
+const REG_COLOUR = Object.fromEntries(REGIONS.map((r, i) => [r, PALETTE[i % PALETTE.length]]));   // fix this map by name when the categories are known
+const MONTHS_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const monLbl = ym => MONTHS_ABBR[+ym.slice(5, 7) - 1] + ' ' + ym.slice(0, 4);   // '2026-09' -> 'Sep 2026'
+
+// ---- maths and formatting
+const sum = a => a.reduce((s, x) => s + x, 0);
+const mean = a => a.length ? sum(a) / a.length : NaN;
+function median(a) { if (!a.length) return NaN; const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
+function groupBy(a, fn) { const m = new Map(); for (const x of a) { const k = fn(x); if (!m.has(k)) m.set(k, []); m.get(k).push(x); } return m; }
+function wilson(k, n) { if (!n) return [0, 0]; const z = 1.96, p = k / n, d = 1 + z * z / n, c = p + z * z / (2 * n), h = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)); return [Math.max(0, (c - h) / d), Math.min(1, (c + h) / d)]; }
+const uniq = a => [...new Set(a)].sort((x, y) => String(x).localeCompare(String(y)));
+const fmt = (v, d = 0) => v === null || v === undefined || Number.isNaN(v) ? '–' : Number(v).toLocaleString('en-AU', {minimumFractionDigits: d, maximumFractionDigits: d});
+const pct = (v, d = 1) => v === null || v === undefined || Number.isNaN(v) ? '–' : (100 * v).toFixed(d) + '%';
+const pfmt = p => p === null || p === undefined || Number.isNaN(p) ? '–' : p < 0.0001 ? '< 0.0001' : p.toFixed(4);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[ch]));
+const MIN_TEST = 20, MIN_NAME = 30;                          // groups under 20: not tested, shown grey; under 30: never named highest/lowest
+
+// ---- Chart.js house style
+Chart.defaults.font.family = 'Manrope, Segoe UI, Arial, sans-serif';
+Chart.defaults.color = '#737C90';
+Chart.defaults.borderColor = '#DCE3EE';
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.maintainAspectRatio = false;
+const pctAxis = {ticks: {callback: v => pct(v, 0)}, beginAtZero: true};   // use on any axis holding shares (0-1): draw() then shows % in the table
+
+const charts = {};
+function draw(id, cfg) {
+  const scales = (cfg.options && cfg.options.scales) || {};
+  const isPct = Object.values(scales).some(sc => sc.ticks && sc.ticks.callback);   // read before Chart.js adds its own defaults
+  if (charts[id]) charts[id].destroy(); charts[id] = new Chart($(id), cfg); chartData(id, cfg, isPct);
+}
+
+// ---- "Numbers behind this chart": every chart gets its exact values as a table with a CSV button
+const dataClosed = {};
+function chartData(id, cfg, isPct) {
+  const body = $(id).closest('.card-body');
+  let box = body.querySelector('details.chart-data');
+  if (!box) {
+    box = document.createElement('details'); box.className = 'chart-data'; box.open = true;
+    box.innerHTML = '<summary>Numbers behind this chart <button class="btn-mini" type="button">CSV</button></summary><div class="tbl-wrap"></div>';
+    box.ontoggle = () => { dataClosed[id] = !box.open; };
+    body.appendChild(box);
+  }
+  if (dataClosed[id]) box.open = false;
+  const show = v => v === null || v === undefined || Number.isNaN(v) ? '–' : isPct ? pct(v) : Number.isInteger(v) ? fmt(v) : fmt(v, 2);
+  const sets = cfg.data.datasets, labels = cfg.data.labels;
+  const cols = [{k: 'label', label: ''}, ...sets.map((d, j) => ({k: 'd' + j, label: esc(d.label) + (isPct ? ' (%)' : ''), n: 1, f: show}))];
+  const rows = labels.map((l, i) => Object.assign({label: l}, ...sets.map((d, j) => ({['d' + j]: d.data[i]}))));
+  table(box.querySelector('.tbl-wrap'), cols, rows);
+  box.querySelector('button').onclick = e => { e.preventDefault(); e.stopPropagation();
+    download(id + '_numbers.csv', rows.map(r => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, isPct && k !== 'label' && typeof v === 'number' ? +(100 * v).toFixed(2) : v]))),
+      cols.map(c => ({k: c.k, label: c.label.replace(/&amp;/g, '&') || 'group'}))); };
+}
+function table(el, cols, rows, opts = {}) {    // cols: [{k, label, n (numeric, right-aligned mono), f (format fn (v, row) -> html)}]; row._small = grey row
+  const sortable = !!opts.sortable;
+  let h = '<table><thead><tr>' + cols.map((c, i) => `<th class="${c.n ? 'n' : ''} ${sortable ? 'sort' : ''}" data-i="${i}">${c.label}</th>`).join('') + '</tr></thead><tbody>';
+  h += rows.map(r => `<tr class="${r._small ? 'small' : ''}">` + cols.map(c => `<td class="${c.n ? 'n' : ''}">${c.f ? c.f(r[c.k], r) : esc(r[c.k])}</td>`).join('') + '</tr>').join('');
+  el.innerHTML = h + '</tbody></table>';
+  if (sortable) el.querySelectorAll('th').forEach(th => th.onclick = () => opts.onSort(cols[+th.dataset.i].k));
+}
+function download(name, rows, cols) {
+  const q = v => { const s = v === null || v === undefined ? '' : String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const csv = [cols.map(c => q(c.label)).join(','), ...rows.map(r => cols.map(c => q(r[c.k])).join(','))].join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'})); a.download = name; a.click();
+}
+const kpiTiles = items => items.map(([cls, ic, l, v, s]) => `<div class="kpi ${cls}"><div class="kpi-top"><span class="kpi-icon"><i class="fa-solid ${ic}"></i></span>${esc(l)}</div><div class="kpi-value">${v}</div><div class="kpi-sub">${s}</div></div>`).join('');
+
+// ---- header text: every date comes from the data, never typed into the template
+const M = D.meta;
+document.title = M.title;
+$('brandSub').textContent = M.subtitle; $('crumbRoot').textContent = M.title; $('sourceTxt').textContent = M.source;
+$('extractTxt').textContent = new Date(M.extract).toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric'});
+$('builtTxt').textContent = M.generated.slice(0, 10);
+$('dateChip').textContent = 'Data to ' + $('extractTxt').textContent;
+
+
+// ================= lead grading page =================
+$('teamTxt').textContent = M.team;
+$('extractTxt').textContent = new Date(M.extract).toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric'});
+$('dateChip').textContent = 'Graded ' + new Date(M.as_of).toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric'});
+const R = D.rows;
+const LISTS = uniq(R.map(r => r.lead_list));
+const LIST_COLOUR = Object.fromEntries(LISTS.map((l, i) => [l, PALETTE[i % PALETTE.length]]));
+const GRADES = ['Tier 1', 'Tier 2', 'Tier 3', 'Check fit', 'Existing client', 'Excluded: distressed'];
+const GRADE_COLOUR = {'Tier 1': '#007AFF', 'Tier 2': '#00AB9C', 'Tier 3': GREY, 'Check fit': '#FFC426', 'Existing client': '#AA67FD', 'Excluded: distressed': '#E34678'};
+const EVENTS = ['Funding round', 'PE buyout', 'M&A', 'Expansion / new office', 'Restructuring', 'Leadership change'];
+const isTier = r => String(r.grade).startsWith('Tier');
+const CHIP_CLASS = {service: 'b-service', signal: 'b-ok', news: 'b-news', jobs: 'b-blue', filing: 'b-blue', apollo: 'b-warn', fit: 'b-purple', info: 'b-no', warn: 'b-pink', pitch: 'b-no', parent: 'b-parent'};
+const HIRE_BANDS = ['1–2', '3–5', '6–10', '11–20', '21+'];
+const hireRecency = r => r.hiring_band === 'unknown' || !r.hiring_band ? 'careers page not read' : r.hiring_band === 'none open' ? 'no open roles'
+  : r.jobs_new_30d > 0 ? 'new roles in the last 30 days' : r.jobs_new_90d > 0 ? 'newest in 31–90 days' : r.jobs_newest ? 'newest over 90 days ago' : 'no posting dates';
+const PARENT_ICON = '<i class="fa-solid fa-sitemap" title="Parent company news"></i>';
+const APOLLO_ICON = '<i class="fa-solid fa-database" title="From the Apollo export (undated)"></i>';
+// a chip's third element (news chips): the articles behind it, shown in a popover on hover or keyboard focus, never inline
+const popHtml = items => items.map(x => `<div class="pop-item"><span class="pop-date">${esc(dmy(x.date))}</span>${esc(x.title)}`
+  + `<span class="pop-src">${esc(x.publisher || '')}${x.confidence && x.confidence !== 'high' ? ` · ${esc(x.confidence)} confidence` : ''}</span></div>`).join('');
+const chipHtml = cs => `<div class="chips">${(cs || []).map(([t, k, items]) => {
+  const pop = items && items.length ? ` tabindex="0" data-pop="${esc(popHtml(items))}"` : '';
+  return `<span class="badge ${CHIP_CLASS[k] || 'b-no'}${pop ? ' has-pop' : ''}"${pop}>${k === 'parent' ? PARENT_ICON : k === 'apollo' ? APOLLO_ICON : ''}${esc(t)}${pop ? ' <i class="fa-regular fa-newspaper"></i>' : ''}</span>`;
+}).join('')}</div>`;
+// one floating popover for the whole page (position: fixed, so table scroll areas can't clip it)
+const POP = Object.assign(document.createElement('div'), {className: 'pop', role: 'tooltip'});
+document.body.appendChild(POP);
+const showPop = el => {
+  POP.innerHTML = el.dataset.pop;
+  POP.style.display = 'block';
+  const b = el.getBoundingClientRect(), w = Math.min(380, window.innerWidth - 32);
+  POP.style.width = w + 'px';
+  POP.style.left = Math.max(16, Math.min(b.left, window.innerWidth - w - 16)) + 'px';
+  const below = b.bottom + 6, h = POP.offsetHeight;
+  POP.style.top = (below + h > window.innerHeight - 8 && b.top - h - 6 > 8 ? b.top - h - 6 : below) + 'px';
+};
+const hidePop = () => { POP.style.display = 'none'; };
+document.addEventListener('mouseover', e => { const el = e.target.closest('[data-pop]'); el ? showPop(el) : hidePop(); });
+document.addEventListener('focusin', e => { const el = e.target.closest('[data-pop]'); if (el) showPop(el); });
+document.addEventListener('focusout', hidePop);
+window.addEventListener('scroll', hidePop, true);
+const gradeHtml = g => `<span class="grade ${g === 'Tier 1' ? 'g-t1' : g === 'Tier 2' ? 'g-t2' : g === 'Tier 3' ? 'g-t3' : g === 'Check fit' ? 'g-cf' : 'g-x'}">${esc(g)}</span>`;
+const dmy = s => s ? new Date(s).toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric'}) : '–';
+const count = (rows, fn, keys) => keys.map(k => rows.filter(r => fn(r) === k).length);
+
+// ---- filters
+function fillSelect(id, values, labels) { $(id).innerHTML = values.map((v, i) => `<option value="${esc(v)}">${esc(labels ? labels[i] : v)}</option>`).join(''); }
+fillSelect('fList', ['All', ...LISTS], ['All lists', ...LISTS]);
+fillSelect('fGrade', ['All', ...GRADES], ['All grades', ...GRADES]);
+const SERVICES = uniq(R.flatMap(r => (r.service_lines || '').split('; ').filter(Boolean)));
+fillSelect('fService', ['All', ...SERVICES], ['All service lines', ...SERVICES]);
+const filt = () => ({list: $('fList').value, grade: $('fGrade').value, act: $('fAct').value, target: $('fTarget').value, hire: $('fHire').value, service: $('fService').value, apollo: $('fApollo').value});
+const apolloOk = (r, a) => a === 'All' || (a === 'any' ? !!r.apollo_latest_funding
+  : a === 'news only' ? !r.apollo_latest_funding && ['Funding round', 'PE buyout', 'M&A'].includes(r.news_signal) : r.apollo_vs_news === a);
+const hireOk = (r, h) => h === 'All' || (h === 'new' ? r.jobs_new_30d > 0 : h === 'open' ? HIRE_BANDS.includes(r.hiring_band) : h === 'none' ? r.hiring_band === 'none open' : r.hiring_band === 'unknown');
+const applyFilt = f => R.filter(r => (f.list === 'All' || r.lead_list === f.list) && (f.grade === 'All' || r.grade === f.grade) && hireOk(r, f.hire)
+  && (f.service === 'All' || (r.service_lines || '').split('; ').includes(f.service)) && apolloOk(r, f.apollo)
+  && (f.act === 'All' || r.act_now) && (f.target === 'All' || (f.target === 'on' ? r.on_target === true : r.on_target === false)));
+const filtText = f => [f.list === 'All' ? 'all lists' : f.list, f.grade === 'All' ? 'all grades' : f.grade, f.act === 'All' ? '' : 'Act now only',
+  f.target === 'All' ? '' : f.target === 'on' ? 'target industry' : 'other industries',
+  f.hire === 'All' ? '' : $('fHire').selectedOptions[0].text.toLowerCase(), f.service === 'All' ? '' : f.service, f.apollo === 'All' ? '' : 'Apollo: ' + $('fApollo').selectedOptions[0].text.toLowerCase()].filter(Boolean).join(' · ');
+
+// ---- pages
+const TITLES = {leads: 'Graded leads', overview: 'Grades overview', gathered: 'Data gathered', fit: 'Fit and market', method: 'How grading works', qa: 'QA and data checks'};
+const FILTERED = {leads: 1, overview: 1, gathered: 1, fit: 1};
+let page = 'leads', current = [];
+document.querySelectorAll('.nav a').forEach(a => a.onclick = () => go(a.dataset.page));
+function go(p) {
+  page = p;
+  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('active', a.dataset.page === p));
+  document.querySelectorAll('.page').forEach(s => s.classList.toggle('show', s.id === 'p-' + p));
+  $('pageTitle').textContent = TITLES[p]; $('crumbPage').textContent = TITLES[p];
+  render();
+}
+function render() {
+  const f = filt();
+  $('filters').style.display = FILTERED[page] ? '' : 'none';
+  current = applyFilt(f);
+  $('pageSub').textContent = `${fmt(current.length)} of ${fmt(R.length)} companies · ${filtText(f)}`;
+  ({leads: rLeads, overview: rOverview, gathered: rGathered, fit: rFit, method: rMethod, qa: rQa})[page](f, current);
+}
+
+// ---------------- Graded leads
+const LEAD_COLS = [
+  {k: 'grade', label: 'Grade', f: v => gradeHtml(v)},
+  {k: 'priority_score', label: 'Score', n: 1, f: v => v === null ? '–' : fmt(v)},
+  {k: 'readiness', label: '<span title="Tie-break only, never points. One each: an Apollo funding label · a decision-maker with a verified email · in the news (or a relevant event on its own site) in the last 180 days · in the list\'s target industry">Readiness <i class="fa-regular fa-circle-question"></i></span>', n: 1, f: (v, r) => `<span title="${esc(r.readiness_why || 'none')}">${fmt(v)}/4</span>`},
+  {k: 'company_name', label: 'Company', f: (v, r) => `<b>${esc(v)}</b><br><span class="note">${esc([r.city, r.employee_count ? r.employee_count + ' staff' : '', r.lead_list].filter(Boolean).join(' · '))}</span>`},
+  {k: 'chips', label: 'Why', f: v => chipHtml(v)},
+  {k: 'best_contact', label: 'Best contact', f: (v, r) => v ? `${esc(v)}<br><span class="note">${esc(r.best_title || '')}${r.n_contacts > 1 ? ` · +${r.n_contacts - 1} more` : ''}</span>` : '–'},
+];
+let sortKey = null, sortDir = -1, selected = null;
+const GRADE_ORDER = Object.fromEntries(GRADES.map((g, i) => [g, i]));
+function leadRows(rows) {
+  const q = ($('listSearch').value || $('topSearch').value).trim().toLowerCase();
+  const hay = r => [r.company_name, r.city, r.industry_raw, r.website_domain, (r.chips || []).map(c => c[0]).join(' '), (r.contacts || []).map(c => c.name + ' ' + c.title).join(' ')].join(' ').toLowerCase();
+  const out = rows.filter(r => !q || hay(r).includes(q));
+  if (!sortKey) return out;   // default: the order the grading wrote (grade, score, readiness)
+  const val = r => sortKey === 'grade' ? GRADE_ORDER[r.grade] : sortKey === 'chips' ? (r.chips || []).length : r[sortKey];
+  return out.sort((a, b) => { const x = val(a), y = val(b); return x === y ? 0 : (x === null ? 1 : y === null ? -1 : (x > y ? 1 : -1) * sortDir); });
+}
+function rLeads(f, rows) {
+  const t = rows.filter(isTier);
+  const act = rows.filter(r => r.act_now).length, ev = rows.filter(r => EVENTS.includes(r.news_signal)).length;
+  $('kpisLeads').innerHTML = kpiTiles([
+    ['k-blue', 'fa-ranking-star', 'Tier 1 leads', fmt(t.filter(r => r.grade === 'Tier 1').length), `of ${fmt(t.length)} graded in this view`],
+    ['k-teal', 'fa-bolt', 'Act now', fmt(act), 'funding / PE in 30 days, hiring spike, restructuring or leadership news'],
+    ['k-yellow', 'fa-newspaper', 'With a news event', fmt(ev), `funding, PE, M&A, expansion, restructuring, leadership`],
+    ['k-pink', 'fa-ban', 'Not tiered', fmt(rows.filter(r => !isTier(r)).length), `${fmt(rows.filter(r => r.grade === 'Check fit').length)} other industry (check fit), ${fmt(rows.filter(r => r.grade.startsWith('Excluded') || r.grade === 'Existing client').length)} distressed or existing client`],
+  ]);
+  const out = leadRows(rows);
+  $('leadsSub').textContent = `${fmt(out.length)} companies · list owner ${M.team}`;
+  table($('tLeads'), LEAD_COLS, out, {sortable: true, onSort: k => { sortDir = sortKey === k ? -sortDir : (k === 'company_name' ? 1 : -1); sortKey = k; render(); }});
+  $('tLeads').querySelectorAll('tbody tr').forEach((tr, i) => tr.onclick = () => { selected = out[i].account_id; showDetail(out[i]); });
+  const sel = selected && out.find(r => r.account_id === selected);
+  if (sel) showDetail(sel, false); else $('detailCard').style.display = 'none';
+}
+function showDetail(r, scroll = true) {
+  $('detailCard').style.display = '';
+  $('detailTitle').textContent = r.company_name;
+  $('detailSub').textContent = `${r.grade}${r.priority_score !== null ? ' · score ' + r.priority_score : ''} · readiness ${r.readiness}/4`;
+  const link = (u, t) => u ? `<a class="ext" href="${esc(u)}" target="_blank" rel="noopener">${esc(t || u)}</a>` : '–';
+  const kv = pairs => `<div class="kv">${pairs.map(([k, v]) => `<div><b>${esc(k)}</b>${v}</div>`).join('')}</div>`;
+  const web = r.website_domain ? link('https://' + r.website_domain, r.website_domain) : '–';
+  let h = '<h4>Why</h4>' + chipHtml(r.chips) + (r.readiness_why ? `<div class="note">Readiness: ${esc(r.readiness_why)}</div>` : '');
+  const pc = (p, u) => p === null || p === undefined ? '–' : `${pct(p, 0)}${u ? ` (usual ${pct(u, 0)})` : ''}`;
+  h += '<h4>Fit (Client Propensity, past clients in the same industry)</h4>' + kv([
+    ['5+ seats in a year', `${pc(r.fit_growth_p, r.fit_growth_usual)} · ${esc(r.fit_growth_band || '–')}`],
+    ['10+ seats in 2 years', `${pc(r.fit_reach_10_p, r.fit_reach_10_usual)} · ${esc(r.fit_reach_10_band || '–')}`],
+    ['A 2nd department in a year', `${pc(r.fit_branch_1y_p, r.fit_branch_1y_usual)} · ${esc(r.fit_branch_1y_band || '–')}`],
+    ['Most likely first new department', esc(r.likely_first_new_dept || '–')], ['Outlook', esc(r.fit_outlook || '–')],
+    ['Target industry?', `${r.on_target === false ? 'no' : r.on_target ? 'yes' : '–'} · ${esc(r.fit_basis || '')}`]]);
+  h += '<h4>Company profile</h4>' + ((r.profile_chips || []).length ? chipHtml(r.profile_chips) + '<div class="note" style="margin:4px 0 10px">Service lines from its website, pitch hints from its software stack, and group membership. Descriptive: no points.</div>' : '') + kv([['Website', web], ['Apollo industry', esc(r.industry_raw || '–')], ['Industry group', esc(r.industry || 'unmapped')],
+    ['Activity codes', esc([r.sic_us ? 'SIC ' + r.sic_us : '', r.naics ? 'NAICS ' + r.naics : ''].filter(Boolean).join(' · ') || '–')],
+    ['Staff (Apollo)', fmt(r.employee_count)], ['Revenue (Apollo estimate)', r.annual_revenue ? '£/$ ' + fmt(r.annual_revenue) : '–'], ['City', esc(r.city || '–')],
+    ['Apollo funding label', esc(r.apollo_latest_funding || '–')], ['Parent company', esc(r.parent_company || '–')], ['LinkedIn', link(r.company_linkedin, 'company page')]]);
+  h += '<h4>Companies House</h4>' + kv([['Status', esc(r.registered_status || r.filings_status || '–')], ['Legal name', esc(r.registered_name || '–')],
+    ['Company number', r.company_number ? link('https://find-and-update.company-information.service.gov.uk/company/' + r.company_number, r.company_number) : '–'],
+    ['Incorporated', dmy(r.registered_on)], ['Latest filing event', esc(r.filing_signal && r.filing_signal !== 'None' ? r.filing_signal + ' · ' + r.filing_signal_date : 'none in the last year')],
+    ['Accounts', esc(r.uk_accounts || '–')], ['SIC', esc(r.uk_sic || '–')]]);
+  h += `<h4>News (${r.news_status || 'not checked'})</h4>`;
+  h += r.news && r.news.length ? '<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Headline</th><th>Source</th></tr></thead><tbody>' + r.news.map(n =>
+    `<tr><td class="n">${esc(n.date)}</td><td>${esc(n.category)}${n.confidence ? ` <span class="badge b-no">${esc(n.confidence)}</span>` : ''}</td><td>${n.parent ? `<span class="badge b-parent">${PARENT_ICON}Parent ${esc(n.parent)}</span> ` : ''}${link(n.url, n.title)}</td><td>${esc(n.source === 'newsroom' ? (n.parent ? 'parent website' : 'own website (no points unless an event)') : n.publisher || n.source)}</td></tr>`).join('') + '</tbody></table></div>'
+    : '<div class="note">No article confirmed to be about this company in the last year.</div>';
+  const okJobs = r.jobs_status === 'ok';
+  h += '<h4>Jobs</h4>' + kv([['Careers page', esc(r.jobs_status || 'not checked')], ['Open roles', okJobs ? fmt(r.open_roles) : 'unknown'],
+    ['Posted in the last 30 / 90 days', okJobs && r.jobs_newest ? `${fmt(r.jobs_new_30d)} / ${fmt(r.jobs_new_90d)}` : okJobs && r.open_roles > 0 ? 'dates not given' : '–'],
+    ['Newest posting', dmy(r.jobs_newest)], ['Roles we fill', r.roles_we_fill === null || r.roles_we_fill === undefined ? '–' : `${fmt(r.roles_we_fill)} of ${fmt(r.roles_listed)} listed${r.roles_we_fill_categories ? ' (' + esc(r.roles_we_fill_categories) + ')' : ''}`],
+    ['Page', link(r.careers_url, 'careers page')]]);
+  const VERDICT = {'we fill': 'b-ok', 'possible': 'b-warn', 'on-site': 'b-no', 'no match': 'b-no'};
+  if ((r.jobs || []).length) h += '<div class="tbl-wrap" style="margin-top:8px"><table><thead><tr><th>Role posted</th><th>Posted</th><th>Cloudstaff role?</th><th>Nearest Cloudstaff title</th><th class="n">Similarity</th></tr></thead><tbody>'
+    + r.jobs.map(j => `<tr><td>${esc(j.title)}</td><td class="n">${esc(j.posted || '–')}</td><td><span class="badge ${VERDICT[j.verdict] || 'b-no'}">${esc(j.verdict)}</span></td><td>${esc(j.jp_title ? j.jp_title + ' (' + (j.jp_category || '') + ')' : '–')}</td><td class="n">${j.similarity === null ? '–' : fmt(j.similarity, 2)}</td></tr>`).join('') + '</tbody></table></div>';
+  if (r.priority_score !== null) {
+    const rows = [
+      ['News and hiring', r.news_jobs_pts, M.max_points.news, (r.news_signal === 'None' ? 'no news' : r.news_signal ? `${r.news_from === 'parent' ? 'Parent ' + r.parent_name + ': ' : ''}${r.news_signal}${r.event_detail && r.news_from !== 'parent' ? ' (' + r.event_detail + ')' : ''}${r.news_signal_date ? ' · ' + r.news_signal_date : ''}${r.news_strength_factor < 1 ? ' · half weight' : ''}` : 'not checked')
+        + (r.jobs_status === 'ok' ? ` · ${fmt(r.job_postings_30d)} roles we fill posted in 30 days` : ' · jobs unknown')],
+      ['Competitor client', r.bpo_pts, M.max_points.bpo, 'no data yet: counts as No'],
+      ['Fit', r.fit_pts, M.max_points.fit, `${r.industry || 'Unknown'}: 5+ seats ${r.fit_growth_band || '–'}, 2nd department ${r.fit_branch_1y_band || '–'}`]];
+    h += '<h4>Score</h4><table class="pts"><thead><tr><th>Part</th><th class="n">Points</th><th class="n">Max</th><th>Based on</th></tr></thead><tbody>'
+      + rows.map(([a, p, m, b]) => `<tr><td>${a}</td><td class="n">${fmt(p, 1)}</td><td class="n">${m}</td><td>${esc(b)}</td></tr>`).join('')
+      + `<tr><td>+ Act now bonus</td><td class="n">${fmt(r.act_now_bonus, 1)}</td><td></td><td>${esc(r.act_now_triggers || 'none')}</td></tr>`
+      + `<tr><td><b>Priority score</b></td><td class="n"><b>${fmt(r.priority_score)}</b></td><td class="n">100</td><td>${esc(r.estimated_fields ? 'estimated: ' + r.estimated_fields : '')}</td></tr></tbody></table>`;
+  }
+  h += `<h4>Contacts (${(r.contacts || []).length})</h4><div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Title</th><th>Seniority</th><th>Email</th><th>LinkedIn</th></tr></thead><tbody>`
+    + (r.contacts || []).map(c => `<tr><td>${esc(c.name)}</td><td>${esc(c.title)}</td><td>${esc(c.seniority)}</td><td>${c.email ? `<a class="ext" href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : '–'}${c.email_status && c.email_status !== 'Verified' ? ` <span class="badge b-warn">${esc(c.email_status)}</span>` : ''}</td><td>${link(c.linkedin, 'profile')}</td></tr>`).join('') + '</tbody></table></div>';
+  $('detailBody').innerHTML = h;
+  if (scroll) $('detailCard').scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+$('listSearch').oninput = () => render();
+$('topSearch').oninput = () => { if (page !== 'leads') go('leads'); else render(); };
+const CSV_COLS = ['grade', 'priority_score', 'readiness', 'company_name', 'lead_list', 'city', 'employee_count', 'website_domain', 'industry', 'industry_raw',
+  'news_signal', 'news_signal_date', 'signal_confidence', 'news_headline', 'news_url', 'filing_signal', 'registered_status', 'company_number', 'jobs_status', 'open_roles',
+  'apollo_latest_funding', 'apollo_vs_news', 'event_detail', 'service_lines', 'roles_we_fill', 'roles_we_fill_categories', 'hiring_band', 'parent_company', 'act_now_triggers', 'readiness_why', 'best_contact', 'best_title', 'n_contacts'].map(k => ({k, label: k}));
+$('btnCsv').onclick = () => download('lead_grades.csv', leadRows(current).map(r => ({...r, reasons: (r.chips || []).map(c => c[0]).join('; ')})), [...CSV_COLS, {k: 'reasons', label: 'reasons'}]);
+$('btnCsvC').onclick = () => download('lead_contacts.csv', leadRows(current).flatMap(r => (r.contacts || []).map(c => ({grade: r.grade, priority_score: r.priority_score, company_name: r.company_name, ...c}))),
+  ['grade', 'priority_score', 'company_name', 'name', 'title', 'seniority', 'email', 'email_status', 'linkedin'].map(k => ({k, label: k})));
+
+// ---------------- Grades overview
+function rOverview(f, rows) {
+  const t = rows.filter(isTier);
+  $('kpisOver').innerHTML = kpiTiles([
+    ['k-blue', 'fa-building', 'Companies', fmt(rows.length), `${fmt(t.length)} graded`],
+    ['k-teal', 'fa-gauge-high', 'Median score', fmt(median(t.map(r => r.priority_score))), t.length ? `range ${fmt(Math.min(...t.map(r => r.priority_score)))}–${fmt(Math.max(...t.map(r => r.priority_score)))}` : 'no graded leads in this view'],
+    ['k-yellow', 'fa-circle-question', 'Estimated parts', pct(t.length ? t.filter(r => (r.estimated_fields || '').includes('News')).length / t.length : NaN), 'of graded leads have no news check yet (scored at the average)'],
+    ['k-purple', 'fa-user-check', 'Decision-maker reachable', fmt(rows.filter(r => r.dm_verified > 0).length), 'companies with a verified decision-maker email'],
+  ]);
+  const lists = uniq(rows.map(r => r.lead_list));
+  draw('cGrade', {type: 'bar', data: {labels: lists, datasets: GRADES.map(g => ({label: g, backgroundColor: GRADE_COLOUR[g], data: lists.map(l => rows.filter(r => r.lead_list === l && r.grade === g).length)}))},
+    options: {scales: {x: {stacked: true}, y: {stacked: true, title: {display: true, text: 'Leads'}}}}});
+  const parts = [['News and hiring', 'news_jobs_pts', PALETTE[1]], ['Fit', 'fit_pts', PALETTE[5]], ['Act now bonus', 'act_now_bonus', PALETTE[3]]];
+  draw('cPts', {type: 'bar', data: {labels: lists, datasets: parts.map(([lbl, k, c]) => ({label: lbl, backgroundColor: c, data: lists.map(l => { const a = t.filter(r => r.lead_list === l); return a.length ? +mean(a.map(r => r[k] || 0)).toFixed(1) : null; })}))},
+    options: {scales: {x: {stacked: true}, y: {stacked: true, title: {display: true, text: 'Average points (before the industry multiplier)'}}}}});
+  $('ptsNote').textContent = `These leads are pre-HubSpot, so website activity and Diamond referral are not scored. Their points went to the other parts in the live profile's proportions: news and hiring ${M.max_points.news}, fit ${M.max_points.fit}, Competitor client ${M.max_points.bpo} (no data yet). Fit differs by industry; news and hiring is where leads separate.`;
+  const bands = ['0-9', '10-14', '15-19', '20-24', '25-29', '30-39', '40+'], b = s => s < 10 ? 0 : s < 15 ? 1 : s < 20 ? 2 : s < 25 ? 3 : s < 30 ? 4 : s < 40 ? 5 : 6;
+  draw('cScore', {type: 'bar', data: {labels: bands, datasets: lists.map(l => ({label: l, backgroundColor: LIST_COLOUR[l], data: bands.map((_, i) => t.filter(r => r.lead_list === l && b(r.priority_score) === i).length)}))},
+    options: {scales: {y: {title: {display: true, text: 'Leads'}}}}});
+  draw('cReady', {type: 'bar', data: {labels: ['0', '1', '2', '3', '4'], datasets: lists.map(l => ({label: l, backgroundColor: LIST_COLOUR[l], data: [0, 1, 2, 3, 4].map(k => rows.filter(r => r.lead_list === l && r.readiness === k).length)}))},
+    options: {scales: {x: {title: {display: true, text: 'Readiness points'}}, y: {title: {display: true, text: 'Leads'}}}}});
+}
+
+// ---------------- Data gathered (the readout)
+function stacked(id, rows, keyFn, cats, colours, axis) {
+  const lists = uniq(rows.map(r => r.lead_list));
+  draw(id, {type: 'bar', data: {labels: cats, datasets: lists.map(l => ({label: l, backgroundColor: LIST_COLOUR[l], data: cats.map(c => rows.filter(r => r.lead_list === l && keyFn(r) === c).length)}))},
+    options: {indexAxis: 'y', scales: {x: {stacked: true, title: {display: true, text: axis || 'Companies'}}, y: {stacked: true}}}});
+}
+function rGathered(f, rows) {
+  const I = M.info.readout;
+  $('gatherInfo').innerHTML = `<i class="fa-solid fa-circle-info"></i> Collected by News Scraper (<span class="mono">News Scraper/apollo_emea</span>) for ${fmt(I.companies)} companies from ${I.apollo_files.length} Apollo export file(s). News looks back 6 months, or 12 months for companies with an Apollo funding label so the news can date it. Charts follow the filters.`;
+  const checked = rows.filter(r => ['found', 'checked, nothing found'].includes(r.news_status)).length;
+  const ch = rows.filter(r => r.filings_status === 'found in Companies House').length;
+  const jobsOk = rows.filter(r => r.jobs_status === 'ok').length;
+  $('kpisGather').innerHTML = kpiTiles([
+    ['k-blue', 'fa-newspaper', 'News checked', `${fmt(checked)} / ${fmt(rows.length)}`, `${fmt(rows.filter(r => r.news_status === 'found').length)} with at least one confirmed article`],
+    ['k-teal', 'fa-landmark', 'In Companies House', `${fmt(ch)} / ${fmt(rows.length)}`, `${fmt(rows.filter(r => r.grade === 'Excluded: distressed').length)} distressed, excluded`],
+    ['k-yellow', 'fa-briefcase', 'Careers page read', `${fmt(jobsOk)} / ${fmt(rows.length)}`, `${fmt(rows.filter(r => r.jobs_status === 'ok' && r.open_roles > 0).length)} with open roles`],
+    ['k-pink', 'fa-sack-dollar', 'Apollo funding in the news', `${fmt(rows.filter(r => r.apollo_vs_news === 'matches the news').length)} / ${fmt(rows.filter(r => r.apollo_latest_funding).length)}`,
+      `match the news · ${fmt(rows.filter(r => r.apollo_vs_news === 'news shows a different event').length)} differ · ${fmt(rows.filter(r => !r.apollo_latest_funding && ['Funding round', 'PE buyout', 'M&A'].includes(r.news_signal)).length)} deals in the news Apollo doesn't have`],
+  ]);
+  stacked('cNews', rows, r => r.news_status || 'not checked', ['found', 'checked, nothing found', 'not checked']);
+  const evCats = [...EVENTS, 'Other / Unclassified', 'None'];
+  stacked('cEvents', rows.filter(r => r.news_signal), r => r.news_signal, evCats);
+  stacked('cFilings', rows, r => r.registered_status || r.filings_status || 'not checked', uniq(rows.map(r => r.registered_status || r.filings_status || 'not checked')));
+  stacked('cJobs', rows, r => (r.jobs_status || 'not checked').split(':')[0], uniq(rows.map(r => (r.jobs_status || 'not checked').split(':')[0])));
+  stacked('cHire', rows.filter(r => r.hiring_band !== 'unknown'), r => r.hiring_band, ['none open', ...HIRE_BANDS]);
+  stacked('cHireRec', rows.filter(r => HIRE_BANDS.includes(r.hiring_band)), hireRecency, ['new roles in the last 30 days', 'newest in 31–90 days', 'newest over 90 days ago', 'no posting dates']);
+  const fr = rows.filter(r => r.apollo_latest_funding), ft = uniq(fr.map(r => r.apollo_latest_funding));
+  const AVN = [['matches the news', PALETTE[1]], ['news shows a different event', PALETTE[2]], ['not in the news', GREY]];
+  draw('cFund', {type: 'bar', data: {labels: ft, datasets: AVN.map(([k, c]) => ({label: k, backgroundColor: c, data: ft.map(t => fr.filter(r => r.apollo_latest_funding === t && r.apollo_vs_news === k).length)}))},
+    options: {indexAxis: 'y', scales: {x: {stacked: true, title: {display: true, text: 'Companies'}}, y: {stacked: true}}}});
+  const people = rows.flatMap(r => (r.contacts || []).map(c => ({...c, lead_list: r.lead_list}))), sen = uniq(people.map(c => c.seniority || 'unknown'));
+  const lists = uniq(rows.map(r => r.lead_list));
+  draw('cContacts', {type: 'bar', data: {labels: sen, datasets: lists.map(l => ({label: l, backgroundColor: LIST_COLOUR[l], data: sen.map(s => people.filter(c => c.lead_list === l && (c.seniority || 'unknown') === s).length)}))},
+    options: {indexAxis: 'y', scales: {x: {stacked: true, title: {display: true, text: 'People'}}, y: {stacked: true}}}});
+  const n = rows.length, row = (src, ok, note) => ({src, ok, share: n ? ok / n : NaN, note});
+  table($('tCoverage'), [{k: 'src', label: 'Source'}, {k: 'ok', label: 'Companies with a result', n: 1, f: v => fmt(v)}, {k: 'share', label: 'Share', n: 1, f: v => pct(v)}, {k: 'note', label: 'What it gives'}], [
+    row('Apollo export', n, 'Website, city, staff, industry, funding label, technologies, contacts'),
+    row('Company website card', rows.filter(r => r.website_profile && !/^(error|site unreachable)/.test(String(r.website_profile))).length, 'Legal and other names, keywords and city, used to confirm news matches'),
+    row('News search (Google News, Bing, own newsroom)', checked, 'Dated events: funding, PE, M&A, expansion, restructuring, leadership'),
+    row('  with at least one confirmed article', rows.filter(r => r.news_status === 'found').length, ''),
+    row('Companies House (exact legal name)', ch, 'Status, incorporation, accounts, SIC, name changes'),
+    row('Gazette insolvency notices', ch, 'Administration, liquidation, winding-up notices (searched for every matched company)'),
+    row('Careers page / job feed read', jobsOk, 'Open roles; a hiring spike needs a second run 21+ days later'),
+    row('Client Propensity fit profile', rows.filter(r => r.fit_growth_band).length, 'How past clients in the same industry grew'),
+    row('Market trend (segment mode, context only)', rows.filter(r => r.market_trend !== null).length, 'Healthcare & Wellness UK and Technology UK tailwinds'),
+    row('MyStaff / HubSpot match', rows.filter(r => r.internal_match).length, 'Existing clients and known prospects (by website domain)'),
+    row('Parent company named by Apollo', rows.filter(r => r.parent_name).length, 'Parent news searched too; its events show marked "Parent" and count at half strength when stronger than the lead\'s own'),
+    row('  with a relevant parent event', rows.filter(r => r.parent_signal).length, ''),
+    row('Own-website posts only (no points)', rows.filter(r => (!r.news_signal || r.news_signal === 'None') && r.own_site_posts > 0).length, 'Companies whose only news is their own blog: shown, but no news points'),
+  ]);
+}
+
+// ---------------- Fit and market
+function rFit(f, rows) {
+  $('fitWarn').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> UK fit is not used: MyStaff has only 26 UK clients (2 in Healthcare, 2 in Technology), too few for a country-level estimate. The fit comes from past clients in the same <b>industry, all countries</b> (decision 18 Nov 2026).`;
+  const g = [...groupBy(rows, r => r.industry || 'Unmapped')].map(([k, a]) => ({k, n: a.length, gp: a[0].fit_growth_p, gb: a[0].fit_growth_band, rp: a[0].fit_reach_10_p, rb: a[0].fit_reach_10_band, bp: a[0].fit_branch_1y_p, bb: a[0].fit_branch_1y_band})).sort((a, b) => b.n - a.n);
+  const lists = uniq(rows.map(r => r.lead_list));
+  const sv = uniq(rows.flatMap(r => (r.service_lines || '').split('; ').filter(Boolean)));
+  table($('tService'), [{k: 's', label: 'Service line'}, ...lists.map(l => ({k: l, label: esc(l), n: 1, f: v => fmt(v)}))],
+    sv.map(s => Object.assign({s}, ...lists.map(l => ({[l]: rows.filter(r => r.lead_list === l && (r.service_lines || '').split('; ').includes(s)).length}))))
+      .sort((a, b) => lists.reduce((t, l) => t + b[l] - a[l], 0)));
+  $('serviceNote').textContent = 'Matched in the company\'s website title, description and keywords (home and About pages). ' + lists.map(l => {
+    const a = rows.filter(r => r.lead_list === l); return `${l}: ${fmt(a.filter(r => r.service_lines).length)} of ${fmt(a.length)} have at least one`; }).join(' · ')
+    + '. Blank usually means the website could not be read, not that the company offers none. Use the Service line filter to target a list.';
+  const pb = (p, b) => p === null || p === undefined ? '–' : `${pct(p)} <span class="badge ${b === 'High' ? 'b-ok' : b === 'Medium' ? 'b-blue' : 'b-no'}">${esc(b)}</span>`;
+  table($('tFit'), [{k: 'k', label: 'Industry group'}, {k: 'n', label: 'Leads', n: 1, f: v => fmt(v)}, {k: 'gp', label: '5+ seats in 1 year', n: 1, f: (v, r) => pb(v, r.gb)},
+    {k: 'rp', label: '10+ seats in 2 years', n: 1, f: (v, r) => pb(v, r.rb)}, {k: 'bp', label: '2nd department in 1 year', n: 1, f: (v, r) => pb(v, r.bb)}], g);
+  const tr = [...groupBy(rows, r => (r.industry || 'Unmapped') + '|' + (r.trend_basis || ''))].map(([k, a]) => ({ind: a[0].industry || 'Unmapped', basis: a[0].trend_basis, trend: a[0].market_trend, n: a.length})).sort((a, b) => b.n - a.n);
+  table($('tTrend'), [{k: 'ind', label: 'Industry group'}, {k: 'n', label: 'Leads', n: 1, f: v => fmt(v)}, {k: 'trend', label: 'Trend (0–1)', n: 1, f: v => v === null || v === undefined ? '–' : fmt(v, 3)}, {k: 'basis', label: 'Based on'}], tr);
+  const ind = [...groupBy(rows, r => r.lead_list + '|' + (r.industry_raw || '–'))].map(([k, a]) => ({list: a[0].lead_list, raw: a[0].industry_raw || '–', grp: a[0].industry || 'unmapped', n: a.length,
+    on: a.filter(r => r.on_target === true).length, off: a.filter(r => r.on_target === false).length,
+    codes: a.filter(r => (r.fit_basis || '').startsWith('activity codes') && !(r.industry && r.list_target.includes(r.industry))).length}))
+    .sort((a, b) => a.list.localeCompare(b.list) || b.n - a.n);
+  table($('tInd'), [{k: 'list', label: 'Apollo list'}, {k: 'raw', label: 'Apollo industry'}, {k: 'grp', label: 'Industry group'}, {k: 'n', label: 'Leads', n: 1, f: v => fmt(v)},
+    {k: 'on', label: 'In target', n: 1, f: v => fmt(v)}, {k: 'off', label: 'Check fit', n: 1, f: v => v ? `<span class="badge b-pink">${fmt(v)}</span>` : '0'},
+    {k: 'codes', label: 'Rescued by activity codes', n: 1, f: v => v ? `<span class="badge b-ok">${fmt(v)}</span>` : '–'}], ind);
+}
+
+// ---------------- Method and QA
+function rMethod() {
+  const ns = Object.entries(M.news_strength).map(([k, v]) => `${esc(k)} ${v}`).join(' · ');
+  const rc = M.recency.map(([d, f], i) => `${d}${M.recency[i + 1] ? '–' + (M.recency[i + 1][0] - 1) : '+'} days × ${f}`).join(' · ');
+  $('methodBody').innerHTML = `<ul class="rules">
+    <li><b>The Priority Score, without HubSpot.</b> Each Apollo company is scored as a New Logo account with the live Priority Score code (<span class="mono">${esc(M.info.scoring_profile)}</span>). These leads are pre-HubSpot, so website activity and Diamond referral are left out, and their 40 points are shared out in the live profile's own proportions: news and hiring ${M.max_points.news}, fit ${M.max_points.fit}, Competitor client ${M.max_points.bpo}.</li>
+    <li><b>What we have (Apollo):</b> website, industry, staff, city, funding label, technologies and contacts. The funding label has no date, so it earns <b>no points</b> until the news dates it (D1); it shows as a chip and a readiness point.</li>
+    <li><b>What we gather (News Scraper):</b> news events score type × recency. Types: ${ns}. Recency: ${rc}. Medium- and low-confidence events count at <b>half strength</b> (D2). <b>"Other" news earns no points</b> (only the event types above count), so a company's own blog posts count only when they report a relevant event. A <b>parent company's</b> event (Apollo's parent) counts at half strength when it beats the lead's own news, and is marked <span class="badge b-parent">${PARENT_ICON}Parent</span>. Half-strength news never triggers Act now. Event details (who bought whom, amounts, new executives) come from the scraper's language pass and only describe an event already counted. <b>Hiring points count only roles Cloudstaff fills</b>: each posted title is matched to Staff Central's JP titles (close matches only; looser ones show as "possible", on-site care and facilities roles as "on-site"), roles posted in the last 30 days, 20+ = full. All open roles still show in the hiring chip, in bands, with how recent they are. <b>Service lines</b> come from the company's website and carry no points. Companies House status gates the lead.</li>
+    <li><b>What we know internally:</b> existing clients (MyStaff) are taken off the list, and known HubSpot prospects are flagged. Fit uses Client Propensity's industry profile from all countries, because there are only 26 UK clients.</li>
+    <li><b>Unknown parts</b> (news where the search didn't run) are scored at the average of the leads where they are known, or 25% when none is known, and listed as estimated.</li>
+    <li><b>Grades:</b> ranked <b>within each Apollo list</b>, since each list is its own campaign: Tier 1 = top 10% of the list, Tier 2 = next 30%, Tier 3 = the rest (D3). Equal scores are ordered by <b>readiness</b> (0–4): an Apollo funding label, a decision-maker with a verified email, in the news (or a relevant event on its own site) in the last 180 days, being in the list's target industry. Readiness never adds points.</li>
+    <li><b>Check fit:</b> the company is outside the list's target industry (e.g. builders or furniture suppliers in the care-home list). It is scored, but not tiered against the campaign's own targets.</li>
+    <li><b>Act now</b> (adds a bonus): funding or PE buyout news in the last 30 days, a hiring spike or 18+ open roles, restructuring or leadership news in the last 30 days.</li>
+    <li><b>Excluded:</b> in administration, liquidation, receivership, strike-off or dissolved, or a Gazette insolvency notice. <b>Existing client:</b> website matches an active MyStaff client.</li>
+    <li><b>Owner:</b> every graded lead goes to <b>${esc(M.team)}</b> for now (no SDR / BDM / Marketing split).</li></ul>`;
+  const mp = M.max_points;
+  table($('tPoints'), [{k: 'p', label: 'Part'}, {k: 'm', label: 'Max points', n: 1}, {k: 'd', label: 'For Apollo leads today'}], [
+    {p: 'News and hiring', m: mp.news, d: 'News events (News Scraper), half each with roles we fill posted in 30 days (careers pages)'},
+    {p: 'Competitor client', m: mp.bpo, d: 'No data yet: counts as No (the CS Jobs competitor-client map would fill it)'},
+    {p: 'Website activity, Diamond referral', m: 0, d: 'Not scored: these leads are pre-HubSpot'},
+    {p: 'Fit', m: mp.fit, d: 'Client Propensity industry profile'},
+    {p: 'Industry trend', m: 0, d: 'Not scored: tiers rank within each list, where every lead shares the same trend. Shown as market context on Fit and market'},
+  ]);
+}
+function rQa() {
+  table($('tQa'), [{k: 'step', label: 'Step'}, {k: 'rows', label: 'Rows', n: 1, f: v => fmt(v)}], D.qa || []);
+  const I = M.info;
+  table($('tInputs'), [{k: 'k', label: 'Input'}, {k: 'v', label: 'File or setting'}], [
+    {k: 'Apollo export', v: I.readout.apollo_files.join(', ')}, {k: 'Internal accounts', v: I.internal}, {k: 'Fit profiles', v: I.fit_profiles + ' (country = ' + M.fit_country + ')'},
+    {k: 'Industry trend', v: I.trend}, {k: 'Scoring', v: I.scoring_profile}, {k: 'Graded on', v: M.as_of}]);
+}
+
+// ---- wire up
+document.querySelectorAll('#filters select').forEach(s => s.onchange = () => render());
+$('btnReset').onclick = () => { ['fList', 'fGrade', 'fAct', 'fTarget', 'fHire', 'fService', 'fApollo'].forEach(id => $(id).value = 'All'); render(); };
+render();
+</script>
+</body>
+</html>

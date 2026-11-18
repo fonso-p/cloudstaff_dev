@@ -6,7 +6,8 @@ when to use it and how.
 
 | Module | What it's for | Used in |
 |---|---|---|
-| [jp_titles.py](jp_titles.py) | Cleans Staff Central JP titles by removing seniority words (Senior/Junior, Level 2, II, ...) and fixing known typos. It also backfills blank `JP Title (All)` / `JP Category (All)` values from `Designation (All)` using a strict rule: when the evidence is ambiguous, it leaves the field blank instead of guessing. | `Adhoc/Top roles APAC/top_roles_APAC.ipynb` |
+| [jp_titles.py](jp_titles.py) | Cleans Staff Central JP titles by removing seniority words (Senior/Junior, Level 2, II, ...) and fixing known typos. It also backfills blank `JP Title (All)` / `JP Category (All)` values from `Designation (All)` using a strict rule: when the evidence is ambiguous, it leaves the field blank instead of guessing. | `Adhoc/Top roles APAC/top_roles_APAC.ipynb`, `Marketing Intelligence/apollo_lead_grading/roles.py` |
+| [company_keys.py](company_keys.py) | `name_key()`: one normalised key per company name (lower case, "&" = "and", punctuation and legal / generic words such as Pty Ltd, Inc, Group, UK removed), for joining name lists that share no id or website. Not enough on its own for one-word names. | `Client Extraction (CS Jobs)/export_client_map.py`, `Marketing Intelligence/apollo_lead_grading/grade_leads.py` |
 
 ## Importing from a notebook or script
 

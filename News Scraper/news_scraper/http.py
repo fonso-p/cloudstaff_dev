@@ -1,5 +1,8 @@
 """Polite HTTP: one requests session per thread, a per-host rate limit, and retries with backoff."""
+import datetime as dt
+import email.utils
 import random
+import re
 import threading
 import time
 from urllib.parse import urlparse
@@ -30,9 +33,9 @@ class RateLimiter:
             time.sleep(slot - now)
 
     def push(self, key, interval):
-        """Next request for key no earlier than `interval` seconds from now."""
+        """Next request for key no earlier than `interval` seconds from now (never brings an existing slot forward)."""
         with self._lock:
-            self._next[key] = time.monotonic() + interval
+            self._next[key] = max(self._next.get(key, 0.0), time.monotonic() + interval)
 
 
 LIMITER = RateLimiter()
@@ -71,16 +74,75 @@ def get(url, params=None, key=None, interval=1.0, timeout=25, retries=3, serial=
                 LIMITER.wait(key, interval * random.uniform(1.0, 1.3))
                 r = _session().request(method, url, params=params, json=json, timeout=timeout)
         except requests.RequestException as e:
-            err = e
+            if _permanent(e):                              # a bad certificate or a missing domain fails the same way every time
+                raise FetchError(str(e)) from e
+            err, wait = e, None
         else:
             if r.status_code == 200:
                 return r
             if r.status_code not in RETRY_STATUS:
                 raise FetchError(f"HTTP {r.status_code} for {r.url[:120]}")
-            err = FetchError(f"HTTP {r.status_code}: {r.text[:120]}")
+            err, wait = FetchError(f"HTTP {r.status_code}: {r.text[:120]}"), _retry_after(r)
+            if wait is not None and wait > MAX_RETRY_AFTER:  # asked to come back much later: give up rather than hold a worker
+                raise FetchError(f"HTTP {r.status_code} for {r.url[:120]} (asked to wait {wait:.0f}s)")
         if attempt < retries:
-            time.sleep(min(90, interval * 2 * 2 ** attempt))
+            # back off on the whole host, not just this thread: the next request for `key` from any thread waits too
+            LIMITER.push(key, wait if wait is not None else min(90, interval * 2 * 2 ** attempt))
     raise FetchError(str(err))
+
+
+MAX_RETRY_AFTER = 120             # seconds; a longer Retry-After means "not today"
+_PERMANENT = re.compile(r"NameResolution|Failed to resolve|getaddrinfo|Name or service not known|nodename nor servname", re.I)
+
+
+def _permanent(e):
+    """Network errors a retry can't fix."""
+    if isinstance(e, (requests.exceptions.SSLError, requests.exceptions.TooManyRedirects, requests.exceptions.InvalidURL,
+                      requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema)):
+        return True
+    return isinstance(e, requests.exceptions.ConnectionError) and bool(_PERMANENT.search(str(e)))
+
+
+def _retry_after(r):
+    """Seconds from a Retry-After header (a number or an HTTP date), or None."""
+    v = (r.headers.get("Retry-After") or "").strip()
+    if not v:
+        return None
+    if v.isdigit():
+        return float(v)
+    try:
+        when = email.utils.parsedate_to_datetime(v)
+    except (TypeError, ValueError):
+        return None
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=dt.timezone.utc)
+    return max(0.0, (when - dt.datetime.now(dt.timezone.utc)).total_seconds())
+
+
+_REASONS = [                      # (pattern in the requests/urllib3 message, short reason for people)
+    (re.compile(r"CERTIFICATE_VERIFY_FAILED|SSLError|SSL:|certificate", re.I), "SSL certificate problem"),
+    (re.compile(r"NameResolution|Failed to resolve|getaddrinfo|Name or service not known|nodename nor servname", re.I), "domain not found"),
+    (re.compile(r"timed out|Timeout", re.I), "timed out"),
+    (re.compile(r"TooManyRedirects|Exceeded \d+ redirects", re.I), "redirect loop"),
+    (re.compile(r"refused|reset|aborted|RemoteDisconnected|ConnectionError|Max retries", re.I), "connection failed"),
+]
+
+
+def reason(err):
+    """A short, readable reason for a failed fetch ('SSL certificate problem', 'HTTP 403'), never the raw traceback text."""
+    msg = str(err)
+    m = re.search(r"HTTP (\d{3})", msg)
+    if m:
+        return f"HTTP {m.group(1)}"
+    return next((r for rx, r in _REASONS if rx.search(msg)), "could not load")
+
+
+def tidy_status(status):
+    """'error: HTTPSConnectionPool(...)' -> 'site unreachable: SSL certificate problem'. Other statuses pass through,
+    so snapshots stored before this existed export cleanly too."""
+    if isinstance(status, str) and status.startswith("error:"):
+        return f"site unreachable: {reason(status)}"
+    return status
 
 
 def post(url, json=None, **kw):

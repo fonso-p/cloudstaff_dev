@@ -114,6 +114,8 @@ flowchart TD
 | `--mode backfill` | Always pull the whole window. |
 | `--sources google,bing,newsroom` | Which sources to use (see below). Add `gdelt` to include it. |
 | `--workers 6` | Companies processed in parallel. Each source still has its own rate limit, so adding workers does not make any source go faster. |
+
+**Rate limits (`news_scraper/http.py`):** one request per host every 1–1.3 s, shared by all threads. A 429 or 5xx is retried with exponential backoff, or after the site's `Retry-After` if it sends one (over 120 s and we give up on that page). The backoff holds the whole host, not just the thread that hit it. Errors a retry can't fix (bad SSL certificate, unknown domain, redirect loop) fail at once. `robots.txt` is fetched once per site per run.
 | `--limit N` | Only the first N companies, for testing. |
 
 ## Reading the full article (optional)
@@ -301,7 +303,7 @@ Job boards (SEEK, Indeed, LinkedIn) are recorded in `jobs_method` as `seen: …`
 
 | `company_summary.csv` column | Meaning |
 |---|---|
-| `jobs_status` | `ok`, `no roles found` (careers page found, no feed or data, often a list built with JavaScript), `not readable`, `no careers page`, `no website`, `error: …` |
+| `jobs_status` | `ok`, `no roles found` (careers page found, no feed or data, often a list built with JavaScript), `not readable`, `no careers page`, `no website`, `site unreachable: <reason>` (SSL certificate problem, domain not found, timed out, HTTP 403 …; the raw error is not kept), `check failed` |
 | `open_roles` | Roles listed now (only when `ok`) |
 | `job_postings_30d` | The score's field: roles posted in the last 30 days when the feed gives dates (`jobs_dates_known` = yes), else all open roles. **Blank when unknown.** `no roles found` is not a zero, because the page may load its list with JavaScript. |
 | `hiring_spike` | `Yes` when open roles are at least 1.5× **and** 3 more than a snapshot taken 21–120 days earlier. Blank until there is an earlier snapshot, so the first run never shows one. |
@@ -427,6 +429,8 @@ Two more checks apply only to **small companies** (`employees` under 1,000, no t
 
   Ticker, legal name or a founder count like the domain (+0.3), and card keywords like location (+0.15). A score of 0.4 or more is stored; at export, an article also needs 0.6 or more, plus the identity checks above, to count.
 - **What kind of news?** (`classify.py`) Keyword rules sort each article into the scoring categories: Funding round, PE buyout, M&A, Expansion / new office, Restructuring, Leadership change, otherwise "Other / Unclassified".
+  - **Added 18 Nov 2026:** two more categories, **Contract / partnership win** ("wins contract", "names X as its provider", "partners with"; sponsorships excluded) and **Product launch** ("launches / unveils / introduces … platform, app, service"), plus phrasings missed on UK care news ("adds six homes to portfolio", "takes 3,442 sq ft office", "development pipeline", "80-bed scheme", "secures £13m backing", "names new commercial lead", "strengthens leadership team"). Example headlines were added to `event_examples.py` the same way. Their strengths default to 0.5 and 0.3 (`classify.DEFAULT_STRENGTH`) until `scoring_settings.json` has them.
+  - **Measured** with `eval/eval_events.py`, treating the two new categories as Other so the numbers compare with the labels: build set precision 0.89 → 0.88, recall 0.80 → 0.79; holdout precision 0.66 → 0.66 (rules alone 0.60 → 0.64), recall 0.55 → 0.55. Unit tests: 33 pass. The labels have no examples of the new categories yet, so their own accuracy is unmeasured.
   - The rules exclude common false positives, such as "raises price target", "X-backed start-up raises", "stocks to buy" and "talent acquisition".
   - Company-profile pages (funding lists, stock charts) are dropped entirely.
 
