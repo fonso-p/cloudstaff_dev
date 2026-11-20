@@ -82,6 +82,8 @@ h1,h2,h3{font-family:var(--font-family-heading);margin:0}
 .card-head span{opacity:.9;font-size:var(--font-size-xs);text-align:right;flex:0 1 auto;max-width:45%}
 .card-body{padding:var(--component-card-padding)}
 .chart{position:relative;height:300px}
+.chart.chart-tall{height:380px}
+.chart-head{margin:0 0 10px;font-size:var(--font-size-sm);color:var(--color-text-base-primary)}
 .chart.tall{height:380px}
 .note{color:var(--color-text-base-muted);font-size:var(--font-size-xs);margin-top:10px;line-height:1.5}
 .warn{background:var(--color-feature-02-soft);border-radius:var(--radius-lg);padding:10px 14px;margin:0 0 var(--component-tile-padding);font-size:var(--font-size-xs)}
@@ -134,6 +136,28 @@ details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
 .flag{display:inline-block;margin:1px 2px;padding:1px 6px;border-radius:var(--radius-pill);font-size:var(--font-size-2xs);background:var(--color-surface-secondary);color:var(--color-text-base-secondary);white-space:nowrap}
 .st{display:inline-block;padding:2px 8px;border-radius:var(--radius-pill);font-size:var(--font-size-2xs);font-weight:var(--font-weight-semibold);white-space:nowrap;color:#fff}
 .st.lt{color:var(--color-text-base-primary)}
+.st-legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 12px;font-size:var(--font-size-xs);color:var(--color-text-base-secondary)}
+.st-legend span.item{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.st-legend span.item:hover{color:var(--color-text-base-primary)}
+.charts-box{margin-bottom:var(--component-card-padding)}
+.charts-box > summary{cursor:pointer;list-style:none}
+.charts-box > summary::-webkit-details-marker{display:none}
+.charts-box .caret{font-size:12px;margin-right:6px;transition:transform .15s}
+.charts-box[open] .caret{transform:rotate(90deg)}
+.sticky2 td:nth-child(-n+2),.sticky2 th:nth-child(-n+2){position:sticky;background:var(--color-surface-primary);z-index:1}
+.sticky2 th:nth-child(-n+2){z-index:2}
+td.col-reco{background:var(--color-feature-01-soft);font-size:var(--font-size-base);border-left:2px solid var(--color-feature-01);border-right:2px solid var(--color-feature-01)}
+th.col-reco{background:var(--color-feature-01-soft);border-left:2px solid var(--color-feature-01);border-right:2px solid var(--color-feature-01)}
+.muted{color:var(--color-text-base-secondary);font-weight:normal}
+.kpi-hero{outline:2px solid var(--color-feature-01)} .kpi-hero .kpi-value{font-size:calc(var(--font-size-3xl) * 1.25)}
+.sticky2 td:first-child,.sticky2 th:first-child{left:0;width:150px;min-width:150px}
+.sticky2 td:nth-child(2),.sticky2 th:nth-child(2){left:150px;min-width:200px;box-shadow:inset -1px 0 0 var(--border-color-default)}
+.kpi-link{cursor:pointer;transition:box-shadow .15s}
+.kpi-link:hover{box-shadow:var(--shadow-md, 0 2px 8px rgba(0,0,0,.12))}
+.sku-suffix{color:var(--color-text-base-secondary)}
+.sku-flags{white-space:normal;max-width:300px;margin-top:4px}
+.sku-flags .flag{background:var(--color-feature-02-soft);color:var(--color-text-base-primary)}
+.chart-title{margin:0 0 10px;font-family:var(--font-family-heading);font-size:var(--font-size-md);color:var(--color-brand-primary-strong)}
 </style>
 </head>
 <body>
@@ -142,12 +166,7 @@ details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
     <div class="brand"><!--__LOGO__--><small id="brandSub"></small></div>
     <div class="nav-label">Workspace</div>
     <nav class="nav">
-      <a data-page="overview" class="active"><i class="fa-solid fa-chart-column"></i>Overview</a>
-      <a data-page="list"><i class="fa-solid fa-list-ol"></i>Replenishment list</a>
-      <a data-page="compare"><i class="fa-solid fa-code-compare"></i>Ours vs Amazon vs Mich</a>
-      <a data-page="exceptions"><i class="fa-solid fa-triangle-exclamation"></i>Exceptions</a>
-      <a data-page="trends"><i class="fa-solid fa-chart-line"></i>Trends &amp; SKU detail</a>
-      <a data-page="econ"><i class="fa-solid fa-sack-dollar"></i>SKU economics</a>
+      <a data-page="list" class="active"><i class="fa-solid fa-list-ol"></i>Replenishment list</a>
     </nav>
     <div class="nav-label">Method</div>
     <nav class="nav">
@@ -163,108 +182,58 @@ details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
 
   <main class="main">
     <div class="topbar">
-      <div class="crumbs"><span id="crumbRoot"></span> &nbsp;<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>&nbsp; <b id="crumbPage">Overview</b></div>
+      <div class="crumbs"><span id="crumbRoot"></span> &nbsp;<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>&nbsp; <b id="crumbPage">Replenishment list</b></div>
       <div class="grow"></div>
       <div class="chip"><i class="fa-regular fa-calendar"></i><span id="dateChip"></span></div>
       <div class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="topSearch" placeholder="Search SKU, ASIN or product"></div>
     </div>
-    <div class="page-head"><div><h1 id="pageTitle">Overview</h1><p id="pageSub"></p></div></div>
+    <div class="page-head"><div><h1 id="pageTitle">Replenishment list</h1><p id="pageSub"></p></div></div>
 
     <div class="filters" id="filters">
       <div class="frow"><span class="frow-label">Which SKUs</span>
         <label>Market<select id="fMkt"></select></label>
-        <label id="lSnap">Snapshot<select id="fSnap"></select></label>
         <label id="lStatus">Status<select id="fStatus"></select></label>
+        <label id="lGroup">Status group<select id="fGroup"></select></label>
+        <label id="lFlag">Exception flag<select id="fFlag"></select></label>
         <button class="btn btn-blue reset" id="btnReset"><i class="fa-solid fa-rotate-left"></i>Reset</button>
       </div>
       <div class="frow-note" id="filterNote"></div>
     </div>
 
-    <!-- Overview -->
-    <section class="page show" id="p-overview">
+    <!-- Replenishment list: the one working view -->
+    <section class="page show" id="p-list">
       <div class="warn"><i class="fa-solid fa-circle-exclamation"></i> <b>Mock built on Amazon data only.</b> There is no Trilanco (warehouse) stock yet, so every recommendation assumes the warehouse can supply it. Rules use assumed settings: see <span class="ins-link" onclick="go('rules')">Rules &amp; assumptions</span>.</div>
       <div class="kpis" id="kpis"></div>
-      <div class="grid g2">
-        <div class="card"><div class="card-head"><h3>SKUs by restock status, per market</h3><span>SKUs · excludes No activity</span></div>
-          <div class="card-body"><div class="chart"><canvas id="cStatus"></canvas></div><div class="note">Each bar counts the SKUs in one market in the selected snapshot, split by status. The status filter does not apply to this chart.</div></div></div>
-        <div class="card"><div class="card-head"><h3>Units to send: ours, Amazon's and Mich's</h3><span>units · per market</span></div>
-          <div class="card-body"><div class="chart"><canvas id="cUnits"></canvas></div><div class="note">Totals for the selected snapshot. Mich's reco sheets cover only the SKUs Mich reviewed that day, so Mich's total is not like for like. "New inbound" approximates what was actually sent since the previous snapshot.</div></div></div>
-      </div>
-      <div class="card"><div class="card-head"><h3>Top 15 SKUs to act on</h3><span>Out of stock, Urgent, then Below target · lowest cover first</span></div>
-        <div class="card-body"><div class="tbl-wrap nowrap" id="tTop"></div><div class="note">The full list, with search and CSV export, is on <span class="ins-link" onclick="go('list')">Replenishment list</span>.</div></div></div>
-    </section>
-
-    <!-- Replenishment list -->
-    <section class="page" id="p-list">
+      <details class="card charts-box" id="chartsBox">
+        <summary class="card-head"><h3><i class="fa-solid fa-chevron-right caret"></i> Charts</h3><span>status mix · units to send · profit lost to stockouts · top SKUs · click to show or hide</span></summary>
+        <div class="card-body">
+          <div class="grid g2" style="margin:0">
+            <div class="card-body" style="padding:0"><h4 class="chart-title">SKUs by restock status, per market</h4><div class="chart"><canvas id="cStatus"></canvas></div><div class="note">SKUs in the latest snapshot that match the filters.</div></div>
+            <div class="card-body" style="padding:0"><h4 class="chart-title">Units to send: restock recommendation vs Amazon's and Mich's</h4><div class="chart"><canvas id="cUnits"></canvas></div><div class="note">Totals for the selected snapshot. Mich's reco sheets cover only the SKUs Mich reviewed that day, so Mich's total is not like for like. "New inbound" approximates what was actually sent since the previous snapshot.</div></div>
+          </div>
+          <div class="grid g2" style="margin:var(--component-card-padding) 0 0">
+            <div class="card-body" style="padding:0"><h4 class="chart-title">Profit lost to stockouts each week</h4><p class="chart-head" id="hStock"></p><div class="chart chart-tall"><canvas id="cStock"></canvas></div><div class="note">Out-of-stock SKUs only: weekly demand × profit per unit. Weekly demand uses the 90-day rate when that is higher, so an empty shelf does not hide demand. Loss-making SKUs count as 0. Uses sales and the economics file only, none of the assumed settings. Follows the Market filter only.</div></div>
+            <div class="card-body" style="padding:0"><h4 class="chart-title">Where the profit sits, and is it at risk?</h4><p class="chart-head" id="hHero"></p><div class="chart chart-tall"><canvas id="cHero"></canvas></div><div class="note">"Top SKUs" = the top 20% of SKUs by profit per week (weekly demand × profit per unit), coloured by status. Statuses depend on the assumed lead time, buffer and cap; the profit figures do not. Follows the Market filter only.</div></div>
+          </div>
+        </div>
+      </details>
       <div class="card"><div class="card-head"><h3>Replenishment list</h3><span id="listSub"></span></div><div class="card-body">
         <div class="tools"><input id="listSearch" placeholder="Search SKU, base code, ASIN, product">
           <button class="btn btn-teal" id="btnCsv2"><i class="fa-solid fa-file-csv"></i>Export to CSV</button><span class="note" style="margin:0">Sorted by priority. Click a column header to sort.</span></div>
-        <div class="tbl-wrap nowrap sticky1" id="tList"></div>
-        <div class="note">Cover = (available + inbound) ÷ weekly demand. Ours = the rule-based quantity. Amazon = Amazon's recommended ship-in quantity. Mich = Mich's reco sheet for the same date (blank if Mich did not review the SKU). New inbound = rise in inbound units since the previous snapshot.</div></div></div>
-    </section>
-
-    <!-- Compare -->
-    <section class="page" id="p-compare">
-      <div class="info">For each SKU, do our rules agree with Mich and with Amazon on whether to send stock? Mich's reco sheets list only SKUs Mich chose to restock, so "only ours" includes SKUs Mich did not review.</div>
-      <div class="kpis" id="kpisCmp"></div>
-      <div class="grid g2">
-        <div class="card"><div class="card-head"><h3>Do we and Mich agree on which SKUs to restock?</h3><span>SKUs · per market</span></div>
-          <div class="card-body"><div class="chart"><canvas id="cAgree"></canvas></div><div class="note">Counts SKUs where at least one of us recommends sending stock in the selected snapshot.</div></div></div>
-        <div class="card"><div class="card-head"><h3>Do we and Amazon agree on which SKUs to restock?</h3><span>SKUs · per market</span></div>
-          <div class="card-body"><div class="chart"><canvas id="cAgreeAmz"></canvas></div><div class="note">Amazon recommends from its own forecast and lead times, which we cannot see.</div></div></div>
-      </div>
-      <div class="card"><div class="card-head"><h3>SKUs Mich recommended, side by side</h3><span id="cmpSub"></span></div>
-        <div class="card-body"><div class="tbl-wrap nowrap sticky1" id="tCmp"></div><div class="note">Difference = ours − Mich. Large gaps are the cases to review with Mich and Ramin when writing down the rules.</div></div></div>
-    </section>
-
-    <!-- Exceptions -->
-    <section class="page" id="p-exceptions">
-      <div class="info">Cases a ranking does not surface. Each flag is defined on <span class="ins-link" onclick="go('rules')">Rules &amp; assumptions</span>.</div>
-      <div class="grid g2">
-        <div class="card"><div class="card-head"><h3>SKUs with each exception flag</h3><span>SKUs · per market</span></div>
-          <div class="card-body"><div class="chart tall"><canvas id="cFlags"></canvas></div><div class="note">A SKU can carry several flags. Counts follow the market, snapshot and status filters.</div></div></div>
-        <div class="card"><div class="card-head"><h3>What each flag means</h3><span>and what to do</span></div>
-          <div class="card-body"><div class="tbl-wrap" id="tFlagDef"></div></div></div>
-      </div>
-      <div class="card"><div class="card-head"><h3>Flagged SKUs</h3><span id="excSub"></span></div><div class="card-body">
-        <div class="tools"><label>Flag <select id="fFlag"></select></label></div>
-        <div class="tbl-wrap nowrap sticky1" id="tExc"></div></div></div>
-    </section>
-
-    <!-- Trends -->
-    <section class="page" id="p-trends">
-      <div class="info">Change across the four snapshots. The snapshot filter does not apply on this page. Snapshot dates differ slightly by market (see the numbers under each chart).</div>
-      <div class="grid g2">
-        <div class="card"><div class="card-head"><h3>Units sold in the 30 days before each snapshot</h3><span>units · per market</span></div>
-          <div class="card-body"><div class="chart"><canvas id="cTSales"></canvas></div></div></div>
-        <div class="card"><div class="card-head"><h3>SKUs out of stock or urgent at each snapshot</h3><span>SKUs · per market</span></div>
-          <div class="card-body"><div class="chart"><canvas id="cTOos"></canvas></div></div></div>
-      </div>
-      <div class="card"><div class="card-head"><h3>One SKU across the snapshots</h3><span id="skuSub"></span></div><div class="card-body">
-        <div class="tools"><label>SKU <input id="skuPick" list="skuList" placeholder="Type a SKU"></label><datalist id="skuList"></datalist><span class="note" style="margin:0" id="skuNote"></span></div>
-        <div class="grid g2" style="margin:0">
-          <div><div class="chart"><canvas id="cSku"></canvas></div></div>
-          <div class="tbl-wrap nowrap" id="tSku"></div>
-        </div></div></div>
-    </section>
-
-    <!-- Economics -->
-    <section class="page" id="p-econ">
-      <div class="info">Amazon SKU economics from LICKIMAT TABLE (12 months for UK, AU and DE; 15 months for US). Money stays in each market's currency and is never added across markets. Includes DE, which has no inventory data.</div>
-      <div class="card"><div class="card-head"><h3>Economics by market</h3><span>whole window</span></div>
-        <div class="card-body"><div class="tbl-wrap" id="tEconSum"></div></div></div>
-      <div class="card"><div class="card-head"><h3 id="econTitle">Top and bottom SKUs by net proceeds</h3><span id="econSub"></span></div><div class="card-body">
-        <div class="tools"><label>Market <select id="fEcon"></select></label></div>
-        <div class="chart tall"><canvas id="cEcon"></canvas></div>
-        <div class="note">Net proceeds = what Amazon pays out after referral, fulfilment, storage and ad fees. Negative = the SKU cost more in fees than it earned.</div></div></div>
+        <div class="st-legend" id="stLegend"></div>
+        <div class="tbl-wrap nowrap sticky2" id="tList"></div>
+        <div class="note">SKU: the bold part is the base code (the LickiMat product code); the rest is the label or marketplace suffix. "unmapped" = no LM product code (bundles, test listings).<br>Order: by status number (1 · Out of stock first); within a status, the highest profit at stake per week first. Click any column header to sort differently; Reset returns to this order. Loss-making SKUs are restocked like any other (brand presence) and keep the Losing money flag. Profit /unit = net proceeds ÷ units sold over the economics window ("est." = the market's median, no match). Profit at stake /wk = demand per week × profit per unit. Demand, cover and profit are rounded for reading; the CSV keeps exact values, in the market's currency (converted to GBP at fixed rates only to order mixed markets).<br>Cover = (available + inbound) ÷ weekly demand; "no sales" = no demand to divide by, so cover is not counted as 0. Restock recommendation = our rule-based quantity (see Rules &amp; assumptions). Amazon recommendation = "Recommended ship-in quantity" (UK, US) or "recommended-order-quantity" (AU) from Amazon's own restock report. Mich = Mich's reco sheet for the same date (blank if Mich did not review the SKU). New inbound = rise in inbound units since the previous snapshot.</div></div></div>
     </section>
 
     <!-- Rules -->
     <section class="page" id="p-rules">
-      <div class="warn"><i class="fa-solid fa-circle-exclamation"></i> Every setting below is an assumption until Ramin and Mich confirm it. Settings live in <span class="mono">Lickimat/rules.py</span>; change them there and rebuild.</div>
+      <div class="warn"><i class="fa-solid fa-circle-exclamation"></i> Apart from Ramin's requirements, every setting below is an assumption until Ramin and Mich confirm it. Settings live in <span class="mono">Lickimat/rules.py</span>; change them there and rebuild.</div>
       <div class="kpis" id="kpisSet"></div>
-      <div class="card"><div class="card-head"><h3>To confirm</h3><span>assumed for this mock</span></div><div class="card-body"><div class="tbl-wrap" id="tConfirm"></div></div></div>
+      <div class="card"><div class="card-head"><h3>Requirements from Ramin</h3><span>set by the client · not assumptions</span></div><div class="card-body"><div class="tbl-wrap" id="tReqs"></div></div></div>
+      <div class="card"><div class="card-head"><h3>How the restock recommendation is calculated</h3><span>in plain terms</span></div><div class="card-body" id="howReco"></div></div>
       <div class="card"><div class="card-head"><h3>Replenishment rules</h3><span>applied in order</span></div><div class="card-body"><div class="tbl-wrap" id="tRules"></div></div></div>
+      <div class="card"><div class="card-head"><h3>To confirm</h3><span>assumed for this mock</span></div><div class="card-body"><div class="tbl-wrap" id="tConfirm"></div></div></div>
+      <div class="card"><div class="card-head"><h3>Exception flags</h3><span>shown under each SKU in the list · filter by flag above the list</span></div><div class="card-body"><div class="tbl-wrap" id="tFlagDef"></div></div></div>
       <div class="grid g2">
         <div class="card"><div class="card-head"><h3>Statuses</h3><span>priority order</span></div><div class="card-body"><div class="tbl-wrap" id="tStatus"></div></div></div>
         <div class="card"><div class="card-head"><h3>Data engineering assumptions</h3><span>how the sources are joined</span></div><div class="card-body"><ul class="rules" id="deList"></ul></div></div>
@@ -292,13 +261,14 @@ const PALETTE = ['#007AFF', '#00AB9C', '#FFC426', '#E34678', '#4121A9', '#AA67FD
 const GREY = '#C9D2E1';
 const MARKETS = ['UK', 'US', 'AU'];
 const MKT_COLOUR = {UK: '#007AFF', US: '#00AB9C', AU: '#4121A9', DE: '#F46600'};
-const STATUS_ORDER = ['Out of stock', 'Urgent', 'Below target', 'OK', 'Excess', 'No activity'];
-const STATUS_COLOUR = {'Out of stock': '#E34678', 'Urgent': '#F46600', 'Below target': '#FFC426', 'OK': '#00AB9C', 'Excess': '#AA67FD', 'No activity': GREY};
-const SRC_COLOUR = {Ours: '#007AFF', Amazon: '#F46600', Mich: '#00AB9C', 'New inbound': '#AA67FD'};
+const STATUS_ORDER = ['Out of stock', 'Urgent', 'Below target', 'OK', 'Excess', 'Keep listing alive', 'No recent sales'];
+const NO_SALES = ['Keep listing alive', 'No recent sales'];
+const STATUS_COLOUR = {'Out of stock': '#E34678', 'Urgent': '#F46600', 'Below target': '#FFC426', 'OK': '#00AB9C', 'Excess': '#AA67FD', 'Keep listing alive': '#36D6E7', 'No recent sales': GREY};
+const SRC_COLOUR = {'Restock recommendation': '#007AFF', 'Amazon recommendation': '#F46600', Mich: '#00AB9C', 'New inbound': '#AA67FD'};
 const ACTION = ['Out of stock', 'Urgent', 'Below target'];
 const FLAG_NAMES = D.flags.map(f => f.flag);
 const FLAG_DO = {'Out of stock': 'Restock first; check inbound', 'Unfulfillable units': 'Raise a case with Amazon (barcode, damage)', 'Aged stock': 'Do not add stock; consider a deal or removal',
-  'Price check': 'Look for an unauthorised reseller on the listing', 'Losing money': 'Review before restocking', 'Several SKUs on one ASIN': 'Confirm which label SKU to ship',
+  'Price check': 'Look for an unauthorised reseller on the listing', 'Losing money': 'Still restocked (brand presence); check price and ad spend', 'Several SKUs on one ASIN': 'Confirm which label SKU to ship',
   'Inbound not moving': 'Check the shipment status with Amazon', 'Amazon alert': 'Review listing traffic or conversion'};
 
 // ---- maths and formatting
@@ -310,7 +280,10 @@ const pct = (v, d = 1) => v === null || v === undefined || Number.isNaN(v) ? '�
 const esc = s => String(s ?? '').replace(/[&<>"]/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[ch]));
 const dLbl = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-AU', {day: 'numeric', month: 'short'});
 const money = (v, m) => v === null || v === undefined ? '–' : D.meta.currency[m] + ' ' + fmt(v);
-const stBadge = s => `<span class="st ${s === 'Below target' || s === 'No activity' ? 'lt' : ''}" style="background:${STATUS_COLOUR[s]}">${esc(s)}</span>`;
+// round for reading: whole numbers, '<1' for small non-zero values (the CSV keeps the exact values)
+const approx = v => v === null || v === undefined || Number.isNaN(v) ? '–' : v !== 0 && Math.abs(v) < 1 ? (v > 0 ? '<1' : '-<1') : fmt(Math.round(v) || 0);
+const stNum = s => `${STATUS_ORDER.indexOf(s) + 1} · ${s}`;   // status numbered by priority: 1 · Out of stock, 2 · Urgent, ...
+const stBadge = s => `<span class="st ${['Below target', ...NO_SALES].includes(s) ? 'lt' : ''}" style="background:${STATUS_COLOUR[s]}">${esc(stNum(s))}</span>`;
 const flagList = a => (a || []).map(f => `<span class="flag">${esc(f)}</span>`).join('');
 const pos = v => (v || 0) > 0;
 
@@ -348,7 +321,7 @@ function chartData(id, cfg, isPct) {
 }
 function table(el, cols, rows, opts = {}) {
   const sortable = !!opts.sortable;
-  let h = '<table><thead><tr>' + cols.map((c, i) => `<th class="${c.n ? 'n' : ''} ${sortable ? 'sort' : ''}" data-i="${i}">${c.label}</th>`).join('') + '</tr></thead><tbody>';
+  let h = '<table><thead><tr>' + cols.map((c, i) => `<th class="${c.n ? 'n' : ''} ${sortable ? 'sort' : ''} ${c.cls || ''}" data-i="${i}">${c.label}</th>`).join('') + '</tr></thead><tbody>';
   h += rows.map(r => `<tr class="${r._small ? 'small' : ''}">` + cols.map(c => `<td class="${c.n ? 'n' : ''} ${c.cls || ''}">${c.f ? c.f(r[c.k], r) : esc(r[c.k])}</td>`).join('') + '</tr>').join('');
   el.innerHTML = h + '</tbody></table>';
   if (sortable) el.querySelectorAll('th').forEach(th => th.onclick = () => opts.onSort(cols[+th.dataset.i].k));
@@ -358,7 +331,7 @@ function download(name, rows, cols) {
   const csv = [cols.map(c => q(c.label)).join(','), ...rows.map(r => cols.map(c => q(r[c.k])).join(','))].join('\n');
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'})); a.download = name; a.click();
 }
-const kpiTiles = items => items.map(([cls, ic, l, v, s]) => `<div class="kpi ${cls}"><div class="kpi-top"><span class="kpi-icon"><i class="fa-solid ${ic}"></i></span>${esc(l)}</div><div class="kpi-value">${v}</div><div class="kpi-sub">${s}</div></div>`).join('');
+const kpiTiles = items => items.map(([cls, ic, l, v, s, st]) => `<div class="kpi ${cls}${st ? ' kpi-link' : ''}"${st ? ` data-st="${esc(st)}" title="Show these in the list"` : ''}><div class="kpi-top"><span class="kpi-icon"><i class="fa-solid ${ic}"></i></span>${esc(l)}</div><div class="kpi-value">${v}</div><div class="kpi-sub">${s}</div></div>`).join('');
 
 // ---- header text from the data
 const M = D.meta, S = D.settings;
@@ -370,7 +343,9 @@ $('dateChip').textContent = 'Latest snapshot ' + $('extractTxt').textContent;
 
 // ---- priority order and derived fields
 D.rows.forEach(r => { r.si = STATUS_ORDER.indexOf(r.status); r.flagTxt = (r.flags || []).join('; '); });
-const prioSort = (a, b) => a.si - b.si || (a.cover ?? 1e9) - (b.cover ?? 1e9) || b.dem - a.dem;
+// status first; within a status, highest weekly profit at stake (GBP at fixed rates, a loss counts as 0), then lowest cover
+const pw0 = r => Math.max(r.pw_gbp ?? 0, 0);
+const prioSort = (a, b) => a.si - b.si || pw0(b) - pw0(a) || (a.cover ?? 1e9) - (b.cover ?? 1e9) || b.dem - a.dem;
 const NSNAP = Math.max(...MARKETS.map(m => M.snapshots[m].length));
 const snapName = sr => { const i = NSNAP - 1 - sr; const ds = uniq(MARKETS.map(m => M.snapshots[m][i]).filter(Boolean)); const lo = dLbl(ds[0]), hi = dLbl(ds.at(-1)); return lo === hi ? lo : `${lo} – ${hi}`; };
 
@@ -378,23 +353,25 @@ const snapName = sr => { const i = NSNAP - 1 - sr; const ds = uniq(MARKETS.map(m
 function fillSelect(id, values, labels) { $(id).innerHTML = values.map((v, i) => `<option value="${esc(v)}">${esc(labels ? labels[i] : v)}</option>`).join(''); }
 fillSelect('fMkt', ['All', ...MARKETS], ['All markets (UK, US, AU)', ...MARKETS]);
 const SR = [...Array(NSNAP).keys()];
-fillSelect('fSnap', SR.map(String), SR.map(sr => (sr === 0 ? 'Latest · ' : sr === NSNAP - 1 ? 'Earliest · ' : '') + snapName(sr)));
-fillSelect('fStatus', ['active', 'action', ...STATUS_ORDER, 'all'], ['All with activity', 'Needs action (Out of stock, Urgent, Below target)', ...STATUS_ORDER, 'Everything, incl. No activity']);
-fillSelect('fFlag', ['any', ...FLAG_NAMES], ['Any flag', ...FLAG_NAMES]);
-fillSelect('fEcon', ['UK', 'US', 'AU', 'DE']);
-const filt = () => ({m: $('fMkt').value, sr: +$('fSnap').value, st: $('fStatus').value});
+fillSelect('fStatus', ['all', ...STATUS_ORDER], ['All statuses', ...STATUS_ORDER.map(stNum)]);
+const GROUPS = {all: ['All', 'everything'], restock: ['Needs a restock (recommendation above 0)', 'needs a restock'],
+  action: ['Needs action (1–3)', 'needs action'], active: ['Selling (1–5, sales in 90 days)', 'selling'], nosales: ['No sales in 90 days (6–7)', 'no sales in 90 days']};
+fillSelect('fGroup', Object.keys(GROUPS), Object.values(GROUPS).map(g => g[0]));
+fillSelect('fFlag', ['all', 'any', ...FLAG_NAMES], ['No flag filter', 'Any flag', ...FLAG_NAMES]);
+const filt = () => ({m: $('fMkt').value, sr: 0,   // always the latest snapshot
+  st: $('fStatus').value, gr: $('fGroup').value, fl: $('fFlag').value});
 const inMkt = (r, f) => f.m === 'All' || r.m === f.m;
-const stOk = (r, st) => st === 'all' ? true : st === 'active' ? r.status !== 'No activity' : st === 'action' ? ACTION.includes(r.status) : r.status === st;
-const applyFilt = (f, useStatus = true) => D.rows.filter(r => inMkt(r, f) && r.sr === f.sr && (!useStatus || stOk(r, f.st)));
-const stLabel = st => ({active: 'all with activity', action: 'needs action', all: 'everything'})[st] || st;
-const filtText = f => [f.m === 'All' ? 'UK, US, AU' : f.m, 'snapshot ' + snapName(f.sr), stLabel(f.st)].join(' · ');
+const stOk = (r, st) => st === 'all' || r.status === st;
+const grOk = (r, gr) => gr === 'all' ? true : gr === 'active' ? !NO_SALES.includes(r.status) : gr === 'nosales' ? NO_SALES.includes(r.status) : gr === 'action' ? ACTION.includes(r.status) : r.reco > 0;
+const flOk = (r, fl) => fl === 'all' ? true : fl === 'any' ? r.flags.length > 0 : r.flags.includes(fl);
+const applyFilt = (f, useStatus = true) => D.rows.filter(r => inMkt(r, f) && r.sr === f.sr && (!useStatus || (stOk(r, f.st) && grOk(r, f.gr) && flOk(r, f.fl))));
+const stLabel = (st, gr) => [st === 'all' ? '' : stNum(st), gr === 'all' ? '' : GROUPS[gr][1]].filter(Boolean).join(', ') || 'all statuses';
+const filtText = f => [f.m === 'All' ? 'UK, US, AU' : f.m, 'latest snapshot ' + snapName(f.sr), stLabel(f.st, f.gr), ...(f.fl === 'all' ? [] : [f.fl === 'any' ? 'any flag' : 'flag: ' + f.fl])].join(' · ');
 const mkts = f => f.m === 'All' ? MARKETS : [f.m];
 
-// ---- pages
-const TITLES = {overview: 'Overview', list: 'Replenishment list', compare: 'Ours vs Amazon vs Mich', exceptions: 'Exceptions', trends: 'Trends and SKU detail', econ: 'SKU economics', rules: 'Rules and assumptions', qa: 'QA and data checks'};
-const FILTERS = {overview: 'ms', list: 'mss', compare: 'ms', exceptions: 'mss', trends: 'm'};   // m = market, s = snapshot, ss = + status
-const NOTE = {overview: 'The status filter applies to the top-15 table and tiles, not to the two charts.', compare: 'The status filter does not apply: agreement is judged on all SKUs.', trends: 'Only the market filter applies on this page.'};
-let page = 'overview', current = [];
+// ---- pages: one working view (list) plus the two method pages
+const TITLES = {list: 'Replenishment list', rules: 'Rules and assumptions', qa: 'QA and data checks'};
+let page = 'list', current = [];
 document.querySelectorAll('.nav a').forEach(a => a.onclick = () => go(a.dataset.page));
 function go(p) {
   page = p;
@@ -404,157 +381,142 @@ function go(p) {
   render();
 }
 function render() {
-  const f = filt(), use = FILTERS[page] || '';
-  $('filters').style.display = use ? '' : 'none';
-  $('lSnap').style.display = use.includes('s') ? '' : 'none';
-  $('lStatus').style.display = use === 'mss' || page === 'overview' ? '' : 'none';
-  $('filterNote').textContent = NOTE[page] || '';
+  const f = filt(), isList = page === 'list';
+  $('filters').style.display = isList ? '' : 'none';
+  $('filterNote').textContent = isList ? 'Latest snapshot. Every filter applies to the tiles, the charts and the list; search applies to the list only.' : '';
   current = applyFilt(f).sort(prioSort);
-  $('pageSub').textContent = use ? (use === 'm' ? `${f.m === 'All' ? 'UK, US, AU' : f.m} · all ${NSNAP} snapshots` : `${fmt(current.length)} SKUs · ${filtText(f)}`)
-    : page === 'econ' ? `${fmt(D.econ.length)} SKU rows across UK, US, AU, DE` : `${fmt(D.rows.length)} rows · ${MARKETS.length} markets × ${NSNAP} snapshots`;
-  ({overview: rOverview, list: rList, compare: rCompare, exceptions: rExc, trends: rTrends, econ: rEcon, rules: rRules, qa: rQa})[page](f, current);
+  $('pageSub').textContent = isList ? `${fmt(current.length)} SKUs · ${filtText(f)}` : `${fmt(D.rows.length)} rows · ${MARKETS.length} markets × ${NSNAP} snapshots`;
+  ({list: rList, rules: rRules, qa: rQa})[page](f, current);
 }
 
 // ---- shared columns
 const C = {
-  m: {k: 'm', label: 'Mkt'}, sku: {k: 'sku', label: 'SKU', f: (v, r) => `<b>${esc(v)}</b><br><span class="note" style="margin:0">${esc(String(r.name).slice(0, 48))}</span>`},
+  m: {k: 'm', label: 'Mkt'}, sku: {k: 'sku', label: 'SKU', f: (v, r) => { const fl = (r.flags || []).filter(x => x !== 'Out of stock');   // Out of stock is already the status
+    // base code = the bold start of the SKU (derived in prep.py); the rest is the label/marketplace suffix
+    const sk = String(v), n = r.base_ok ? r.base.length : 0;
+    const code = n ? `<b>${esc(sk.slice(0, n))}</b><span class="sku-suffix">${esc(sk.slice(n))}</span>` : `<b>${esc(sk)}</b> <span class="badge b-warn" title="Does not start with an LM product code: bundle, test or new listing">unmapped</span>`;
+    return `${code}<br><span class="note" style="margin:0">${esc(String(r.name).slice(0, 48))}</span>` + (fl.length ? `<div class="sku-flags">${flagList(fl)}</div>` : ''); }},
   base: {k: 'base', label: 'Base code', f: (v, r) => r.base_ok ? esc(v) : `<span class="badge b-warn">unmapped</span>`},
   status: {k: 'si', label: 'Status', f: (v, r) => stBadge(r.status)},
   avail: {k: 'avail', label: 'Available', n: 1, f: v => fmt(v)}, inb: {k: 'inb', label: 'Inbound', n: 1, f: v => fmt(v)},
   s30: {k: 's30', label: 'Sold 30d', n: 1, f: v => fmt(v)}, s90: {k: 's90', label: 'Sold 90d', n: 1, f: v => fmt(v)},
-  dem: {k: 'dem', label: 'Demand /wk', n: 1, f: v => fmt(v, 1)}, cover: {k: 'cover', label: 'Cover (wks)', n: 1, f: v => v === null ? '–' : fmt(v, 1)},
-  reco: {k: 'reco', label: 'Ours', n: 1, f: v => `<b>${fmt(v)}</b>`}, amz: {k: 'amz', label: 'Amazon', n: 1, f: v => fmt(v)},
+  dem: {k: 'dem', label: 'Demand /wk', n: 1, f: v => approx(v)}, cover: {k: 'cover', label: 'Cover (wks)', n: 1, f: v => v == null ? '<span class="muted" title="No sales in the last 30 days, so weeks of cover cannot be worked out (not zero)">no sales</span>' : approx(v)},
+  reco: {k: 'reco', label: 'Restock<br>recommendation', n: 1, cls: 'col-reco', f: v => v > 0 ? `<b>${fmt(v)}</b>` : '<span class="muted">0</span>'}, amz: {k: 'amz', label: 'Amazon<br>recommendation', n: 1, f: v => fmt(v)},
   mich: {k: 'mich', label: 'Mich', n: 1, f: v => fmt(v)}, sent: {k: 'sent', label: 'New inbound', n: 1, f: v => fmt(v)},
   np: {k: 'np', label: 'Net proceeds', n: 1, f: (v, r) => v === null ? '–' : `<span style="color:${v < 0 ? '#E34678' : 'inherit'}">${money(v, r.m)}</span>`},
   flags: {k: 'flagTxt', label: 'Flags', f: (v, r) => flagList(r.flags)}, why: {k: 'why', label: 'Why', cls: 'why'},
+  ppu: {k: 'ppu', label: 'Profit /unit', n: 1, f: (v, r) => v === null ? '–' : `<span style="color:${v < 0 ? '#E34678' : 'inherit'}">${D.meta.currency[r.m]} ${approx(v)}</span>` + (r.ppu_est ? ' <span class="flag">est.</span>' : '')},
+  pw: {k: 'pw_gbp', label: 'Profit at stake /wk', n: 1, f: (v, r) => r.pw === null ? '–' : `<b style="color:${r.pw < 0 ? '#E34678' : 'inherit'}">${D.meta.currency[r.m]} ${approx(r.pw)}</b>`},
 };
 const CSV_COLS = [['m', 'Market'], ['snap', 'Snapshot'], ['sku', 'SKU'], ['base', 'Base code'], ['asin', 'ASIN'], ['name', 'Product'], ['status', 'Status'], ['avail', 'Available'], ['inb', 'Inbound'],
-  ['s30', 'Sold 30d'], ['s90', 'Sold 90d'], ['dem', 'Demand per week'], ['cover', 'Weeks of cover'], ['reco', 'Ours'], ['amz', 'Amazon'], ['mich', 'Mich'], ['sent', 'New inbound since last snapshot'],
+  ['s30', 'Sold 30d'], ['s90', 'Sold 90d'], ['dem', 'Demand per week'], ['cover', 'Weeks of cover'], ['reco', 'Restock recommendation'], ['amz', 'Amazon recommendation'], ['mich', 'Mich'], ['sent', 'New inbound since last snapshot'],
+  ['ppu', 'Profit per unit'], ['ppu_est', 'Profit per unit is the market median (est.)'], ['pw', 'Profit at stake per week'], ['loss', 'Net proceeds negative (still restocked)'],
   ['np', 'Net proceeds'], ['flags', 'Flags'], ['why', 'Why']].map(([k, label]) => ({k, label}));
 
-// ---------------- Overview
-function rOverview(f, rows) {
-  const all = applyFilt(f, false);
+// ---------------- Replenishment list: summary tiles, hidden charts, the list
+function rSummary(f) {
+  const all = applyFilt(f);   // tiles and charts follow every filter (market, status, flag)
   const n = s => all.filter(r => r.status === s).length;
-  const act = all.filter(r => r.status !== 'No activity');
+  const act = all.filter(r => !NO_SALES.includes(r.status)), ka = all.filter(r => r.status === 'Keep listing alive');
+  const restock = all.filter(r => r.reco > 0), nAct = n('Out of stock') + n('Urgent') + n('Below target');
   $('kpis').innerHTML = kpiTiles([
-    ['k-blue', 'fa-boxes-stacked', 'SKUs with activity', fmt(act.length), `of ${fmt(all.length)} listed; ${fmt(n('No activity'))} have no stock or sales`],
-    ['k-pink', 'fa-ban', 'Out of stock', fmt(n('Out of stock')), 'sold in the last 90 days, none available'],
-    ['k-yellow', 'fa-hourglass-half', 'Urgent or below target', fmt(n('Urgent') + n('Below target')), `${fmt(n('Urgent'))} urgent: cover under the lead time`],
-    ['k-teal', 'fa-truck-ramp-box', 'Units to send (ours)', fmt(sum(rows.map(r => r.reco))), `Amazon ${fmt(sum(rows.map(r => r.amz)))} · Mich ${fmt(sum(rows.map(r => r.mich)))}`],
-    ['k-purple', 'fa-warehouse', 'Excess SKUs', fmt(n('Excess')), `over ${S.cap} weeks of cover`],
+    ['k-teal kpi-hero', 'fa-truck-ramp-box', 'SKUs needing a restock', fmt(restock.length), `${fmt(sum(restock.map(r => r.reco)))} units to send`, 'restock'],
+    ['k-pink', 'fa-triangle-exclamation', 'Need action now', fmt(nAct), `${fmt(n('Out of stock'))} out of stock · ${fmt(n('Urgent'))} urgent · ${fmt(n('Below target'))} below target`, 'action'],
+    ['k-purple', 'fa-warehouse', 'Excess', fmt(n('Excess')), `over ${S.cap} weeks of cover`, 'Excess'],
   ]);
-  const ms = mkts(f), sts = STATUS_ORDER.filter(s => s !== 'No activity');
-  draw('cStatus', {type: 'bar', data: {labels: ms, datasets: sts.map(s => ({label: s, backgroundColor: STATUS_COLOUR[s], data: ms.map(m => all.filter(r => r.m === m && r.status === s).length)}))},
+  $('kpis').querySelectorAll('[data-st]').forEach(el => el.onclick = () => {
+    const v = el.dataset.st, isGroup = v in GROUPS;
+    $('fGroup').value = isGroup ? v : 'all'; $('fStatus').value = isGroup ? 'all' : v; sortKey = null; render(); });
+  if (!$('chartsBox').open) return;   // charts are drawn only while the panel is open
+  const ms = mkts(f), sts = STATUS_ORDER.filter(s => all.some(r => r.status === s));
+  draw('cStatus', {type: 'bar', data: {labels: ms, datasets: sts.map(s => ({label: stNum(s), backgroundColor: STATUS_COLOUR[s], data: ms.map(m => all.filter(r => r.m === m && r.status === s).length)}))},
     options: {scales: {x: {stacked: true}, y: {stacked: true, title: {display: true, text: 'SKUs'}}}}});
-  const src = [['Ours', 'reco'], ['Amazon', 'amz'], ['Mich', 'mich'], ['New inbound', 'sent']];
+  const src = [['Restock recommendation', 'reco'], ['Amazon recommendation', 'amz'], ['Mich', 'mich'], ['New inbound', 'sent']];
   draw('cUnits', {type: 'bar', data: {labels: ms, datasets: src.map(([l, k]) => ({label: l, backgroundColor: SRC_COLOUR[l], data: ms.map(m => sum(all.filter(r => r.m === m).map(r => r[k])))}))},
     options: {scales: {y: {title: {display: true, text: 'Units'}}}}});
-  const top = rows.filter(r => ACTION.includes(r.status)).slice(0, 15);
-  table($('tTop'), [C.m, C.sku, C.status, C.avail, C.inb, C.dem, C.cover, C.reco, C.amz, C.mich, C.flags], top);
-  if (!top.length) $('tTop').innerHTML = '<p class="note">No SKUs need action in this view.</p>';
+  rProfitCharts(f);
 }
+// Profit charts: follow the Market filter only. One market = its own currency; all markets = GBP at the fixed rates.
+function rProfitCharts(f) {
+  const base = applyFilt(f, false), one = f.m !== 'All', cur = one ? D.meta.currency[f.m] : 'GBP';
+  const val = r => Math.max(0, (one ? r.pw : r.pw_gbp) || 0), money0 = v => `${cur} ${fmt(v)}`;
+  const fxNote = one ? '' : ' (GBP at fixed rates)';
+  // 1. stockouts
+  const oos = base.filter(r => r.status === 'Out of stock' && val(r) > 0).sort((a, b) => val(b) - val(a));
+  const tot = sum(oos.map(val)), byM = mkts(f).map(m => `${m} ${D.meta.currency[m]} ${fmt(sum(oos.filter(r => r.m === m).map(r => Math.max(0, r.pw || 0))))}`);
+  const top = oos.slice(0, 10), topShare = tot ? sum(top.map(val)) / tot : 0;
+  $('hStock').innerHTML = `About <b>${money0(tot)} a week</b>${fxNote} of profit is lost while ${fmt(oos.length)} SKUs are out of stock` +
+    (one ? '.' : `: ${byM.join(' · ')}.`) + (oos.length > 10 ? ` The 10 below are ${pct(topShare, 0)} of it.` : '');
+  draw('cStock', {type: 'bar', data: {labels: top.map(r => `${r.base || r.sku} (${r.m})`),
+      datasets: [{label: `Profit lost per week, ${cur}`, data: top.map(r => Math.round(val(r))), backgroundColor: top.map(r => MKT_COLOUR[r.m])}]},
+    options: {indexAxis: 'y', plugins: {legend: {display: false}, tooltip: {callbacks: {title: i => top[i[0].dataIndex].sku, label: i => `${money0(i.raw)} a week · ${approx(top[i.dataIndex].dem)} a week × ${D.meta.currency[top[i.dataIndex].m]} ${approx(top[i.dataIndex].ppu)}`}}},
+      scales: {x: {title: {display: true, text: `${cur} per week`}}}}});
+  // 2. top 20% of SKUs by profit per week
+  const earners = base.filter(r => val(r) > 0).sort((a, b) => val(b) - val(a)), nTop = Math.max(1, Math.ceil(earners.length * 0.2));
+  const heroes = earners.slice(0, nTop), all$ = sum(earners.map(val)), hero$ = sum(heroes.map(val));
+  const risk = heroes.filter(r => ACTION.includes(r.status)), risk$ = sum(risk.map(val));
+  $('hHero').innerHTML = `The top 20% of SKUs (${fmt(nTop)}) make <b>${pct(all$ ? hero$ / all$ : 0, 0)}</b> of profit per week. ` +
+    `<b>${fmt(risk.length)}</b> of them need action, worth ${money0(risk$)} a week${fxNote}: ` +
+    ACTION.map(s => `${fmt(risk.filter(r => r.status === s).length)} ${s.toLowerCase()}`).join(' · ') + '.';
+  const sts = STATUS_ORDER.filter(s => heroes.some(r => r.status === s) || earners.some(r => r.status === s));
+  draw('cHero', {type: 'bar', data: {labels: ['Top 20% of SKUs', 'Other 80%'],
+      datasets: sts.map(s => ({label: stNum(s), backgroundColor: STATUS_COLOUR[s],
+        data: [heroes, earners.slice(nTop)].map(g => Math.round(sum(g.filter(r => r.status === s).map(val))))}))},
+    options: {scales: {x: {stacked: true}, y: {stacked: true, title: {display: true, text: `Profit per week, ${cur}`}}}}});
+}
+$('chartsBox').ontoggle = () => { if ($('chartsBox').open) render(); };
 
-// ---------------- Replenishment list
 let sortKey = null, sortDir = 1;
 function listRows(rows) {
   const q = ($('listSearch').value || $('topSearch').value).trim().toLowerCase();
   const out = rows.filter(r => !q || [r.sku, r.base, r.asin, r.name].join(' ').toLowerCase().includes(q));
   return sortKey ? out.sort((a, b) => { const x = a[sortKey] ?? -1e9, y = b[sortKey] ?? -1e9; return x === y ? prioSort(a, b) : (x > y ? 1 : -1) * sortDir; }) : out;
 }
+const LEGEND = () => {
+  const lead = Math.min(...MARKETS.map(m => S.lead[m])), tgt = Math.min(...MARKETS.map(m => S.lead[m] + S.buffer[m]));
+  return {'Out of stock': 'none available, sold in 90 days', 'Urgent': `under ${lead} weeks of cover`, 'Below target': `under ${tgt} weeks of cover`,
+    'OK': `${tgt}–${S.cap} weeks of cover`, 'Excess': `over ${S.cap} weeks`, 'Keep listing alive': `no sales in 90 days, send up to ${S.keep_alive}`, 'No recent sales': 'no sales in 90 days, no order'};
+};
+function rLegend() {
+  const d = LEGEND();
+  $('stLegend').innerHTML = STATUS_ORDER.map(s => `<span class="item" data-st="${esc(s)}" title="Show only this status">${stBadge(s)} ${esc(d[s])}</span>`).join('');
+  $('stLegend').querySelectorAll('[data-st]').forEach(el => el.onclick = () => { $('fStatus').value = el.dataset.st; $('fGroup').value = 'all'; sortKey = null; render(); });
+}
 function rList(f, rows) {
-  const out = listRows(rows);
-  $('listSub').textContent = `${fmt(out.length)} SKUs · ${fmt(sum(out.map(r => r.reco)))} units recommended`;
-  table($('tList'), [C.sku, C.m, C.base, C.status, C.avail, C.inb, C.s30, C.s90, C.dem, C.cover, C.reco, C.amz, C.mich, C.sent, C.np, C.flags, C.why], out,
+  rLegend();
+  rSummary(f);
+  const out = listRows(rows), nAct = out.filter(r => ACTION.includes(r.status)).length;
+  $('listSub').textContent = `${fmt(out.length)} SKUs · ${fmt(nAct)} need action · ${fmt(out.filter(r => r.reco > 0).length)} need a restock (${fmt(sum(out.map(r => r.reco)))} units)`;
+  table($('tList'), [C.status, C.sku, C.m, C.reco, C.amz, C.mich, C.avail, C.inb, C.dem, C.cover, C.ppu, C.pw, C.sent, C.s30, C.s90, C.np, C.why], out,
     {sortable: true, onSort: k => { sortDir = sortKey === k ? -sortDir : (['si', 'cover', 'sku', 'm', 'base'].includes(k) ? 1 : -1); sortKey = k; render(); }});
+  if (!out.length) $('tList').innerHTML = '<p class="note">No SKUs match these filters.</p>';
 }
 $('listSearch').oninput = () => render();
 $('topSearch').oninput = () => { if (page !== 'list') go('list'); else render(); };
 $('btnCsv').onclick = $('btnCsv2').onclick = () => { const f = filt(); download(`lickimat_replenishment_${f.m}_${snapName(f.sr).replace(/\s/g, '')}.csv`, listRows(applyFilt(f).sort(prioSort)), CSV_COLS); };
 
-// ---------------- Compare
-function rCompare(f) {
-  const all = applyFilt(f, false), ms = mkts(f);
-  const both = (r, k) => pos(r.reco) && pos(r[k]), onlyO = (r, k) => pos(r.reco) && !pos(r[k]), onlyT = (r, k) => !pos(r.reco) && pos(r[k]);
-  const mich = all.filter(r => pos(r.mich)), agreeM = mich.filter(r => pos(r.reco)).length;
-  const amz = all.filter(r => pos(r.amz)), agreeA = amz.filter(r => pos(r.reco)).length;
-  $('kpisCmp').innerHTML = kpiTiles([
-    ['k-teal', 'fa-user-check', 'SKUs Mich recommended', fmt(mich.length), `in this snapshot · ${fmt(sum(mich.map(r => r.mich)))} units`],
-    ['k-blue', 'fa-handshake', 'Of those, we also restock', mich.length ? pct(agreeM / mich.length, 0) : '–', `${fmt(agreeM)} of ${fmt(mich.length)} SKUs`],
-    ['k-yellow', 'fa-robot', 'SKUs Amazon recommended', fmt(amz.length), `${fmt(sum(amz.map(r => r.amz)))} units`],
-    ['k-indigo', 'fa-handshake', 'Of those, we also restock', amz.length ? pct(agreeA / amz.length, 0) : '–', `${fmt(agreeA)} of ${fmt(amz.length)} SKUs`],
-  ]);
-  const agree = (id, k, who) => draw(id, {type: 'bar', data: {labels: ms, datasets: [
-      {label: 'Both', backgroundColor: SRC_COLOUR.Ours, data: ms.map(m => all.filter(r => r.m === m && both(r, k)).length)},
-      {label: 'Only ours', backgroundColor: GREY, data: ms.map(m => all.filter(r => r.m === m && onlyO(r, k)).length)},
-      {label: 'Only ' + who, backgroundColor: SRC_COLOUR[who], data: ms.map(m => all.filter(r => r.m === m && onlyT(r, k)).length)}]},
-    options: {scales: {x: {stacked: true}, y: {stacked: true, title: {display: true, text: 'SKUs'}}}}});
-  agree('cAgree', 'mich', 'Mich'); agree('cAgreeAmz', 'amz', 'Amazon');
-  const rows = mich.map(r => Object.assign({}, r, {diff: (r.reco || 0) - r.mich})).sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
-  $('cmpSub').textContent = `${fmt(rows.length)} SKUs · largest gap first`;
-  table($('tCmp'), [C.sku, C.m, C.status, C.avail, C.inb, C.dem, C.cover, C.reco, C.mich, {k: 'diff', label: 'Ours − Mich', n: 1, f: v => (v > 0 ? '+' : '') + fmt(v)}, C.amz, C.sent, C.why], rows);
-  if (!rows.length) $('tCmp').innerHTML = '<p class="note">Mich has no reco rows for this market and snapshot.</p>';
+// plain-terms explanation of the restock recommendation, built from the settings so it cannot drift from rules.py
+function rHow() {
+  const tg = uniq(MARKETS.map(m => S.lead[m] + S.buffer[m])), ld = uniq(MARKETS.map(m => S.lead[m]));
+  const tgt = tg.length === 1 ? tg[0] : tg.join(' / '), lead = ld.length === 1 ? ld[0] : ld.join(' / ');
+  const bf = uniq(MARKETS.map(m => S.buffer[m])), buf = bf.length === 1 ? bf[0] : bf.join(' / ');
+  const ex = D.rows.filter(r => r.sr === 0 && ACTION.includes(r.status) && r.dem >= S.slow && r.reco > 0).sort(prioSort)[0];
+  const t = ex ? S.lead[ex.m] + S.buffer[ex.m] : 0, stock = ex ? ex.avail + ex.inb : 0;
+  $('howReco').innerHTML = `
+    <ol class="rules">
+      <li><b>How fast it sells.</b> Units sold in the last 30 days, turned into a weekly rate. If the SKU is out of stock, we use the last 90 days instead when that is higher, so an empty shelf does not look like no demand.</li>
+      <li><b>What is already there.</b> Units available at Amazon plus units on the way.</li>
+      <li><b>How much to send.</b> One of three reasons, depending on how it sells:</li>
+    </ol>
+    <div class="tbl-wrap" style="margin:10px 0"><table><thead><tr><th>Reason</th><th>How it sells</th><th>Restock recommendation</th><th>Status</th></tr></thead><tbody>
+      <tr><td><b>1. Running low</b></td><td>${S.slow} or more a week</td><td class="why">Enough for <b>${tgt} weeks</b> of sales (${lead} weeks to get there + ${buf} weeks spare), minus what is already there</td><td>${stBadge('Out of stock')} ${stBadge('Urgent')} ${stBadge('Below target')}</td></tr>
+      <tr><td><b>2. Slow seller running out</b></td><td>under ${S.slow} a week</td><td class="why">Nothing until stock falls below <b>${S.slow_min}</b>, then top up to <b>${S.slow_topup}</b></td><td>${stBadge('Below target')} or ${stBadge('Out of stock')}</td></tr>
+      <tr><td><b>3. Keep listing alive</b></td><td>no sales in 90 days</td><td class="why">Top up to <b>${S.keep_alive}</b> units so the listing stays live; never more</td><td>${stBadge('Keep listing alive')}</td></tr>
+    </tbody></table></div>
+    <p class="note" style="font-size:var(--font-size-sm)">Always a whole number, never below 0. Status, profit, Amazon's recommendation and Mich's numbers do not change the quantity. Profit only changes the order of the list.</p>
+    ${ex ? `<div class="info" style="margin:12px 0 0"><b>Example, top of the list:</b> ${esc(ex.sku)} (${ex.m}) sells about <b>${approx(ex.dem)}</b> a week and has <b>${fmt(stock)}</b> at Amazon or on the way.
+      ${t} weeks of sales ≈ <b>${fmt(Math.ceil(t * ex.dem))}</b> units, minus ${fmt(stock)} already there = <b>${fmt(ex.reco)}</b> to send.</div>` : ''}`;
 }
-
-// ---------------- Exceptions
-function rExc(f, rows) {
-  const ms = mkts(f);
-  draw('cFlags', {type: 'bar', data: {labels: FLAG_NAMES, datasets: ms.map(m => ({label: m, backgroundColor: MKT_COLOUR[m], data: FLAG_NAMES.map(fl => rows.filter(r => r.m === m && r.flags.includes(fl)).length)}))},
-    options: {indexAxis: 'y', scales: {x: {stacked: true, title: {display: true, text: 'SKUs'}}, y: {stacked: true}}}});
-  table($('tFlagDef'), [{k: 'flag', label: 'Flag'}, {k: 'meaning', label: 'Meaning'}, {k: 'todo', label: 'Suggested action'}], D.flags.map(x => Object.assign({todo: FLAG_DO[x.flag]}, x)));
-  const fl = $('fFlag').value;
-  const out = rows.filter(r => fl === 'any' ? r.flags.length : r.flags.includes(fl));
-  $('excSub').textContent = `${fmt(out.length)} SKUs`;
-  table($('tExc'), [C.sku, C.m, C.status, C.flags, C.avail, C.inb, C.s90, {k: 'unf', label: 'Unfulfillable', n: 1, f: v => fmt(v)}, {k: 'aged', label: 'Aged 180d+', n: 1, f: v => fmt(v)},
-    {k: 'price', label: 'Our price', n: 1, f: v => fmt(v, 2)}, {k: 'featured', label: 'Featured offer', n: 1, f: v => fmt(v, 2)}, C.np, C.reco], out);
-}
-$('fFlag').onchange = () => render();
-
-// ---------------- Trends
-let skuSel = null;
-function rTrends(f) {
-  const ms = mkts(f), srs = [...SR].reverse(), labels = srs.map(snapName);
-  const at = (m, sr) => D.rows.filter(r => r.m === m && r.sr === sr);
-  draw('cTSales', {type: 'line', data: {labels, datasets: ms.map(m => ({label: m, borderColor: MKT_COLOUR[m], backgroundColor: MKT_COLOUR[m], data: srs.map(sr => sum(at(m, sr).map(r => r.s30)))}))},
-    options: {scales: {y: {beginAtZero: true, title: {display: true, text: 'Units'}}}}});
-  draw('cTOos', {type: 'line', data: {labels, datasets: ms.map(m => ({label: m, borderColor: MKT_COLOUR[m], backgroundColor: MKT_COLOUR[m], data: srs.map(sr => at(m, sr).filter(r => r.status === 'Out of stock' || r.status === 'Urgent').length)}))},
-    options: {scales: {y: {beginAtZero: true, title: {display: true, text: 'SKUs'}}}}});
-  const pool = D.rows.filter(r => inMkt(r, f) && r.sr === 0 && r.status !== 'No activity').sort(prioSort);
-  $('skuList').innerHTML = pool.map(r => `<option value="${esc(r.sku)}">${esc(r.m + ' · ' + r.name.slice(0, 50))}</option>`).join('');
-  const typed = $('skuPick').value.trim();
-  if (typed && D.rows.some(r => r.sku === typed && inMkt(r, f))) skuSel = typed;
-  if (!skuSel || !D.rows.some(r => r.sku === skuSel && inMkt(r, f))) skuSel = pool.length ? pool[0].sku : null;
-  if (!skuSel) return;
-  if (!typed) $('skuPick').placeholder = skuSel;
-  const hist = D.rows.filter(r => r.sku === skuSel && inMkt(r, f)).sort((a, b) => a.m.localeCompare(b.m) || b.sr - a.sr);
-  const one = hist.filter(r => r.m === hist[0].m);
-  $('skuSub').textContent = `${one[0].m} · ${one[0].name.slice(0, 60)}`;
-  $('skuNote').textContent = typed ? '' : 'Showing the top-priority SKU. Type another SKU to switch.';
-  draw('cSku', {type: 'bar', data: {labels: one.map(r => dLbl(r.snap)), datasets: [
-      {label: 'Available', backgroundColor: SRC_COLOUR.Ours, data: one.map(r => r.avail), stack: 's'},
-      {label: 'Inbound', backgroundColor: '#36D6E7', data: one.map(r => r.inb), stack: 's'},
-      {label: 'Sold 30d', type: 'line', borderColor: '#E34678', backgroundColor: '#E34678', data: one.map(r => r.s30)}]},
-    options: {scales: {x: {stacked: true}, y: {stacked: true, beginAtZero: true, title: {display: true, text: 'Units'}}}}});
-  table($('tSku'), [{k: 'snap', label: 'Snapshot', f: v => dLbl(v)}, C.status, C.cover, C.reco, C.amz, C.mich, C.sent], one);
-}
-$('skuPick').onchange = () => render();
-
-// ---------------- Economics
-function rEcon() {
-  const ms = ['UK', 'US', 'AU', 'DE'];
-  const sumRows = ms.map(m => { const e = D.econ.filter(x => x.m === m), rev = sum(e.map(x => x.rev)), np = sum(e.map(x => x.np));
-    return {m, months: M.econ_months[m], n: e.length, units: sum(e.map(x => x.units)), rev, np, margin: rev ? np / rev : null, neg: e.filter(x => x.np < 0).length}; });
-  table($('tEconSum'), [{k: 'm', label: 'Market'}, {k: 'months', label: 'Months', n: 1}, {k: 'n', label: 'SKUs', n: 1, f: v => fmt(v)}, {k: 'units', label: 'Net units sold', n: 1, f: v => fmt(v)},
-    {k: 'rev', label: 'Net sales revenue', n: 1, f: (v, r) => money(v, r.m)}, {k: 'np', label: 'Net proceeds', n: 1, f: (v, r) => money(v, r.m)},
-    {k: 'margin', label: 'Net margin', n: 1, f: v => pct(v)}, {k: 'neg', label: 'SKUs losing money', n: 1, f: v => fmt(v)}], sumRows);
-  const m = $('fEcon').value, e = D.econ.filter(x => x.m === m && x.np !== null).sort((a, b) => b.np - a.np);
-  const pick = [...e.slice(0, 10), ...e.slice(-10).filter(x => !e.slice(0, 10).includes(x))];
-  $('econTitle').textContent = `Top and bottom 10 SKUs by net proceeds: ${m}`;
-  $('econSub').textContent = `${D.meta.currency[m]} · ${M.econ_months[m]} months`;
-  draw('cEcon', {type: 'bar', data: {labels: pick.map(x => x.sku), datasets: [{label: `Net proceeds (${D.meta.currency[m]})`, data: pick.map(x => x.np), backgroundColor: pick.map(x => x.np < 0 ? '#E34678' : MKT_COLOUR[m])}]},
-    options: {indexAxis: 'y', plugins: {legend: {display: false}}, scales: {x: {title: {display: true, text: D.meta.currency[m]}}, y: {ticks: {autoSkip: false}}}}});
-}
-$('fEcon').onchange = () => render();
 
 // ---------------- Rules
 function rRules() {
@@ -563,24 +525,28 @@ function rRules() {
     ['k-teal', 'fa-shield-halved', 'Target cover', MARKETS.map(m => S.lead[m] + S.buffer[m]).join(' / ') + ' wks', 'lead time + buffer'],
     ['k-purple', 'fa-hand', 'Cap', S.cap + ' wks', 'above = Excess (aged-inventory fees)'],
     ['k-yellow', 'fa-gauge-simple', 'Slow seller', `< ${S.slow}/wk`, `reorder below ${S.slow_min}, top up to ${S.slow_topup}`],
+    ['k-indigo', 'fa-heart-pulse', 'Keep listing alive', `${S.keep_alive} units`, 'no sales in 90 days: top up to this, never more'],
   ]);
+  rHow();
+  table($('tReqs'), [{k: 'req', label: 'Requirement'}, {k: 'what', label: 'What it means', cls: 'why'}, {k: 'from', label: 'From'}, {k: 'status', label: 'How the rules meet it', cls: 'why'}], D.reqs);
   table($('tConfirm'), [{k: 'item', label: 'To confirm'}, {k: 'assumed', label: 'Assumed for now', cls: 'why'}, {k: 'who', label: 'Who can confirm'}], D.confirm);
   table($('tRules'), [{k: 'rule', label: 'Rule'}, {k: 'how', label: 'How', cls: 'why'}, {k: 'source', label: 'Source'}], D.rules);
   table($('tStatus'), [{k: 'status', label: 'Status', f: v => stBadge(v)}, {k: 'meaning', label: 'Meaning', cls: 'why'}], D.statuses);
-  $('deList').innerHTML = D.de_assumptions.map(x => `<li>${esc(x)}</li>`).join('');
+  table($('tFlagDef'), [{k: 'flag', label: 'Flag'}, {k: 'meaning', label: 'Meaning', cls: 'why'}, {k: 'todo', label: 'Suggested action', cls: 'why'}], D.flags.map(x => Object.assign({todo: FLAG_DO[x.flag]}, x)));
+  $('deList').innerHTML =D.de_assumptions.map(x => `<li>${esc(x)}</li>`).join('');
 }
 
 // ---------------- QA
 function rQa() {
   table($('tQa'), [{k: 'market', label: 'Market'}, {k: 'step', label: 'Step'}, {k: 'rows', label: 'Rows', n: 1, f: v => fmt(v)}], D.qa);
-  const g = [...groupBy(D.rows, r => r.m + '|' + r.snap)].map(([k, a]) => ({m: k.split('|')[0], snap: k.split('|')[1], n: a.length, act: a.filter(r => r.status !== 'No activity').length, mich: a.filter(r => r.mich !== null).length}));
-  table($('tSnapQa'), [{k: 'm', label: 'Market'}, {k: 'snap', label: 'Snapshot'}, {k: 'n', label: 'SKUs', n: 1}, {k: 'act', label: 'With activity', n: 1}, {k: 'mich', label: 'Mich reco rows', n: 1}], g);
+  const g = [...groupBy(D.rows, r => r.m + '|' + r.snap)].map(([k, a]) => ({m: k.split('|')[0], snap: k.split('|')[1], n: a.length, act: a.filter(r => !NO_SALES.includes(r.status)).length, mich: a.filter(r => r.mich !== null).length}));
+  table($('tSnapQa'), [{k: 'm', label: 'Market'}, {k: 'snap', label: 'Snapshot'}, {k: 'n', label: 'SKUs', n: 1}, {k: 'act', label: 'Selling', n: 1}, {k: 'mich', label: 'Mich reco rows', n: 1}], g);
   table($('tUnmapped'), [{k: 'm', label: 'Market'}, {k: 'sku', label: 'SKU'}], D.unmapped);
 }
 
 // ---- wire up
 document.querySelectorAll('#filters select').forEach(s => s.onchange = () => render());
-$('btnReset').onclick = () => { $('fMkt').value = 'All'; $('fSnap').value = '0'; $('fStatus').value = 'active'; render(); };
+$('btnReset').onclick = () => { $('fMkt').value = 'All'; $('fStatus').value = 'all'; $('fGroup').value = 'all'; $('fFlag').value = 'all'; sortKey = null; render(); };
 render();
 </script>
 </body>

@@ -95,7 +95,8 @@ def load_inventory(path, m, qa):
 def load_mich(path, m, snaps, qa):
     """Mich's dated reco log. Dates that match no snapshot are retried with day and month swapped."""
     r = pd.read_excel(path, f"{m} RECO", header=1)
-    r = r.rename(columns={r.columns[10]: "mich"})
+    qcol = "Recommendation" if "Recommendation" in r.columns else r.columns[10]   # by name; position 10 (column K) as fallback
+    r = r.rename(columns={qcol: "mich"})
     r["mich"] = pd.to_numeric(r["mich"], errors="coerce")
     r["d"] = r["Date"].map(to_date)
     snapset, fixed = set(snaps), 0
@@ -135,13 +136,15 @@ def load_econ(path, m):
 
 # ---------------------------------------------------------------- 4. joins, 5. rules, flags
 def join_econ(inv, econ, m, qa):
-    by_sku = econ.set_index("sku")[["np", "margin", "rev"]]
-    uniq_asin = econ[~econ["asin"].duplicated(keep=False)].set_index("asin")[["np", "margin", "rev"]]
+    cols = ["np", "margin", "rev", "eunits"]
+    econ = econ.rename(columns={"units": "eunits"})
+    by_sku = econ.set_index("sku")[cols]
+    uniq_asin = econ[~econ["asin"].duplicated(keep=False)].set_index("asin")[cols]
     inv = inv.join(by_sku, on="sku")
     inv["econ"] = inv["np"].notna().map({True: "SKU", False: None})
     miss = inv["np"].isna()
     fb = inv.loc[miss, ["asin"]].join(uniq_asin, on="asin")
-    for c in ["np", "margin", "rev"]:
+    for c in cols:
         inv.loc[miss, c] = fb[c]
     inv.loc[miss & inv["np"].notna(), "econ"] = "ASIN"
     latest = inv[inv["sr"] == 0]
@@ -194,6 +197,24 @@ def add_rules_and_flags(inv, m):
     return pd.concat([inv.reset_index(drop=True), pd.DataFrame(out)], axis=1)
 
 
+def add_profit(inv, econ, m, qa):
+    """Profit per unit and weekly profit at stake, used to order SKUs within a status (rules.RULES, "Priority number")."""
+    ok = econ["units"] > 0
+    median = (econ.loc[ok, "np"] / econ.loc[ok, "units"]).median()
+    inv["ppu"] = (inv["np"] / inv["eunits"]).where(inv["eunits"] > 0)
+    inv["ppu_est"] = inv["ppu"].isna()
+    inv.loc[inv["ppu_est"], "ppu"] = median
+    inv["pw"] = inv["dem"] * inv["ppu"]
+    inv["pw_gbp"] = inv["pw"] * rules.FX_TO_GBP[m]
+    inv["loss"] = inv["np"].notna() & (inv["np"] < 0)   # same test as the Losing money flag
+    act = inv[(inv["sr"] == 0) & inv["status"].isin(rules.ACTION_STATUSES)]
+    qa.append({"market": m, "step": f"Profit per unit: market median used (no economics or 0 units sold), latest snapshot, SKUs needing action. Median = {median:.2f} {CURRENCY[m]}",
+               "rows": int(act["ppu_est"].sum())})
+    qa.append({"market": m, "step": "Net proceeds negative: still restocked, flagged Losing money (latest snapshot, SKUs needing action)",
+               "rows": int(act["loss"].sum())})
+    return inv
+
+
 # ---------------------------------------------------------------- 7. write
 def clean(v):
     if v is None:
@@ -232,12 +253,13 @@ def main(src, out_dir):
                    "rows": len(lost)})
         unmapped += [{"m": m, "sku": f"{s} (Mich reco, {d.isoformat()})"} for d, s in zip(lost["snap"], lost["sku"])]
         inv = add_rules_and_flags(inv, m)
+        inv = add_profit(inv, econ_all[econ_all["m"] == m], m, qa)
         qa.append({"market": m, "step": "Rows in the dashboard (all snapshots)", "rows": len(inv)})
         frames.append(inv)
 
     df = pd.concat(frames, ignore_index=True)
     cols = ["m", "snap", "sr", "sku", "base", "base_ok", "asin", "name", "avail", "inb", "unf", "aged", "s7", "s30", "s90",
-            "dem", "cover", "status", "reco", "amz", "mich", "sent", "price", "featured", "np", "margin", "econ", "flags", "why"]
+            "dem", "cover", "status", "reco", "amz", "mich", "sent", "price", "featured", "np", "margin", "econ", "eunits", "ppu", "ppu_est", "pw", "pw_gbp", "loss", "flags", "why"]
     rows = [{k: clean(v) for k, v in r.items()} for r in df[cols].to_dict("records")]
 
     econ_rows = [{k: clean(v) for k, v in r.items()}
@@ -249,7 +271,9 @@ def main(src, out_dir):
                  "generated": dt.datetime.now().isoformat(timespec="seconds"), "snapshots": snaps,
                  "currency": CURRENCY, "econ_months": ECON_MONTHS},
         "settings": {"lead": rules.LEAD_TIME_WEEKS, "buffer": rules.BUFFER_WEEKS, "cap": rules.MAX_COVER_WEEKS,
-                     "slow": rules.SLOW_SELLER_PER_WEEK, "slow_min": rules.SLOW_MIN_UNITS, "slow_topup": rules.SLOW_TOPUP_UNITS},
+                     "slow": rules.SLOW_SELLER_PER_WEEK, "slow_min": rules.SLOW_MIN_UNITS, "slow_topup": rules.SLOW_TOPUP_UNITS,
+                     "fx": rules.FX_TO_GBP, "action": rules.ACTION_STATUSES, "keep_alive": rules.KEEP_ALIVE_UNITS},
+        "reqs": [dict(zip(["req", "what", "from", "status"], q)) for q in rules.REQUIREMENTS],
         "rules": [dict(zip(["rule", "how", "source"], r)) for r in rules.RULES],
         "statuses": [dict(zip(["status", "meaning"], s)) for s in rules.STATUSES],
         "flags": [dict(zip(["flag", "meaning"], f)) for f in rules.FLAGS],
@@ -269,7 +293,7 @@ DE_ASSUMPTIONS = [
     "Source files are read in place from the Desktop project folder and never copied into the repo; the JSON and HTML are written to a Dashboards folder beside them.",
     "Each market's raw sheet stacks several Amazon exports; 'snapshot-date' separates them. One row per market × snapshot × SKU (no duplicates were found).",
     "Column names differ by market (e.g. units-shipped-t30 vs units-shipped-last-30-days, marketplace vs store). They are mapped to one schema; nothing is computed from market-only columns.",
-    "Blank stock and sales cells mean 0 units (AU has 148 blank 'available' cells, mostly inactive listings).",
+    "Blank stock and sales cells mean 0 units (AU has 148 blank 'available' cells, mostly inactive listings, which the keep-listing-alive rule tops up to 2).",
     "Inbound = Amazon's inbound-quantity, which equals working + shipped + receiving in every row.",
     "Aged stock = all units over 180 days in Amazon's age buckets (bucket edges differ by market).",
     "Amazon's recommendation = 'Recommended ship-in quantity' (UK, US) or 'recommended-order-quantity' (AU).",
@@ -277,8 +301,10 @@ DE_ASSUMPTIONS = [
     "Economics come from '<market> Report' in LICKIMAT TABLE: matched on SKU first, then on ASIN when the ASIN appears once in the report. Windows: 12 months (UK, AU, DE), 15 months (US).",
     "Base code = the leading LickiMat product code; everything after it is treated as a label or marketplace suffix (LM3001GN-DR-FBA-UK → LM3001GN, LM-BTT-FBA-UK → LM-BTT). SKUs that do not start with an LM code (bundles, test listings) are kept and listed on the QA page.",
     "The US export also holds Canada SKUs (suffix -CA). They stay under US because they share the North American export; split them out if Ramin runs Canada separately.",
-    "'What Ramin sent' ≈ the rise in inbound units since the previous snapshot. It misses shipments created and received between two snapshots.",
-    "Money is never added across markets (four currencies); units are.",
+    "'What Ramin actually restocked' ≈ the rise in inbound units since the previous snapshot ('New inbound'). It misses shipments created and received between two snapshots.",
+    "Money is shown in each market's own currency. Only two places convert to GBP at fixed, rounded rates (1 USD = 0.8, 1 AUD = 0.5): ordering the list when several markets are shown, and the profit charts when all markets are selected.",
+    "Weekly demand comes from units shipped in the last 30 (or 90) days. A SKU that was out of stock for part of that window looks slower than it is, so its demand is understated.",
+    "Canada SKUs (-CA) in the US export may be priced in CAD (not checked). Only 2 of them appear in the US economics report; the rest use the US median profit per unit (USD).",
     "Mich's working sheets (UK, US, AU, AU1) are not used: the dated RECO sheets hold the same recommendations with dates.",
 ]
 

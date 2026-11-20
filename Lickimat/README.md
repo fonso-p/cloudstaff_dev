@@ -1,6 +1,8 @@
 # Lickimat replenishment mock
 
-A read-only dashboard that ranks Amazon FBA SKUs (UK, US, AU) for restocking. It shows our rule-based quantity next to Amazon's and Mich's recommendations, plus exceptions, trends across snapshots and SKU economics. This is a mock for internal review (Lee, Marcial, Mich) before it goes to Ramin. Every rule setting is an assumption until confirmed.
+A read-only dashboard that ranks Amazon FBA SKUs (UK, US, AU) for restocking. It is one working view: summary tiles, a chart panel that is hidden by default, and the full list filtered by market, status and exception flag. The list shows our restock recommendation next to the Amazon recommendation and Mich's. The Rules and QA pages sit alongside it. This is a mock for internal review (Lee, Marcial, Mich) before it goes to Ramin. Every rule setting is an assumption until confirmed.
+
+**Handing off or rebuilding?** Start with [HANDOFF.md](HANDOFF.md): the full spec (sources, pipeline, rules, flags, checks, acceptance numbers, open items). The code here is the reference implementation.
 
 ## Where things live
 
@@ -11,6 +13,7 @@ A read-only dashboard that ranks Amazon FBA SKUs (UK, US, AU) for restocking. It
 | Rules and their settings | `rules.py`: change values here only |
 | Data engineering (load, harmonise, SKU map, join, flags, QA counts) | `prep.py` |
 | Independent check against the raw Excel | `verify.py` |
+| Processed data as CSVs for a handoff (written to `Dashboards/handoff_data/`) | `export_handoff.py` |
 | Page template (Cloudstaff house format) | `work/dashboard_template.html` |
 
 ## Refresh
@@ -19,7 +22,8 @@ Drop new exports into the Desktop folder with the same file and sheet names. The
 
 ```
 .venv/Scripts/python.exe Lickimat/prep.py
-.venv/Scripts/python.exe Lickimat/verify.py
+.venv/Scripts/python.exe Lickimat/verify.py            # optional: [SRC_DIR] [OUT_DIR]
+.venv/Scripts/python.exe Lickimat/export_handoff.py    # optional: processed-data CSVs for a handoff
 .venv/Scripts/python.exe .claude/skills/cs-dashboard/scripts/build_dashboard.py --template Lickimat/work/dashboard_template.html --data "%USERPROFILE%/Desktop/Projects/Client/Lickimat/Dashboards/lickimat_replenishment.json" --out "%USERPROFILE%/Desktop/Projects/Client/Lickimat/Dashboards/{date}_Lickimat_Replenishment_Dashboard.html"
 .venv/Scripts/python.exe .claude/skills/cs-dashboard/scripts/check_page.py "<built html>"
 ```
@@ -38,11 +42,6 @@ Drop new exports into the Desktop folder with the same file and sheet names. The
 
 When API access arrives, only the loaders in step 1 need to change.
 
-## Known rule issues (noted, not yet fixed)
+## Known issues and open items
 
-1. **Dead SKUs get topped up.** A SKU with no sales in 90 days and 1–4 units left goes through the slow-seller rule. It is marked Below target and topped up to 10. In the 30 Oct snapshot that was 36 SKUs and 273 units. Proposed fix: recommend 0 and give these SKUs a "No recent sales" status.
-2. **"Out of stock" ignores inbound.** A SKU with nothing available but units inbound is still marked Out of stock (6 SKUs in the latest snapshot). The reason text mentions the inbound units. Proposed fix: an "Out of stock, inbound" status, or rank these below SKUs with nothing on the way.
-
-## Open items to confirm
-
-The current values are in `rules.TO_CONFIRM` and on the dashboard's Rules & assumptions page.
+See [HANDOFF.md](HANDOFF.md) sections 10 and 11. The open items are also in `rules.TO_CONFIRM` and on the dashboard's Rules & assumptions page.
