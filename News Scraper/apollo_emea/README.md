@@ -34,13 +34,17 @@ $PY -m news_scraper jobs    --companies apollo_emea/data/companies.csv --db $DB
 $PY -m news_scraper run     --companies apollo_emea/data/parents.csv --db $DB          # parent companies: news only
 $PY -m news_scraper nlp run --db $DB --scope company --stages entities,events          # event details (who bought whom, amounts)
 $PY -m news_scraper export  --db $DB --out apollo_emea/out --lookback-days 365
+$PY apollo_emea/cqc.py --download                                                 # CQC register (care, England); after filings
+$PY apollo_emea/contracts.py                                                      # public contract awards (Find a Tender); after cqc.py
 ```
 
 About 20 minutes for news on 230 companies the first time (then only new articles), ~10 minutes for jobs, ~5 for filings (Companies House files are cached in `../data/registers/`), under a minute each for parents, event details and export. After changing the classifier or `overrides.csv`, only `export` needs re-running.
 
 | File | What it is |
 |---|---|
-| `prepare.py` | Apollo export(s) → `data/companies.csv` (one row per company, `company_id = apollo-<Apollo Account Id>`) and `data/parents.csv` (`parent-<domain>`). Cleans names ("MIRACL \| The login you love" → MIRACL, all-caps → Title Case), uses the email domain when there is no website, sets a 365-day lookback for companies with a funding label, applies `overrides.csv`. Writes no contact data |
+| `prepare.py` | Apollo export(s) → `data/companies.csv` (one row per company, `company_id = apollo-<Apollo Account Id>`) and `data/parents.csv` (`parent-<domain>`). Cleans names ("MIRACL \| The login you love" → MIRACL, all-caps → Title Case), uses the email domain when there is no website, turns a rebrand in the name ("Monarch Healthcare Now RDCP Care") into the new name when the website, email or LinkedIn backs it (`reference_code/company_keys.py` `split_renamed()`; prints each one), sets a 365-day lookback for companies with a funding label, applies `overrides.csv`. Writes no contact data |
+| `cqc.py` | CQC register (England, monthly files, Open Government Licence, no key). Joins on the provider's Companies House number, else website, else exact multi-word name; leads with the same name pool their providers. Writes `out/cqc_providers.csv` (locations, beds, services, ratings), `out/cqc_locations.csv`, `out/cqc_events.csv`: a home re-registered under the lead within 90 days of leaving another provider at the same postcode = **M&A**, a new home with no predecessor = **Expansion**, a new registered manager vs the previous monthly snapshot = Leadership change (from the second monthly run). Files in `../data/registers/cqc/` (the .ods is turned into a cached .csv once, ~3 min). Franchises match their franchisees through the shared website (Nurse Next Door: 4) |
+| `contracts.py` | Public contract awards from Find a Tender's OCDS API (free, no key; all new UK procurements since Feb 2025). Every award notice in the lookback is cached by month in `../data/registers/fts/` (~1,000 a month; first run ~15 min) and matched by Companies House number (the lead's or a CQC provider's) or exact 2+ word name. Writes `out/contract_awards.csv` (Contract / partnership win events). Contracts Finder did not answer from this network |
 | `overrides.csv` | Hand fixes by `company_name`: `aliases`, `context`, `ambiguous`. **19 rows**: Post-Quantum (pilot) and 18 from the full run (The Fed, George Thomas, White Hat, Titania, Pentest Limited…), all of which had matched someone else |
 | `out/company_summary.csv`, `out/signal_events.csv` | **The hand-off to lead grading:** per company and per article |
 | `out/article_check.xlsx` | A sheet to mark ~100 articles (right company? right event?) for an accuracy check on UK data; then `eval/eval_identity.py` and `eval/eval_events.py` |
@@ -64,5 +68,5 @@ About 20 minutes for news on 230 companies the first time (then only new article
 
 1. **Better Companies House matching** for the 68 not found: try the email-domain name and Apollo's "Company Name for Emails", or the free Companies House search API (free key), which also gives **officers** and **PSC** (dated leadership and ownership changes).
 2. **Adzuna API** (free key) for UK job-board listings, since care homes' hiring is mostly on boards.
-3. **CQC data for the care list** (England): ratings, inspection dates, registered manager, new locations, from CQC's free directory download or API (key). Check the current terms first.
+3. ~~CQC data for the care list~~ done 20 Nov (`cqc.py`). Still open: Scotland (Care Inspectorate), Wales (CIW) and Northern Ireland (RQIA) registers; the CQC API (key) for inspection history.
 4. **UK accuracy check:** mark `out/article_check.xlsx`, including some Contract / partnership and Product launch rows (the existing labels have none).

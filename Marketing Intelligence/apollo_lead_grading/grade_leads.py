@@ -29,8 +29,9 @@ REPO = HERE.parents[1]
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent / "format data"))
 sys.path.insert(0, str(REPO / "references" / "mystaff_industry"))
-sys.path.insert(0, str(REPO / "shared"))
-from company_keys import name_key                                                          # noqa: E402
+sys.path.insert(0, str(REPO / "shared"))                  # old home of the helpers (before 20 Nov), kept as a fallback
+sys.path.insert(0, str(REPO / "reference_code"))
+from company_keys import name_key, split_renamed                                                          # noqa: E402
 from priority_scoring import FIT, SCORING_DASHBOARD_V3, NEWS_STRENGTH, RECENCY, _recency, percentile_tier, score_accounts   # noqa: E402
 from mystaff_industry import INDUSTRY_GROUPS, INDUSTRY_SECTOR                              # noqa: E402
 
@@ -58,11 +59,53 @@ TEAM = "BDM Marketing"                             # decision 2026-11-18: one li
 FIT_COUNTRY = "Unknown"                            # decision 2026-11-18: only 26 UK clients (2 Healthcare, 2 Technology), too
                                                    # few for a UK fit, so use the industry-only profile (all countries)
 NEWS_EVENTS = ["Funding round", "PE buyout", "M&A", "Expansion / new office", "Restructuring", "Leadership change"] + list(NEW_EVENT_STRENGTH)
+# Registers (collected by News Scraper/apollo_emea/cqc.py and contracts.py, added 20 Nov): dated facts, counted at full
+# strength like hand-labelled events. CQC registered-manager changes are shown but not scored: turnover at one home is
+# common, and a scored Leadership change would trigger Act now.
+REGISTER_FILES = {"CQC register": SCRAPER_OUT / "cqc_events.csv", "Find a Tender": SCRAPER_OUT / "contract_awards.csv"}
+REGISTER_SCORED = {"M&A", "Expansion / new office", "Contract / partnership win"}
+CQC_PROVIDERS, CQC_LOCATIONS = SCRAPER_OUT / "cqc_providers.csv", SCRAPER_OUT / "cqc_locations.csv"
+# Sub-sector: what kind of business, from CQC's service types when the lead is in the CQC register (care, England),
+# else from its activity codes (Apollo US SIC 4-digit, NAICS 4-digit, Companies House UK SIC prefixes).
+# Descriptive: no points. A lead can have several.
+SUBSECTORS = {
+    "UK care homes": {
+        "Nursing homes":            {"cqc": r"Care home service with nursing", "sic": {"8051"}, "naics": {"6231"}, "uk": {"871"}},
+        "Residential care":         {"cqc": r"Care home service without nursing", "sic": {"8361", "8059", "8052"}, "naics": {"6233"}, "uk": {"873"}},
+        "Learning disability / mental health": {"cqc": r"learning disability|mental health|Supported living|Shared Lives",
+                                     "sic": set(), "naics": {"6232"}, "uk": {"872"}},
+        "Home care":                {"cqc": r"Domiciliary care service|Extra Care housing", "sic": {"8082"}, "naics": {"6216"}, "uk": {"881"}},
+        "Care staffing agency":     {"cqc": r"Nurses Agency", "sic": {"7361", "7363"}, "naics": {"5613"}, "uk": {"78"}},
+    },
+    "UK cybersecurity": {
+        "Cyber services / consultancy": {"sic": {"7371", "7373", "7379", "8742"}, "naics": {"5415", "5416"}, "uk": {"62020", "62090"}},
+        "Software product":         {"sic": {"7372"}, "naics": {"5112", "5132"}, "uk": {"58290", "62012"}},
+        "Managed / hosted services": {"sic": {"7374"}, "naics": {"5182"}, "uk": {"63110"}},
+        "Training":                 {"sic": {"8243"}, "naics": {"6114", "6115"}, "uk": {"8559"}},
+    },
+}
+# back-office work each kind of business typically has: a first draft for BDM Marketing to correct, shown as pitch hints
+SUBSECTOR_PITCH = {
+    "Nursing homes": "rostering and agency-shift admin, payroll, care-fee and NHS funded-nursing invoicing",
+    "Residential care": "care-fee and council-funding invoicing, payroll, recruitment admin, compliance paperwork",
+    "Learning disability / mental health": "rotas, support-plan and compliance admin, council billing, payroll",
+    "Home care": "rostering and visit scheduling, call-monitoring checks, payroll and mileage, recruitment and onboarding",
+    "Care staffing agency": "candidate compliance and vetting checks, shift booking, timesheets and payroll",
+    "Cyber services / consultancy": "SOC triage, GRC and compliance documentation, project coordination, bid support",
+    "Software product": "developers and QA, customer support, technical writing, customer success",
+    "Managed / hosted services": "service desk, monitoring, billing",
+    "Training": "course admin, content production, sales support",
+}
 # Events a person (or Claude) labelled by hand that the classifier missed: they count like news when stronger than the
 # lead's own; labelled_by is shown on the page. Columns: company_name, date, category, headline, url, publisher, labelled_by,
 # labelled_on, note
 MANUAL_EVENTS = HERE / "manual_events.csv"
 CONFIDENCE_FACTOR = {"high": 1.0, "reviewed": 1.0, "medium": 0.5, "low": 0.5}   # decision D2: medium / low events at half strength
+# Register matches made on an exact name alone (CQC provider name, contract supplier name) are medium reliability: flagged
+# "check match" until a person marks them in REGISTER_REVIEWS (confirmed: flag cleared; rejected: the match is dropped).
+# Columns: company_name, source (CQC | Find a Tender), notice (Find a Tender notice id; blank for CQC), verdict, reviewed_by,
+# reviewed_on, note. A flagged match still scores until rejected.
+REGISTER_REVIEWS = HERE / "register_match_reviews.csv"
 EVENT_OVERRIDES = HERE / "event_overrides.csv"     # a person's correction of an event's category, keyed on company + headline
 OWN_SITE_SOURCE = "newsroom"                       # the scraper's source name for the company's own website / blog
 OTHER_NEWS_POINTS = False                          # decision 2026-11-18: "Other / Unclassified" news earns no points for leads
@@ -72,6 +115,13 @@ APOLLO_CONFIRMS = {"Seed": ["Funding round"], "Angel": ["Funding round"], "Serie
                    "Debt Financing": ["Funding round"], "Private Equity": ["PE buyout"], "Merger / Acquisition": ["M&A", "PE buyout"],
                    "Other": ["Funding round", "PE buyout", "M&A"]}
 # decision 2026-11-18: a company's own blog posts earn no news points unless the post is a relevant event (NEWS_EVENTS)
+# Several events add up (user, 20 Nov 2026: "multiple events is a strong indicator"). A lead's items (news, own site,
+# hand-labelled, CQC, contracts, its parent's event) are grouped into distinct events: same type within EVENT_WINDOW_DAYS
+# = one event (one deal reported by three outlets and CQC is one event). Each event's value is strength x confidence x
+# recency; they combine as 1 - (1-a)(1-b)...: one event scores as before, each extra one adds part of what is left, never
+# above the news maximum. Act now still keys off the single strongest event.
+COMPOUND_EVENTS = True
+EVENT_WINDOW_DAYS = 30
 PARENT_FACTOR = 0.5                                # decision 2026-11-18: a parent's event counts, at half strength, when it beats
                                                    # the lead's own news; marked "Parent" wherever it shows
 JOBS_DB = REPO / "News Scraper" / "apollo_emea" / "data" / "news.db"   # read-only: per-role posted dates, for job recency
@@ -98,6 +148,7 @@ SERVICE_LINES = {
         "Forensics / incident response": r"forensic|incident response|\bdfir\b", "Cryptography / post-quantum": r"post[- ]quantum|cryptograph|quantum"},
 }
 TIER_GROUP = "lead_list"                           # decision 2026-11-18: tiers are ranked within each Apollo list (separate campaigns)
+DUPLICATE = "Duplicate"                            # an Apollo account renamed to another lead in the same list ("X Now Y")
 CHECK_FIT = "Check fit"                            # leads outside the list's target industry (builders, furniture, investors in
                                                    # the care list): scored, but not tiered against the campaign's own targets
 DISTRESS = r"administration|liquidation|strike|dissolved|insolvency|receivership"
@@ -110,7 +161,7 @@ TARGET_CODES = {
     "UK care homes": {"sic": {"8051", "8052", "8059", "8361", "8082"},            # nursing / residential care, home health
                       "naics": {"6231", "6232", "6233", "6239", "6216", "6241"},  # nursing & residential care, home health, elderly
                       "uk": {"87", "88"}},                                         # residential care; social work without accommodation
-    "UK cybersecurity": {"sic": {"7371", "7372", "7373", "7374", "7379"},         # computer programming, software, IT services
+    "UK cybersecurity": {"sic": {"7371", "7372", "7373", "7374", "7375", "7379"},  # programming, software, IT and information services
                          "naics": {"5415", "5182", "5112", "5132", "5192"},
                          "uk": {"62", "63"}},                                       # IT services, information services
 }
@@ -201,8 +252,15 @@ def standardise(c):
     c = c.copy()
     c["account_id"] = "AP-" + c["Apollo Account Id"]
     leads = []
+    firsts = c.groupby("account_id", sort=False).first()
+    others = {a: (clean_name(x["Company Name"]), x.get("Website")) for a, x in firsts.iterrows()}
     for acc, g in c.groupby("account_id", sort=False):
         r = g.iloc[0]
+        # "Monarch Healthcare Now RDCP Care": same rule as the scraper's prepare.py (reference_code/company_keys.py)
+        rn = split_renamed(clean_name(r["Company Name"]), [r.get("Website"), r.get("Company Linkedin Url")] + g["Email"].dropna().tolist(),
+                           [v for k, v in others.items() if k != acc]) or {}
+        same_as = next((k for k, v in others.items() if k != acc and rn.get("same_as") and v[0] == rn["same_as"]), None)
+        shown = (f"{rn['name']} (was {rn['former_name']})" if rn.get("former_name") else rn.get("name")) or clean_name(r["Company Name"])
         lst = str(r.get("Lists", ""))
         list_name, targets = next(((n, t) for k, (n, t) in LIST_TARGET.items() if k in lst.lower()), (lst, set()))
         emp = pd.to_numeric(r.get("# Employees"), errors="coerce")
@@ -210,7 +268,9 @@ def standardise(c):
         email_doms = g["Email"].dropna().str.split("@").str[-1].str.lower()
         tech = str(r.get("Technologies") or "")
         leads.append({
-            "account_id": acc, "company_name": clean_name(r["Company Name"]), "goal": GOAL,
+            "account_id": acc, "company_name": shown, "goal": GOAL,
+            "former_name": rn.get("former_name") or None, "name_note": rn.get("basis"), "name_check": bool(rn.get("check")),
+            "duplicate_of": same_as, "duplicate_of_name": rn.get("same_as") or None,
             "industry": grp, "employee_band": band(emp), "region": COUNTRY_CODE.get(str(r.get("Company Country", "")).lower(), "Other"),
             "lead_list": list_name, "list_target": ", ".join(sorted(targets)),
             "industry_raw": r.get("Industry"), "industry_sector": INDUSTRY_SECTOR.get(grp) if grp else None,
@@ -297,6 +357,74 @@ def _strength(news, factor, d, as_of):
     if news not in STRENGTH or news == "None" or pd.isna(d):
         return 0.0
     return STRENGTH[news] * factor * _recency((as_of - d).days)
+
+
+def compound_events(leads, ev, as_of):
+    """Distinct events per lead and their combined value (see COMPOUND_EVENTS). Writes news_compound (0-1, read by the
+    shared scoring), unique_events, scoring_events, event_list (for the page)."""
+    by = {k: g for k, g in ev.groupby("account_id")}
+    overrides = {}
+    if EVENT_OVERRIDES.exists():
+        for o in pd.read_csv(EVENT_OVERRIDES, dtype=str).fillna("").itertuples():
+            overrides.setdefault(o.company_name, []).append((o.headline_starts_with, o.category))
+    comp, n_all, n_scoring, lists = [], [], [], []
+    for _, r in leads.iterrows():
+        g = by.get(r["account_id"])
+        items = []
+        if g is not None:
+            for x in g.itertuples():
+                cat, src = x.category, str(x.source or "")
+                if cat not in NEWS_EVENTS or pd.isna(x.published):
+                    continue
+                if src == "cqc" and cat not in REGISTER_SCORED:
+                    continue                           # a new registered manager: shown, not scored
+                conf = str(x.event_confidence or "")
+                f = 1.0 if conf.startswith(("labelled by", "from ")) else CONFIDENCE_FACTOR.get(conf, 1.0)
+                # a person's review (event_overrides.csv) of one headline: applied below to the whole event it belongs to
+                ovr = next((c for p, c in overrides.get(r["company_name"], []) if str(x.title or "").startswith(p)), None)
+                if ovr:
+                    f = 1.0
+                kind = {"cqc": "CQC", "fts": "contract", "manual": "hand-labelled", OWN_SITE_SOURCE: "own site"}.get(src, "news")
+                items.append({"cat": cat, "date": x.published, "f": f, "kind": kind, "title": x.title, "ovr": ovr})
+        if r.get("parent_signal") in NEWS_EVENTS and not pd.isna(r.get("parent_signal_date")):
+            pf = CONFIDENCE_FACTOR.get(r.get("parent_confidence") or "", 1.0) * PARENT_FACTOR
+            items.append({"cat": r["parent_signal"], "date": r["parent_signal_date"], "f": pf, "kind": "parent",
+                          "title": f"Parent {r.get('parent_name')}: {r.get('parent_headline') or ''}", "parent": True})
+        events = []                                    # group: same type (and own vs parent) within EVENT_WINDOW_DAYS
+        for it in sorted(items, key=lambda d: d["date"]):
+            e = next((e for e in events if e["cat"] == it["cat"] and e["parent"] == it.get("parent", False)
+                      and (it["date"] - e["first"]).days <= EVENT_WINDOW_DAYS), None)
+            if e is None:
+                e = {"cat": it["cat"], "parent": it.get("parent", False), "first": it["date"], "items": []}
+                events.append(e)
+            e["items"].append(it)
+        # a reviewed headline decides for its whole event: "Other" drops it (Beal Homes' "sales manager snapped up" was
+        # reported by three outlets), another type relabels it (Dunham Care's site purchase = Expansion, not M&A)
+        kept = []
+        for e in events:
+            ovr = next((it["ovr"] for it in e["items"] if it.get("ovr")), None)
+            if ovr and ovr not in NEWS_EVENTS:
+                continue
+            if ovr:
+                e["cat"] = ovr
+            kept.append(e)
+        events = kept
+        out, prod = [], 1.0
+        for e in events:
+            v = max(_strength(e["cat"], it["f"], it["date"], as_of) for it in e["items"])
+            prod *= 1 - v
+            best = max(e["items"], key=lambda it: (_strength(e["cat"], it["f"], it["date"], as_of), it["kind"] == "news"))
+            out.append({"type": ("Parent: " if e["parent"] else "") + e["cat"], "date": e["first"].date().isoformat(),
+                        "last": max(it["date"] for it in e["items"]).date().isoformat(), "value": round(v, 3),
+                        "reports": len(e["items"]), "sources": ", ".join(sorted({it["kind"] for it in e["items"]})),
+                        "title": best["title"]})
+        out.sort(key=lambda d: (-d["value"], d["date"]))
+        comp.append(round(1 - prod, 4) if events else None)
+        n_all.append(len(events)); n_scoring.append(sum(1 for d in out if d["value"] > 0)); lists.append(out)
+    if COMPOUND_EVENTS:
+        leads["news_compound"] = comp
+    leads["unique_events"], leads["scoring_events"], leads["_event_list"] = n_all, n_scoring, lists
+    return leads
 
 
 def hiring_band(status, open_roles):
@@ -509,6 +637,103 @@ def job_recency(leads, db):
     return leads.merge(g, on="account_id", how="left")
 
 
+def load_reviews():
+    """{(company_name, source, notice): (verdict, reviewed_by)} from REGISTER_REVIEWS."""
+    if not REGISTER_REVIEWS.exists():
+        return {}
+    rv = pd.read_csv(REGISTER_REVIEWS, dtype=str, keep_default_na=False)
+    return {(r.company_name.strip(), r.source.strip(), r.notice.strip()): (r.verdict.strip().lower(), r.reviewed_by.strip())
+            for r in rv.itertuples() if r.company_name.strip()}
+
+
+def review_of(reviews, company, source, notice=""):
+    """'confirmed' / 'rejected' (with who) or None, for one register match."""
+    return reviews.get((company, source, notice or ""))
+
+
+def register_events(leads):
+    """CQC and Find a Tender events in the manual-events shape, keyed by account (not by name). `match` says how the lead
+    was found in the register; rejected name matches are dropped, confirmed ones say so."""
+    cols = ["account_id", "date", "category", "headline", "url", "publisher", "labelled_by", "note", "kind", "source", "match"]
+    frames = [pd.read_csv(p, dtype=str, keep_default_na=False).assign(labelled_by=name) for name, p in REGISTER_FILES.items() if p.exists()]
+    frames = [f for f in frames if len(f)]
+    if not frames:
+        return pd.DataFrame(columns=cols)
+    d = pd.concat(frames, ignore_index=True)
+    if CQC_PROVIDERS.exists():                      # a CQC event is as good as the lead's CQC match
+        basis = pd.read_csv(CQC_PROVIDERS, dtype=str, keep_default_na=False).set_index("company_id")["cqc_match"]
+        cq = d["source"] == "cqc"
+        d.loc[cq, "match"] = d.loc[cq, "company_id"].map(basis)
+    d["match"] = d["match"].fillna("")
+    out = pd.DataFrame({"account_id": "AP-" + d["company_id"].str.replace("^apollo-", "", regex=True), "date": d["date"],
+                        "category": d["category"], "headline": d["headline"], "url": d["url"], "publisher": d["publisher"],
+                        "labelled_by": d["labelled_by"], "note": d["detail"], "kind": "register", "source": d["source"], "match": d["match"]})
+    reviews, names = load_reviews(), dict(zip(leads["account_id"], leads["company_name"]))
+    keep = []
+    for r in out.itertuples():
+        notice = r.url.rsplit("/", 1)[-1] if r.source == "fts" else ""
+        rv = review_of(reviews, names.get(r.account_id, ""), r.labelled_by, notice) if r.match.startswith("name") else None
+        keep.append(not (rv and rv[0] == "rejected"))
+        if rv and rv[0] == "confirmed":
+            out.loc[r.Index, "match"] = f"name, confirmed by {rv[1]}"
+    return out[keep]
+
+
+def add_cqc(leads):
+    """CQC profile per lead (cqc.py): providers, locations, beds, service types, ratings. England care providers only."""
+    if not CQC_PROVIDERS.exists():
+        leads["cqc_match"] = None
+        return leads
+    c = pd.read_csv(CQC_PROVIDERS, dtype=str, keep_default_na=False, na_values=[""])
+    c["account_id"] = "AP-" + c.pop("company_id").str.replace("^apollo-", "", regex=True)
+    for k in ("cqc_locations", "cqc_care_homes", "cqc_beds", "cqc_homecare_locations", "cqc_needs_improvement",
+              "cqc_needs_improvement_180d", "cqc_new_locations", "cqc_closed_locations"):
+        c[k] = pd.to_numeric(c[k], errors="coerce")
+    return leads.merge(c, on="account_id", how="left")
+
+
+def review_flags(leads):
+    """Apply REGISTER_REVIEWS to the CQC match, and write match_review: what still needs a person's check."""
+    reviews = load_reviews()
+    cqc_cols = [c for c in leads.columns if c.startswith("cqc_")]
+    flags = []
+    for i, r in leads.iterrows():
+        items = []
+        if isinstance(r.get("cqc_match"), str) and r["cqc_match"].startswith("name"):
+            rv = review_of(reviews, r["company_name"], "CQC register")
+            if rv and rv[0] == "rejected":
+                leads.loc[i, cqc_cols] = None
+            elif rv and rv[0] == "confirmed":
+                leads.loc[i, "cqc_match"] = f"name, confirmed by {rv[1]}"
+            else:
+                items.append(f"CQC matched by provider name ({r.get('cqc_providers')})")
+        if isinstance(r.get("_contract_review"), str):
+            items.append(r["_contract_review"])
+        flags.append("; ".join(items) or None)
+    leads["match_review"] = flags
+    return leads
+
+
+def add_subsectors(leads):
+    """Sub-sector(s) from CQC service types (when matched), else from the activity codes. See SUBSECTORS."""
+    subs, basis = [], []
+    for r in leads.itertuples():
+        rules = SUBSECTORS.get(r.lead_list, {})
+        st = getattr(r, "cqc_service_types", None)
+        st = st if isinstance(st, str) else ""
+        if st and any("cqc" in v for v in rules.values()):
+            found = [k for k, v in rules.items() if v.get("cqc") and re.search(v["cqc"], st, re.I)]
+            if found:
+                subs.append("; ".join(found)); basis.append("CQC service types"); continue
+        sic, naics = [c[:4] for c in _codes(r.sic_us)], [c[:4] for c in _codes(r.naics)]
+        uk = re.findall(r"\b(\d{5})\b", str(getattr(r, "uk_sic", "") or ""))
+        found = [k for k, v in rules.items() if set(sic) & v["sic"] or set(naics) & v["naics"]
+                 or any(u.startswith(tuple(v["uk"])) for u in uk)]
+        subs.append("; ".join(found) or None); basis.append("activity codes" if found else None)
+    leads["sub_sectors"], leads["sub_sector_basis"] = subs, basis
+    return leads
+
+
 def add_collected(leads, out_dir, as_of):
     s_all = pd.read_csv(out_dir / "company_summary.csv", keep_default_na=False, na_values=[""], dtype=str)
     parents = s_all[s_all["company_id"].str.startswith("parent-")].set_index("company_id")
@@ -583,27 +808,40 @@ def add_collected(leads, out_dir, as_of):
 
     # hand-labelled events (manual_events.csv, labelled_by Claude or a person): count in full when stronger than the lead's
     # own news; also added to the lead's news list so they show with who labelled them
+    # registers (CQC, Find a Tender): dated facts, the same treatment, keyed by account; only REGISTER_SCORED types score
     leads["event_labelled_by"] = None
+    me = pd.DataFrame(columns=["account_id", "date", "category", "headline", "url", "publisher", "labelled_by", "note", "kind", "source"])
     if MANUAL_EVENTS.exists():
         me = pd.read_csv(MANUAL_EVENTS, dtype=str).fillna("")
-        me["published"] = pd.to_datetime(me["date"], errors="coerce")
         acc = dict(zip(leads["company_name"], leads["account_id"]))
         me["account_id"] = me["company_name"].map(acc)
         unknown = me.loc[me["account_id"].isna(), "company_name"].unique()
         if len(unknown):
             print(f"manual_events.csv: no lead called {', '.join(unknown)} (check the spelling)")
-        me = me[me["account_id"].notna()]
-        for i, r in leads.iterrows():
-            for m in me[me["account_id"] == r["account_id"]].itertuples():
-                cur = _strength(leads.at[i, "news_signal"], leads.at[i, "news_strength_factor"], leads.at[i, "news_signal_date"], as_of)
-                if _strength(m.category, 1.0, m.published, as_of) > cur:
-                    leads.loc[i, ["news_signal", "news_signal_date", "signal_confidence", "news_strength_factor", "news_from",
-                                  "news_headline", "news_url", "news_publisher", "event_labelled_by", "event_detail"]] = \
-                        [m.category, m.published, "manual", 1.0, "manual", m.headline, m.url, m.publisher, m.labelled_by, m.note or None]
-        ev = pd.concat([ev, pd.DataFrame({"account_id": me["account_id"], "published_at": me["date"], "published": me["published"],
-                                          "category": me["category"], "event_confidence": "labelled by " + me["labelled_by"],
-                                          "title": me["headline"], "url": me["url"], "publisher": me["publisher"],
-                                          "source": "manual"})], ignore_index=True)
+        me = me[me["account_id"].notna()].assign(kind="manual", source="manual")
+    reg = register_events(leads)
+    # contract awards matched on a name only, not yet confirmed: listed on the lead for a person to check
+    nm = reg[(reg["source"] == "fts") & (reg["match"] == "name")]
+    leads["_contract_review"] = leads["account_id"].map(nm.groupby("account_id")["url"].agg(
+        lambda u: f"{len(u)} contract{'s' if len(u) > 1 else ''} matched by supplier name"))
+    me = pd.concat([me, reg], ignore_index=True)
+    me = me[me["account_id"].isin(leads["account_id"])].copy()
+    me["published"] = pd.to_datetime(me["date"], errors="coerce")
+    for i, r in leads.iterrows():
+        for m in me[me["account_id"] == r["account_id"]].itertuples():
+            if m.kind == "register" and m.category not in REGISTER_SCORED:
+                continue
+            cur = _strength(leads.at[i, "news_signal"], leads.at[i, "news_strength_factor"], leads.at[i, "news_signal_date"], as_of)
+            if _strength(m.category, 1.0, m.published, as_of) > cur:
+                conf = "manual" if m.kind == "manual" else "register"
+                leads.loc[i, ["news_signal", "news_signal_date", "signal_confidence", "news_strength_factor", "news_from",
+                              "news_headline", "news_url", "news_publisher", "event_labelled_by", "event_detail"]] = \
+                    [m.category, m.published, conf, 1.0, m.kind, m.headline, m.url, m.publisher, m.labelled_by, m.note or None]
+    ev = pd.concat([ev, pd.DataFrame({"account_id": me["account_id"], "published_at": me["date"], "published": me["published"],
+                                      "category": me["category"],
+                                      "event_confidence": [("labelled by " if k == "manual" else "from ") + b for k, b in zip(me["kind"], me["labelled_by"])],
+                                      "title": me["headline"], "url": me["url"], "publisher": me["publisher"],
+                                      "source": me["source"]})], ignore_index=True)
 
     # jobs: a count is only known when the careers page was read (blank = unknown, never zero)
     leads.loc[leads["jobs_status"] != "ok", "job_postings_30d"] = None
@@ -615,7 +853,10 @@ def add_collected(leads, out_dir, as_of):
         # hiring points count only roles Cloudstaff fills; a read careers page with none of them is a real zero
         leads.loc[leads["jobs_status"] == "ok", "job_postings_30d"] = leads["roles_we_fill_30d"].fillna(0)
     leads = add_service_lines(leads, JOBS_DB)
+    leads = add_cqc(leads)
+    leads = review_flags(leads)
     leads = target_check(leads)                    # needs the Companies House UK SIC, so after the scraper results
+    leads = add_subsectors(leads)
     leads["apollo_vs_news"] = [apollo_vs_news(a, s) for a, s in zip(leads["apollo_latest_funding"], leads["news_signal"])]
     leads["parent_detail"] = [best_detail(pev[pev["company_id"] == p], s, d) if not blank(s) else None
                               for p, s, d in zip(leads["parent_id"], leads["parent_signal"], leads["parent_signal_date"])]
@@ -632,6 +873,8 @@ def gate(r):
         return "Excluded: distressed"
     if isinstance(r.get("internal_match"), str) and r["internal_match"].startswith("Existing client"):
         return "Existing client"
+    if isinstance(r.get("duplicate_of"), str):
+        return DUPLICATE                           # the other account carries the lead; this one keeps its contacts for reference
     if r.get("_on_target") is False:
         return CHECK_FIT                           # scored, but outside the list's tiers (not this campaign's industry)
     return None
@@ -667,7 +910,8 @@ def chips(r, as_of):
     if news in NEWS_EVENTS and not from_parent:
         conf = r.get("signal_confidence") or "unrated"
         suffix = ("" if conf == "high" else " (reviewed)" if conf == "reviewed"
-                  else f" (labelled by {r.get('event_labelled_by')})" if conf == "manual" else f" ({conf} confidence, half weight)")
+                  else f" (labelled by {r.get('event_labelled_by')})" if conf == "manual"
+                  else f" ({r.get('event_labelled_by')})" if conf == "register" else f" ({conf} confidence, half weight)")
         det = r.get("event_detail")
         out.append([f"{news}{'' if blank(det) else ': ' + det} · {d:%b %Y}{suffix}", "signal", by_cat.get(news, [])])
     # other kinds of news event the lead had in the year: one short chip each, headlines on hover. Not scored (only the
@@ -700,6 +944,17 @@ def chips(r, as_of):
         out.append([f"Hiring {r['hiring_band']} roles{recency}{fill}{spike}", "signal" if not blank(k) and k > 0 else "jobs"])
     for s in ([] if blank(r.get("service_lines")) else str(r["service_lines"]).split("; ")):
         out.append([s, "service"])
+    for s in ([] if blank(r.get("sub_sectors")) else str(r["sub_sectors"]).split("; ")):
+        out.append([f"Sub-sector: {s}", "info"])
+        if s in SUBSECTOR_PITCH:
+            out.append([f"Pitch ({s.lower()}): {SUBSECTOR_PITCH[s]}", "pitch"])
+    if not blank(r.get("cqc_locations")):
+        out.append([f"CQC: {int(r['cqc_locations'])} locations"
+                    + (f" · {int(r['cqc_care_homes'])} care homes, {int(r['cqc_beds'])} beds" if r.get("cqc_care_homes") else "")
+                    + (f" · {int(r['cqc_homecare_locations'])} home-care offices" if r.get("cqc_homecare_locations") else ""), "info"])
+    if not blank(r.get("cqc_needs_improvement_180d")) and r["cqc_needs_improvement_180d"] > 0:
+        n = int(r["cqc_needs_improvement_180d"])
+        out.append([f"CQC: {n} location{'s' if n > 1 else ''} rated Requires improvement or Inadequate in the last 6 months", "filing"])
     fs = r.get("filing_signal")
     if not blank(fs) and fs != "None" and not str(r.get("grade", "")).startswith("Excluded"):
         fd = r.get("filing_signal_date")
@@ -723,8 +978,16 @@ def chips(r, as_of):
             out.append([f"Competitor client: {r['competitor_client']}", "signal"])
         else:
             out.append([f"Possible competitor client, check: {r['competitor_client']} · {r.get('competitor_client_basis')}", "warn"])
+    if not blank(r.get("former_name")):          # Apollo name "Old Now New": searched under the new name
+        out.append([f"Renamed: was {r['former_name']}" + ("" if blank(r.get("duplicate_of_name")) else f" · same business as the {r['duplicate_of_name']} lead"), "warn"])
+    elif r.get("name_check"):
+        out.append([f"Check the name: {r.get('name_note')}", "warn"])
     if r.get("_on_target") is False:
         out.append([f"Check fit: {r.get('fit_basis') or r.get('industry_raw')}", "warn"])
+    if not blank(r.get("scoring_events")) and r["scoring_events"] > 1:
+        out.append([f"{int(r['scoring_events'])} separate events in 6 months (added up)", "signal"])
+    if not blank(r.get("match_review")):
+        out.append([f"Check match: {r['match_review']}", "warn"])
     if isinstance(r.get("internal_match"), str):
         out.append([r["internal_match"], "warn"])
     for p in filter(None, str(r.get("pitch") or "").split("; ")):
@@ -779,7 +1042,7 @@ def grade(leads, contacts, events, as_of):
     # Why = relevant signals only (decision 2026-11-18); service lines, pitch and group membership go to the company profile
     leads["chips"] = allchips.map(lambda cs: [c for c in cs if c[1] not in PROFILE_KINDS])
     leads["profile_chips"] = allchips.map(lambda cs: [c for c in cs if c[1] in PROFILE_KINDS])
-    order = {"Tier 1": 0, "Tier 2": 1, "Tier 3": 2, CHECK_FIT: 3, "Existing client": 4, "Excluded: distressed": 5}
+    order = {"Tier 1": 0, "Tier 2": 1, "Tier 3": 2, CHECK_FIT: 3, "Existing client": 4, DUPLICATE: 5, "Excluded: distressed": 6}
     leads["_o"] = leads["grade"].map(order)
     leads = leads.sort_values(["_o", "priority_score", "readiness"], ascending=[True, False, False]).drop(columns="_o")
     return leads.reset_index(drop=True)
@@ -809,6 +1072,34 @@ def readout(leads, events, apollo_files, n_contacts):
     }
 
 
+def lead_signals(r, e):
+    """Signal types a lead has, for the page's "Has these signals" filter. Present, not necessarily the scored one."""
+    out = []
+    if e is not None:
+        src = e["source"].fillna("")
+        if (e["category"].isin(NEWS_EVENTS) & ~src.isin(["cqc", "fts"])).any():
+            out.append("news")                         # a news event (publisher, own site or hand-labelled)
+        if (src == "cqc").any():
+            out.append("cqc")
+        if (src == "fts").any():
+            out.append("contract")
+    if not blank(r.get("job_postings_30d")) and r["job_postings_30d"] > 0:
+        out.append("hiring")                           # roles Cloudstaff fills, posted in the last 30 days
+    if r.get("parent_signal") in NEWS_EVENTS:
+        out.append("parent")
+    if not blank(r.get("competitor_client")):
+        out.append("competitor")
+    if not blank(r.get("match_review")):
+        out.append("review")
+    if not blank(r.get("scoring_events")) and r["scoring_events"] > 1:
+        out.append("multi")
+    if any(c[1] == "fit" for c in r.get("chips") or []):
+        out.append("fit")
+    if not blank(r.get("filing_signal")) and r["filing_signal"] != "None":
+        out.append("filing")
+    return out
+
+
 def save(leads, contacts, events, parent_events, jobs_by_lead, info, name, as_of):
     cols_out = [c for c in leads.columns if not c.startswith("_") and c not in ("chips", "profile_chips")]
     xlsx = DATA_DIR / f"lead_grades_{name}.xlsx"
@@ -824,6 +1115,24 @@ def save(leads, contacts, events, parent_events, jobs_by_lead, info, name, as_of
     pev_by = {k: g.assign(_e=g["category"].isin(NEWS_EVENTS)).sort_values(["_e", "published_at"], ascending=False)
               for k, g in parent_events.groupby("parent_id")}
     con_by = {k: g for k, g in contacts.groupby("account_id")}
+    cqc_by, con_awards = {}, {}
+    if CQC_LOCATIONS.exists():
+        cl = pd.read_csv(CQC_LOCATIONS, dtype=str, keep_default_na=False)
+        cl["account_id"] = "AP-" + cl["company_id"].str.replace("^apollo-", "", regex=True)
+        cols = ["location_name", "city", "registered_on", "care_home", "beds", "rating", "rating_published", "service_types", "location_id"]
+        cqc_by = {k: g.sort_values("registered_on", ascending=False)[cols].to_dict("records") for k, g in cl.groupby("account_id")}
+    ca_path = REGISTER_FILES["Find a Tender"]
+    if ca_path.exists():
+        ca = pd.read_csv(ca_path, dtype=str, keep_default_na=False)
+        ca["account_id"] = "AP-" + ca["company_id"].str.replace("^apollo-", "", regex=True)
+        cols = ["date", "buyer", "headline", "value", "currency", "cpv_desc", "url", "supplier_name", "match"]
+        reviews, names = load_reviews(), dict(zip(leads["account_id"], leads["company_name"]))
+        for i, x in ca.iterrows():
+            if x["match"] == "name":
+                rv = review_of(reviews, names.get(x["account_id"], ""), "Find a Tender", x["url"].rsplit("/", 1)[-1])
+                ca.loc[i, "match"] = "rejected" if rv and rv[0] == "rejected" else f"name, confirmed by {rv[1]}" if rv else "name"
+        ca = ca[ca["match"] != "rejected"]
+        con_awards = {k: g.sort_values("date", ascending=False)[cols].to_dict("records") for k, g in ca.groupby("account_id")}
     fields = (("date", "published_at"), ("category", "category"), ("confidence", "event_confidence"), ("title", "title"),
               ("publisher", "publisher"), ("url", "url"), ("source", "source"))
     for r in leads.to_dict("records"):
@@ -833,6 +1142,10 @@ def save(leads, contacts, events, parent_events, jobs_by_lead, info, name, as_of
         row["news"] = ([] if e is None else [{k: jsonable(getattr(x, f)) for k, f in fields} for x in e.head(8).itertuples()]) + \
                       ([] if pe is None else [{**{k: jsonable(getattr(x, f)) for k, f in fields}, "parent": r.get("parent_name")} for x in pe.head(3).itertuples()])
         row["jobs"] = jobs_by_lead.get(r["account_id"], [])
+        row["signals"] = lead_signals(r, e)
+        row["event_list"] = r.get("_event_list") or []
+        row["cqc_list"] = cqc_by.get(r["account_id"], [])
+        row["contracts"] = con_awards.get(r["account_id"], [])
         cg = con_by.get(r["account_id"])
         row["contacts"] = [] if cg is None else [{k: jsonable(v) for k, v in x.items() if k != "account_id"} for x in cg.to_dict("records")]
         rows.append(row)
@@ -860,6 +1173,7 @@ def main(argv=None):
     leads, contacts = standardise(raw)
     leads, internal_src = match_internal(leads, newest("priority_company_info_combined*.xlsx"))
     leads, events, parent_events, jobs_by_lead, roles_src = add_collected(leads, Path(a.scraper_out), as_of)
+    leads = compound_events(leads, events, as_of)
     leads, competitor_src = add_competitor_clients(leads, COMPETITOR_MAP)   # sets prior_bpo_flag (Competitor client points)
     # fit and trend after the target check, which can correct the industry group (Companies House codes come from the scraper)
     leads, fit_src = add_fit(leads, newest("*_Propensity_Extract_prospect_profiles.csv"))
@@ -877,6 +1191,7 @@ def main(argv=None):
           {"step": "  of which found in Companies House", "rows": int((leads["filings_status"] == "found in Companies House").sum())},
           {"step": "Excluded: distressed (administration, liquidation, strike-off)", "rows": int((leads["grade"] == "Excluded: distressed").sum())},
           {"step": "Existing client (sent to the AM, not graded)", "rows": int((leads["grade"] == "Existing client").sum())},
+          {"step": "Duplicate (renamed to another lead in the list, not graded)", "rows": int((leads["grade"] == DUPLICATE).sum())},
           {"step": "Graded (Tier 1-3)", "rows": int(leads["grade"].str.startswith("Tier").sum())}]
     info = {"apollo_extract": extract, "internal": internal_src, "fit_profiles": fit_src, "trend": trend_src, "roles": roles_src,
             "competitor_map": competitor_src,

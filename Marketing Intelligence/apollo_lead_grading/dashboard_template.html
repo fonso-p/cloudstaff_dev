@@ -58,6 +58,11 @@ h1,h2,h3{font-family:var(--font-family-heading);margin:0}
 .frow-label{width:100%;font-family:var(--font-family-mono);font-size:var(--font-size-2xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-brand-primary-strong);font-weight:var(--font-weight-semibold)}
 .frow-note{font-size:var(--font-size-xs);color:var(--color-text-base-muted)}
 .frow-note:empty{display:none}
+.sigs{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.sigs label{flex-direction:row;align-items:center;gap:6px;font-weight:var(--font-weight-medium);color:var(--color-text-base-primary);cursor:pointer}
+.sigs input{accent-color:var(--color-brand-primary-strong);margin:0}
+.sigs .cnt{color:var(--color-text-base-muted);font-variant-numeric:tabular-nums}
+.sigs .src{font-size:var(--font-size-2xs);color:var(--color-text-base-muted);font-weight:var(--font-weight-regular)}
 /* KPI tiles */
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--component-tile-padding);margin-bottom:var(--component-card-padding)}
 .kpi{border-radius:var(--radius-xl);padding:var(--component-tile-padding);display:flex;flex-direction:column;gap:10px}
@@ -196,14 +201,19 @@ a.ext{color:var(--color-brand-primary-strong)}
 
     <div class="filters" id="filters">
       <div class="frow"><span class="frow-label">Which leads</span>
-        <label>Apollo list<select id="fList"></select></label>
+        <label title="The Apollo export the lead came from">Apollo list <span class="src">(Apollo)</span><select id="fList"></select></label>
         <label>Grade<select id="fGrade"></select></label>
         <label>Act now<select id="fAct"><option value="All">All leads</option><option value="yes">Act now only</option></select></label>
         <label>Hiring<select id="fHire"><option value="All">All</option><option value="new">New roles in the last 30 days</option><option value="open">Any open roles</option><option value="none">No open roles</option><option value="unknown">Careers page not read</option></select></label>
-        <label>Service line<select id="fService"></select></label>
-        <label>Apollo funding<select id="fApollo"><option value="All">All</option><option value="any">Has an Apollo label</option><option value="matches the news">Matches the news</option><option value="news shows a different event">News shows a different event</option><option value="not in the news">Not in the news</option><option value="news only">Deal in the news, no Apollo label</option></select></label>
-        <label>Industry<select id="fTarget"><option value="All">All</option><option value="on">In the list's target industry</option><option value="off">Check fit (other industry)</option></select></label>
+        <label title="Keywords found on the company's own website (News Scraper website card)">Service line <span class="src">(its website)</span><select id="fService"></select></label>
+        <label title="CQC service types when the lead is in the CQC register, else the activity codes (Apollo US SIC / NAICS, Companies House UK SIC)">Sub-sector <span class="src">(CQC, else codes)</span><select id="fSub"></select></label>
+        <label title="Apollo's 'Latest Funding' label (undated), compared with the news">Apollo funding <span class="src">(Apollo)</span><select id="fApollo"><option value="All">All</option><option value="any">Has an Apollo label</option><option value="matches the news">Matches the news</option><option value="news shows a different event">News shows a different event</option><option value="not in the news">Not in the news</option><option value="news only">Deal in the news, no Apollo label</option></select></label>
+        <label title="Activity codes first (Apollo US SIC / NAICS, Companies House UK SIC), then website service lines, then Apollo's industry label">Target industry <span class="src">(codes, then Apollo)</span><select id="fTarget"><option value="All">All</option><option value="on">In the list's target industry</option><option value="off">Check fit (other industry)</option></select></label>
         <button class="btn btn-blue reset" id="btnReset"><i class="fa-solid fa-rotate-left"></i>Reset</button>
+      </div>
+      <div class="frow"><span class="frow-label">Has these signals</span>
+        <div class="sigs" id="fSigs"></div>
+        <label>Match<select id="fSigMode"><option value="any">Any ticked</option><option value="all">All ticked</option></select></label>
       </div>
       <div class="frow-note" id="filterNote"></div>
     </div>
@@ -392,9 +402,9 @@ $('dateChip').textContent = 'Graded ' + new Date(M.as_of).toLocaleDateString('en
 const R = D.rows;
 const LISTS = uniq(R.map(r => r.lead_list));
 const LIST_COLOUR = Object.fromEntries(LISTS.map((l, i) => [l, PALETTE[i % PALETTE.length]]));
-const GRADES = ['Tier 1', 'Tier 2', 'Tier 3', 'Check fit', 'Existing client', 'Excluded: distressed'];
-const GRADE_COLOUR = {'Tier 1': '#007AFF', 'Tier 2': '#00AB9C', 'Tier 3': GREY, 'Check fit': '#FFC426', 'Existing client': '#AA67FD', 'Excluded: distressed': '#E34678'};
-const EVENTS = ['Funding round', 'PE buyout', 'M&A', 'Expansion / new office', 'Restructuring', 'Leadership change'];
+const GRADES = ['Tier 1', 'Tier 2', 'Tier 3', 'Check fit', 'Existing client', 'Duplicate', 'Excluded: distressed'];
+const GRADE_COLOUR = {'Tier 1': '#007AFF', 'Tier 2': '#00AB9C', 'Tier 3': GREY, 'Check fit': '#FFC426', 'Existing client': '#AA67FD', 'Duplicate': '#8A94A6', 'Excluded: distressed': '#E34678'};
+const EVENTS = ['Funding round', 'PE buyout', 'M&A', 'Expansion / new office', 'Restructuring', 'Leadership change', 'Contract / partnership win', 'Product launch'];
 const isTier = r => String(r.grade).startsWith('Tier');
 const CHIP_CLASS = {service: 'b-service', signal: 'b-ok', news: 'b-news', jobs: 'b-blue', filing: 'b-blue', apollo: 'b-warn', fit: 'b-purple', info: 'b-no', warn: 'b-pink', pitch: 'b-no', parent: 'b-parent'};
 const HIRE_BANDS = ['1–2', '3–5', '6–10', '11–20', '21+'];
@@ -436,16 +446,36 @@ fillSelect('fList', ['All', ...LISTS], ['All lists', ...LISTS]);
 fillSelect('fGrade', ['All', ...GRADES], ['All grades', ...GRADES]);
 const SERVICES = uniq(R.flatMap(r => (r.service_lines || '').split('; ').filter(Boolean)));
 fillSelect('fService', ['All', ...SERVICES], ['All service lines', ...SERVICES]);
-const filt = () => ({list: $('fList').value, grade: $('fGrade').value, act: $('fAct').value, target: $('fTarget').value, hire: $('fHire').value, service: $('fService').value, apollo: $('fApollo').value});
+const SUBS = uniq(R.flatMap(r => (r.sub_sectors || '').split('; ').filter(Boolean)));
+fillSelect('fSub', ['All', ...SUBS], ['All sub-sectors', ...SUBS]);
+// "Has these signals": present on the lead (scored or not). Only the strongest event scores; hiring and fit score too.
+const SIGNALS = [
+  ['multi', '2+ separate events', 'two or more distinct events in 6 months: they add up in the score'],
+  ['news', 'News event', 'news search, own site or hand-labelled'],
+  ['cqc', 'CQC register event', 'care home taken over, opened, or new manager (CQC, England)'],
+  ['contract', 'Public contract', 'award notice on Find a Tender (UK government)'],
+  ['hiring', 'Hiring roles we fill', 'posted in the last 30 days (scored)'],
+  ['parent', 'Parent company event', 'half strength'],
+  ['competitor', 'Competitor client', "named in candidates' CVs (scored)"],
+  ['fit', 'Fit above usual', 'Client Propensity, 1.5x the usual rate'],
+  ['filing', 'Companies House change', 'new registration, name change; no points'],
+  ['review', 'Match needs review', 'CQC or a contract matched on a name only: confirm or reject in register_match_reviews.csv'],
+];
+$('fSigs').innerHTML = SIGNALS.map(([k, t, d]) => `<label title="${esc(d)}"><input type="checkbox" value="${k}">${esc(t)} <span class="cnt">(${fmt(R.filter(r => (r.signals || []).includes(k)).length)})</span></label>`).join('');
+$('fSigs').querySelectorAll('input').forEach(i => i.onchange = () => render());
+const sigsTicked = () => [...$('fSigs').querySelectorAll('input:checked')].map(i => i.value);
+const sigOk = (r, ks, mode) => !ks.length || (mode === 'all' ? ks.every(k => (r.signals || []).includes(k)) : ks.some(k => (r.signals || []).includes(k)));
+const filt = () => ({sigs: sigsTicked(), sigMode: $('fSigMode').value, list: $('fList').value, grade: $('fGrade').value, act: $('fAct').value, target: $('fTarget').value, hire: $('fHire').value, service: $('fService').value, sub: $('fSub').value, apollo: $('fApollo').value});
 const apolloOk = (r, a) => a === 'All' || (a === 'any' ? !!r.apollo_latest_funding
   : a === 'news only' ? !r.apollo_latest_funding && ['Funding round', 'PE buyout', 'M&A'].includes(r.news_signal) : r.apollo_vs_news === a);
 const hireOk = (r, h) => h === 'All' || (h === 'new' ? r.jobs_new_30d > 0 : h === 'open' ? HIRE_BANDS.includes(r.hiring_band) : h === 'none' ? r.hiring_band === 'none open' : r.hiring_band === 'unknown');
 const applyFilt = f => R.filter(r => (f.list === 'All' || r.lead_list === f.list) && (f.grade === 'All' || r.grade === f.grade) && hireOk(r, f.hire)
   && (f.service === 'All' || (r.service_lines || '').split('; ').includes(f.service)) && apolloOk(r, f.apollo)
+  && (f.sub === 'All' || (r.sub_sectors || '').split('; ').includes(f.sub)) && sigOk(r, f.sigs, f.sigMode)
   && (f.act === 'All' || r.act_now) && (f.target === 'All' || (f.target === 'on' ? r.on_target === true : r.on_target === false)));
 const filtText = f => [f.list === 'All' ? 'all lists' : f.list, f.grade === 'All' ? 'all grades' : f.grade, f.act === 'All' ? '' : 'Act now only',
   f.target === 'All' ? '' : f.target === 'on' ? 'target industry' : 'other industries',
-  f.hire === 'All' ? '' : $('fHire').selectedOptions[0].text.toLowerCase(), f.service === 'All' ? '' : f.service, f.apollo === 'All' ? '' : 'Apollo: ' + $('fApollo').selectedOptions[0].text.toLowerCase()].filter(Boolean).join(' · ');
+  f.hire === 'All' ? '' : $('fHire').selectedOptions[0].text.toLowerCase(), f.service === 'All' ? '' : f.service, f.sub === 'All' ? '' : f.sub, f.sigs.length ? `has ${f.sigs.length > 1 ? (f.sigMode === 'all' ? 'all of: ' : 'any of: ') : ''}${f.sigs.map(k => SIGNALS.find(s => s[0] === k)[1].toLowerCase()).join(', ')}` : '', f.apollo === 'All' ? '' : 'Apollo: ' + $('fApollo').selectedOptions[0].text.toLowerCase()].filter(Boolean).join(' · ');
 
 // ---- pages
 const TITLES = {leads: 'Graded leads', overview: 'Grades overview', gathered: 'Data gathered', fit: 'Fit and market', method: 'How grading works', qa: 'QA and data checks'};
@@ -493,7 +523,7 @@ function rLeads(f, rows) {
     ['k-blue', 'fa-ranking-star', 'Tier 1 leads', fmt(t.filter(r => r.grade === 'Tier 1').length), `of ${fmt(t.length)} graded in this view`],
     ['k-teal', 'fa-bolt', 'Act now', fmt(act), 'funding / PE in 30 days, hiring spike, restructuring or leadership news'],
     ['k-yellow', 'fa-newspaper', 'With a news event', fmt(ev), `funding, PE, M&A, expansion, restructuring, leadership`],
-    ['k-pink', 'fa-ban', 'Not tiered', fmt(rows.filter(r => !isTier(r)).length), `${fmt(rows.filter(r => r.grade === 'Check fit').length)} other industry (check fit), ${fmt(rows.filter(r => r.grade.startsWith('Excluded') || r.grade === 'Existing client').length)} distressed or existing client`],
+    ['k-pink', 'fa-ban', 'Not tiered', fmt(rows.filter(r => !isTier(r)).length), `${fmt(rows.filter(r => r.grade === 'Check fit').length)} other industry (check fit), ${fmt(rows.filter(r => r.grade.startsWith('Excluded') || r.grade === 'Existing client' || r.grade === 'Duplicate').length)} distressed, existing client or duplicate`],
   ]);
   const out = leadRows(rows);
   $('leadsSub').textContent = `${fmt(out.length)} companies · list owner ${M.team}`;
@@ -518,6 +548,7 @@ function showDetail(r, scroll = true) {
     ['Most likely first new department', esc(r.likely_first_new_dept || '–')], ['Outlook', esc(r.fit_outlook || '–')],
     ['Target industry?', `${r.on_target === false ? 'no' : r.on_target ? 'yes' : '–'} · ${esc(r.fit_basis || '')}`]]);
   h += '<h4>Company profile</h4>' + ((r.profile_chips || []).length ? chipHtml(r.profile_chips) + '<div class="note" style="margin:4px 0 10px">Service lines from its website, pitch hints from its software stack, and group membership. Descriptive: no points.</div>' : '') + kv([['Website', web], ['Apollo industry', esc(r.industry_raw || '–')], ['Industry group', esc(r.industry || 'unmapped')],
+    ['Sub-sector', esc(r.sub_sectors ? r.sub_sectors + ' (from ' + r.sub_sector_basis + ')' : '–')],
     ['Activity codes', esc([r.sic_us ? 'SIC ' + r.sic_us : '', r.naics ? 'NAICS ' + r.naics : ''].filter(Boolean).join(' · ') || '–')],
     ['Staff (Apollo)', fmt(r.employee_count)], ['Revenue (Apollo estimate)', r.annual_revenue ? '£/$ ' + fmt(r.annual_revenue) : '–'], ['City', esc(r.city || '–')],
     ['Apollo funding label', esc(r.apollo_latest_funding || '–')], ['Parent company', esc(r.parent_company || '–')], ['LinkedIn', link(r.company_linkedin, 'company page')]]);
@@ -525,6 +556,28 @@ function showDetail(r, scroll = true) {
     ['Company number', r.company_number ? link('https://find-and-update.company-information.service.gov.uk/company/' + r.company_number, r.company_number) : '–'],
     ['Incorporated', dmy(r.registered_on)], ['Latest filing event', esc(r.filing_signal && r.filing_signal !== 'None' ? r.filing_signal + ' · ' + r.filing_signal_date : 'none in the last year')],
     ['Accounts', esc(r.uk_accounts || '–')], ['SIC', esc(r.uk_sic || '–')]]);
+  if (r.cqc_match) {
+    const needs = m => m === 'name' || m === 'name (pooled with the same-named lead)';
+    h += '<h4>CQC register (England)</h4>' + kv([['Matched by', esc(r.cqc_match) + (needs(r.cqc_match) ? ' <span class="badge b-pink">needs review</span>' : '')], ['Registered providers', esc(r.cqc_providers || '–')],
+      ['Locations', `${fmt(r.cqc_locations)}${r.cqc_care_homes ? ` · ${fmt(r.cqc_care_homes)} care homes, ${fmt(r.cqc_beds)} beds` : ''}${r.cqc_homecare_locations ? ` · ${fmt(r.cqc_homecare_locations)} home-care offices` : ''}`],
+      ['Added / closed in the last year', `${fmt(r.cqc_new_locations)} / ${fmt(r.cqc_closed_locations)}`],
+      ['Service types', esc(r.cqc_service_types || '–')], ['People supported', esc(r.cqc_user_groups || '–')],
+      ['Ratings', esc(r.cqc_ratings || '–') + (r.cqc_needs_improvement_180d > 0 ? ` <span class="badge b-pink">${fmt(r.cqc_needs_improvement_180d)} below Good in 6 months</span>` : '')],
+      ['Councils', esc(r.cqc_local_authorities || '–')], ['Provider page', link(r.cqc_url, 'CQC')]]);
+    if ((r.cqc_list || []).length) h += '<div class="tbl-wrap" style="margin-top:8px"><table><thead><tr><th>Location</th><th>Registered</th><th class="n">Beds</th><th>Rating</th><th>Services</th></tr></thead><tbody>'
+      + r.cqc_list.slice(0, 25).map(l => `<tr><td>${link('https://www.cqc.org.uk/location/' + l.location_id, l.location_name)}<br><span class="note">${esc(l.city || '')}</span></td><td class="n">${esc(l.registered_on || '–')}</td><td class="n">${esc(l.beds && l.beds !== '0' ? l.beds : '–')}</td><td>${esc(l.rating || 'not rated yet')}${l.rating_published ? `<br><span class="note">${esc(l.rating_published)}</span>` : ''}</td><td class="note">${esc(l.service_types || '')}</td></tr>`).join('')
+      + '</tbody></table></div>' + (r.cqc_list.length > 25 ? `<div class="note">and ${r.cqc_list.length - 25} more</div>` : '');
+  }
+  if ((r.contracts || []).length) {
+    h += `<h4>Public contracts won (Find a Tender, ${r.contracts.length})</h4><div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Buyer</th><th>Contract</th><th class="n">Value</th><th>Matched by</th></tr></thead><tbody>`
+      + r.contracts.map(c => `<tr><td class="n">${esc(c.date)}</td><td>${esc(c.buyer)}</td><td>${link(c.url, c.headline.replace(/^Won /, ''))}<br><span class="note">${esc(c.cpv_desc || '')}</span></td><td class="n">${c.value ? fmt(+c.value) + ' ' + esc(c.currency || '') : '–'}</td><td class="note">${esc(c.match)}${c.supplier_name ? ': ' + esc(c.supplier_name) : ''}${c.match === 'name' ? ' <span class="badge b-pink">needs review</span>' : ''}</td></tr>`).join('') + '</tbody></table></div>';
+  }
+  if ((r.event_list || []).length) {
+    h += `<h4>Events, grouped (${r.event_list.length} distinct${r.scoring_events ? `, ${r.scoring_events} scoring` : ''})</h4><div class="note" style="margin:0 0 6px">Reports of the same kind within ${M.event_window || 30} days are one event. Each event is worth strength × confidence × recency; they add up as 1 − (1−a)(1−b)…, so more events score higher but never above the news maximum.</div>`
+      + '<div class="tbl-wrap"><table><thead><tr><th>Event</th><th>Date</th><th>Reports</th><th>Sources</th><th class="n">Value</th><th>Best report</th></tr></thead><tbody>'
+      + r.event_list.map(e => `<tr><td>${esc(e.type)}</td><td class="n">${esc(e.date)}${e.last !== e.date ? ' – ' + esc(e.last) : ''}</td><td class="n">${fmt(e.reports)}</td><td>${esc(e.sources)}</td><td class="n">${e.value > 0 ? fmt(e.value, 2) : '<span class="note">0 (over 180 days)</span>'}</td><td class="note">${esc(e.title)}</td></tr>`).join('')
+      + `</tbody></table></div><div class="note">Combined news value: ${r.news_compound === null || r.news_compound === undefined ? '–' : fmt(r.news_compound, 2)} of 1</div>`;
+  }
   h += `<h4>News (${r.news_status || 'not checked'})</h4>`;
   h += r.news && r.news.length ? '<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Headline</th><th>Source</th></tr></thead><tbody>' + r.news.map(n =>
     `<tr><td class="n">${esc(n.date)}</td><td>${esc(n.category)}${n.confidence ? ` <span class="badge b-no">${esc(n.confidence)}</span>` : ''}</td><td>${n.parent ? `<span class="badge b-parent">${PARENT_ICON}Parent ${esc(n.parent)}</span> ` : ''}${link(n.url, n.title)}</td><td>${esc(n.source === 'newsroom' ? (n.parent ? 'parent website' : 'own website (no points unless an event)') : n.publisher || n.source)}</td></tr>`).join('') + '</tbody></table></div>'
@@ -539,7 +592,7 @@ function showDetail(r, scroll = true) {
     + r.jobs.map(j => `<tr><td>${esc(j.title)}</td><td class="n">${esc(j.posted || '–')}</td><td><span class="badge ${VERDICT[j.verdict] || 'b-no'}">${esc(j.verdict)}</span></td><td>${esc(j.jp_title ? j.jp_title + ' (' + (j.jp_category || '') + ')' : '–')}</td><td class="n">${j.similarity === null ? '–' : fmt(j.similarity, 2)}</td></tr>`).join('') + '</tbody></table></div>';
   if (r.priority_score !== null) {
     const rows = [
-      ['News and hiring', r.news_jobs_pts, M.max_points.news, (r.news_signal === 'None' ? 'no news' : r.news_signal ? `${r.news_from === 'parent' ? 'Parent ' + r.parent_name + ': ' : ''}${r.news_signal}${r.event_detail && r.news_from !== 'parent' ? ' (' + r.event_detail + ')' : ''}${r.news_signal_date ? ' · ' + r.news_signal_date : ''}${r.news_strength_factor < 1 ? ' · half weight' : ''}` : 'not checked')
+      ['News and hiring', r.news_jobs_pts, M.max_points.news, (r.scoring_events > 1 ? `${r.scoring_events} events added up (combined ${fmt(r.news_compound, 2)}); strongest: ` : '') + (r.news_signal === 'None' ? 'no news' : r.news_signal ? `${r.news_from === 'parent' ? 'Parent ' + r.parent_name + ': ' : ''}${r.news_signal}${r.event_detail && r.news_from !== 'parent' ? ' (' + r.event_detail + ')' : ''}${r.news_signal_date ? ' · ' + r.news_signal_date : ''}${r.news_strength_factor < 1 ? ' · half weight' : ''}` : 'not checked')
         + (r.jobs_status === 'ok' ? ` · ${fmt(r.job_postings_30d)} roles we fill posted in 30 days` : ' · jobs unknown')],
       ['Competitor client', r.bpo_pts, M.max_points.bpo, 'no data yet: counts as No'],
       ['Fit', r.fit_pts, M.max_points.fit, `${r.industry || 'Unknown'}: 5+ seats ${r.fit_growth_band || '–'}, 2nd department ${r.fit_branch_1y_band || '–'}`]];
@@ -627,6 +680,8 @@ function rGathered(f, rows) {
     row('  with at least one confirmed article', rows.filter(r => r.news_status === 'found').length, ''),
     row('Companies House (exact legal name)', ch, 'Status, incorporation, accounts, SIC, name changes'),
     row('Gazette insolvency notices', ch, 'Administration, liquidation, winding-up notices (searched for every matched company)'),
+    row('CQC register (care, England)', rows.filter(r => r.cqc_match).length, 'Locations, beds, services, ratings; new and taken-over homes are dated events (by company number, website or exact name)'),
+    row('Public contract awards (Find a Tender)', rows.filter(r => (r.contracts || []).length).length, 'Contract wins in the last year, by Companies House number or exact name'),
     row('Careers page / job feed read', jobsOk, 'Open roles; a hiring spike needs a second run 21+ days later'),
     row('Client Propensity fit profile', rows.filter(r => r.fit_growth_band).length, 'How past clients in the same industry grew'),
     row('Market trend (segment mode, context only)', rows.filter(r => r.market_trend !== null).length, 'Healthcare & Wellness UK and Technology UK tailwinds'),
@@ -674,9 +729,12 @@ function rMethod() {
     <li><b>What we know internally:</b> existing clients (MyStaff) are taken off the list, and known HubSpot prospects are flagged. Fit uses Client Propensity's industry profile from all countries, because there are only 26 UK clients.</li>
     <li><b>Unknown parts</b> (news where the search didn't run) are scored at the average of the leads where they are known, or 25% when none is known, and listed as estimated.</li>
     <li><b>Grades:</b> ranked <b>within each Apollo list</b>, since each list is its own campaign: Tier 1 = top 10% of the list, Tier 2 = next 30%, Tier 3 = the rest (D3). Equal scores are ordered by <b>readiness</b> (0–4): an Apollo funding label, a decision-maker with a verified email, in the news (or a relevant event on its own site) in the last 180 days, being in the list's target industry. Readiness never adds points.</li>
+    <li><b>Registers:</b> the CQC register (England's care regulator, monthly) gives each care lead's locations, beds, services and ratings. A home that re-registers under the lead after leaving another provider is a takeover (M&amp;A); a home with no predecessor is an expansion. Public contract awards from Find a Tender count as a Contract / partnership win. Both count at full strength, like hand-labelled events. A new registered manager at one home is shown but not scored.</li>
+    <li><b>Sub-sector:</b> what kind of business it is (nursing, residential, home care, learning disability; cyber services, software product…), from CQC's service types when the lead is registered, else from its activity codes. Descriptive only, with pitch hints.</li>
     <li><b>Check fit:</b> the company is outside the list's target industry (e.g. builders or furniture suppliers in the care-home list). It is scored, but not tiered against the campaign's own targets.</li>
     <li><b>Act now</b> (adds a bonus): funding or PE buyout news in the last 30 days, a hiring spike or 18+ open roles, restructuring or leadership news in the last 30 days.</li>
     <li><b>Excluded:</b> in administration, liquidation, receivership, strike-off or dissolved, or a Gazette insolvency notice. <b>Existing client:</b> website matches an active MyStaff client.</li>
+    <li><b>Duplicate:</b> Apollo's name says the company was renamed ("Monarch Healthcare Now RDCP Care") and the new name is already another lead in the list. That lead is graded; this one is kept for its contacts. A name with "Now" is only split when its website, email domain or LinkedIn page (or another lead) matches one of the two names.</li>
     <li><b>Owner:</b> every graded lead goes to <b>${esc(M.team)}</b> for now (no SDR / BDM / Marketing split).</li></ul>`;
   const mp = M.max_points;
   table($('tPoints'), [{k: 'p', label: 'Part'}, {k: 'm', label: 'Max points', n: 1}, {k: 'd', label: 'For Apollo leads today'}], [
@@ -697,7 +755,8 @@ function rQa() {
 
 // ---- wire up
 document.querySelectorAll('#filters select').forEach(s => s.onchange = () => render());
-$('btnReset').onclick = () => { ['fList', 'fGrade', 'fAct', 'fTarget', 'fHire', 'fService', 'fApollo'].forEach(id => $(id).value = 'All'); render(); };
+$('btnReset').onclick = () => { ['fList', 'fGrade', 'fAct', 'fTarget', 'fHire', 'fService', 'fSub', 'fApollo'].forEach(id => $(id).value = 'All');
+  $('fSigs').querySelectorAll('input').forEach(i => i.checked = false); $('fSigMode').value = 'any'; render(); };
 render();
 </script>
 </body>

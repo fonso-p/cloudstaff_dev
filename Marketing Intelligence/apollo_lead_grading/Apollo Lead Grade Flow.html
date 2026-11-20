@@ -1,0 +1,597 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Apollo Lead Grade Flow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+/* Layout: one vertical pipeline spine; each stage = what happens (left) + Belmont's data at that point (right). */
+:root{
+  --bg:#f5f7fa; --surface:#ffffff; --fg:#17202b; --muted:#5a6675; --line:#d5dce5; --spine:#9aa7b7;
+  --sample:#eef2f7; --accent:#1f5fae;
+  --t-gather:#0f7a6c;   --t-gather-bg:#e0f3f0;
+  --t-internal:#3d4fb8; --t-internal-bg:#e6e9fa;
+  --t-rule:#4b5563;     --t-rule-bg:#eceff3;
+  --t-ml:#7a3fb0;       --t-ml-bg:#f1e8fa;
+  --t-llm:#a65a00;      --t-llm-bg:#fcefdc;
+  --t-human:#b4234f;    --t-human-bg:#fbe5ec;
+  --t-out:#1f5fae;      --t-out-bg:#e3eefb;
+  --good:#0f7a4a; --warn:#a65a00;
+  --f-display:"Space Grotesk","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10151c; --surface:#18202a; --fg:#e4e9f0; --muted:#9aa6b5; --line:#2c3846; --spine:#4b5a6c;
+  --sample:#1d2732; --accent:#7fb0ee;
+  --t-gather:#5fd0bf; --t-gather-bg:#143a35;
+  --t-internal:#9ea9f5; --t-internal-bg:#252c55;
+  --t-rule:#b9c2ce; --t-rule-bg:#2a333f;
+  --t-ml:#cfa3f5; --t-ml-bg:#35224a;
+  --t-llm:#f2b766; --t-llm-bg:#3f2c12;
+  --t-human:#f58fae; --t-human-bg:#461c2a;
+  --t-out:#8dbdf5; --t-out-bg:#1b3150;
+  --good:#5fd39b; --warn:#f2b766; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10151c; --surface:#18202a; --fg:#e4e9f0; --muted:#9aa6b5; --line:#2c3846; --spine:#4b5a6c;
+  --sample:#1d2732; --accent:#7fb0ee;
+  --t-gather:#5fd0bf; --t-gather-bg:#143a35;
+  --t-internal:#9ea9f5; --t-internal-bg:#252c55;
+  --t-rule:#b9c2ce; --t-rule-bg:#2a333f;
+  --t-ml:#cfa3f5; --t-ml-bg:#35224a;
+  --t-llm:#f2b766; --t-llm-bg:#3f2c12;
+  --t-human:#f58fae; --t-human-bg:#461c2a;
+  --t-out:#8dbdf5; --t-out-bg:#1b3150;
+  --good:#5fd39b; --warn:#f2b766; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 64px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:2rem;font-weight:600}
+h2{font-size:1.15rem;font-weight:600}
+h3{font-size:.95rem;font-weight:600}
+p{margin:0}
+code,.mono{font-family:var(--f-mono);font-size:.84em}
+.lede{max-width:70ch;color:var(--muted)}
+.eyebrow{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* legend + overview */
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  padding:3px 8px;border-radius:4px;white-space:nowrap}
+.tag::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.gather{color:var(--t-gather);background:var(--t-gather-bg)}
+.internal{color:var(--t-internal);background:var(--t-internal-bg)}
+.rule{color:var(--t-rule);background:var(--t-rule-bg)}
+.ml{color:var(--t-ml);background:var(--t-ml-bg)}
+.llm{color:var(--t-llm);background:var(--t-llm-bg)}
+.human{color:var(--t-human);background:var(--t-human-bg)}
+.out{color:var(--t-out);background:var(--t-out-bg)}
+.legend-note{font-size:.85rem;color:var(--muted)}
+
+.overview{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:.82rem}
+.overview span.n{background:var(--surface);border:1px solid var(--line);padding:4px 9px;border-radius:4px;white-space:nowrap}
+.overview span.a{color:var(--spine)}
+
+.company{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 18px;max-width:760px}
+.company .k{color:var(--muted);font-size:.85rem}
+.company .v{font-size:.9rem}
+
+/* pipeline */
+.flow{position:relative;display:flex;flex-direction:column;gap:0}
+.stage{position:relative;display:grid;grid-template-columns:44px minmax(0,1.25fr) minmax(0,1fr);gap:0 18px;padding-bottom:26px}
+.stage::before{content:"";position:absolute;left:21px;top:34px;bottom:0;width:2px;background:var(--spine)}
+.stage:last-child::before{display:none}
+.stage::after{content:"";position:absolute;left:16px;bottom:2px;border:6px solid transparent;border-top:8px solid var(--spine);border-bottom:0}
+.stage:last-child::after{display:none}
+.num{width:44px;height:34px;display:grid;place-items:center;font-family:var(--f-mono);font-weight:500;font-size:.85rem;
+  background:var(--surface);border:2px solid var(--spine);border-radius:6px;position:relative;z-index:1}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card .head{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.card .head h2{margin-right:auto}
+.card ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:.9rem}
+.card .where{font-size:.78rem;color:var(--muted)}
+.card .where code{color:var(--fg)}
+.sample{background:var(--sample);border-radius:8px;padding:12px 14px;font-size:.84rem;display:flex;flex-direction:column;gap:6px;min-width:0;align-self:start}
+.sample .eyebrow{color:var(--accent)}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 12px;font-family:var(--f-mono);font-size:.78rem;font-variant-numeric:tabular-nums}
+.kv .k{color:var(--muted)}
+.kv .v{overflow-wrap:anywhere}
+.sample p{font-size:.84rem}
+.hl{color:var(--good);font-weight:500}
+.wn{color:var(--warn);font-weight:500}
+
+/* parallel collectors */
+.par{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.mini{border:1px solid var(--line);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:.84rem;background:var(--surface);min-width:0}
+.mini .belmont{font-family:var(--f-mono);font-size:.74rem;color:var(--accent);border-top:1px dashed var(--line);padding-top:6px}
+.wide{grid-column:2 / 4}
+
+table.score{border-collapse:collapse;width:100%;font-size:.8rem;font-variant-numeric:tabular-nums}
+table.score th,table.score td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+table.score th{font-weight:600;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em}
+table.score td.n{text-align:right;font-family:var(--f-mono)}
+table.score tr.total td{font-weight:600;border-bottom:0}
+.tbl{overflow-x:auto}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.75rem;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.chip.sig{border-color:var(--t-gather);color:var(--t-gather)}
+
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.note{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;font-size:.88rem}
+.note ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+
+@media (max-width:820px){
+  .stage{grid-template-columns:34px minmax(0,1fr);gap:10px 12px}
+  .num{width:34px;font-size:.78rem}
+  .stage::before{left:16px}
+  .stage::after{left:11px}
+  .sample,.wide{grid-column:2 / 3}
+}
+</style>
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:10px">
+    <span class="eyebrow">Marketing Intelligence · apollo_lead_grading</span>
+    <h1>Apollo lead grading: one company, raw export to dashboard</h1>
+    <p class="lede">Every step from an Apollo contact export to a tier on the EMEA Lead Grades page, followed for one real lead from the 20 Nov 2026 run: <strong>Belmont Healthcare</strong>, UK care homes list. The right-hand boxes show Belmont's actual values at each step.</p>
+  </header>
+
+  <section style="display:flex;flex-direction:column;gap:10px">
+    <span class="eyebrow">What each tag means</span>
+    <div class="legend">
+      <span class="tag gather">Gathering</span>
+      <span class="tag internal">Internal data</span>
+      <span class="tag rule">Rules / transform</span>
+      <span class="tag ml">Machine learning</span>
+      <span class="tag llm">LLM</span>
+      <span class="tag human">Human review</span>
+      <span class="tag out">Output</span>
+    </div>
+    <p class="legend-note">No LLM runs inside the automated pipeline. LLMs appear only in review loops (Claude labelling events and building eval labels; a local Qwen model suggesting answers for the competitor-client review queue).</p>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:10px">
+    <span class="eyebrow">At a glance</span>
+    <div class="overview">
+      <span class="n">Apollo export</span><span class="a">→</span>
+      <span class="n">prepare.py</span><span class="a">→</span>
+      <span class="n">Collect: filings · news · jobs · website · parents · CQC · contracts</span><span class="a">→</span>
+      <span class="n">NLP enrichment</span><span class="a">→</span>
+      <span class="n">Match + classify (export)</span><span class="a">→</span>
+      <span class="n">Review loops</span><span class="a">→</span>
+      <span class="n">Register events</span><span class="a">→</span>
+      <span class="n">Join internal data</span><span class="a">→</span>
+      <span class="n">Target check, sub-sector + gates</span><span class="a">→</span>
+      <span class="n">Score</span><span class="a">→</span>
+      <span class="n">Tier</span><span class="a">→</span>
+      <span class="n">Dashboard</span>
+    </div>
+  </section>
+
+  <section class="flow" aria-label="Pipeline stages">
+
+    <!-- 1 -->
+    <div class="stage">
+      <div class="num">1</div>
+      <div class="card">
+        <div class="head"><h2>Raw input: Apollo contact export</h2><span class="tag gather">Gathering</span></div>
+        <ul>
+          <li>BDM Marketing exports a list from Apollo as CSV: one row per <em>contact</em>, with company fields repeated on each row.</li>
+          <li>These are companies <strong>not in HubSpot yet</strong>, so there is no website-visit or referral data for them.</li>
+          <li>Company fields used later: website, email domain, city, headcount, revenue, industry, US SIC / NAICS codes, latest funding type, parent company, software stack.</li>
+        </ul>
+        <p class="where">File: <code>&lt;Data&gt;/EMEA/apollo-contacts-export.csv</code> (UK Care Homes list, 246 contacts, 175 companies)</p>
+      </div>
+      <div class="sample">
+        <span class="eyebrow">Belmont at this point</span>
+        <div class="kv">
+          <span class="k">Company</span><span class="v">Belmont Healthcare</span>
+          <span class="k">Website</span><span class="v">belmonthealthcare.co.uk</span>
+          <span class="k">City</span><span class="v">Redditch, UK</span>
+          <span class="k">Employees</span><span class="v">59</span>
+          <span class="k">Revenue</span><span class="v">$8,000,000</span>
+          <span class="k">Industry</span><span class="v">hospital &amp; health care</span>
+          <span class="k">US SIC</span><span class="v">8052, 8051, 8059, 8082</span>
+          <span class="k">NAICS</span><span class="v">621610, 623110, 623312</span>
+          <span class="k">Funding</span><span class="v">(none)</span>
+          <span class="k">Parent</span><span class="v">(none)</span>
+          <span class="k">Contacts</span><span class="v">best title: Home Manager</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="stage">
+      <div class="num">2</div>
+      <div class="card">
+        <div class="head"><h2>Prepare the company list</h2><span class="tag rule">Rules / transform</span></div>
+        <ul>
+          <li>Collapses contacts to <strong>one row per company</strong>, keyed on the Apollo account id.</li>
+          <li>Cleans names ("MIRACL | The login you love" → MIRACL; ALL CAPS → Title Case).</li>
+          <li>Uses the email domain when there is no website.</li>
+          <li><strong>Renamed companies:</strong> a name like "Monarch Healthcare Now RDCP Care" is split into old and new, but only when the website, an email domain or the LinkedIn page (or another lead in the list) matches one of the two names. The new name is searched. With no evidence the name is left alone and flagged for a check.</li>
+          <li>Companies with a funding label get a 365-day news lookback so the news can date it.</li>
+          <li>Applies <code>overrides.csv</code>: aliases, context words, and "ambiguous" flags for generic names.</li>
+          <li>Writes a separate <code>parents.csv</code> for the 13 parent companies. No contact data is written.</li>
+        </ul>
+        <p class="where"><code>News Scraper/apollo_emea/prepare.py</code> → <code>companies.csv</code>, <code>parents.csv</code></p>
+      </div>
+      <div class="sample">
+        <span class="eyebrow">Belmont at this point</span>
+        <div class="kv">
+          <span class="k">company_id</span><span class="v">apollo-6af2fc3b2abee400010ac04c</span>
+          <span class="k">name</span><span class="v">Belmont Healthcare (already clean)</span>
+          <span class="k">rename check</span><span class="v">no "Now" / "formerly" in the name</span>
+          <span class="k">website</span><span class="v">belmonthealthcare.co.uk</span>
+          <span class="k">location</span><span class="v">Redditch, UK</span>
+          <span class="k">lookback</span><span class="v">default (no funding label)</span>
+          <span class="k">override</span><span class="v">none (distinctive name)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="stage">
+      <div class="num">3</div>
+      <div class="card">
+        <div class="head"><h2>Collect public signals (seven collectors)</h2><span class="tag gather">Gathering</span></div>
+        <p style="font-size:.88rem">The News Scraper runs each collector against <code>companies.csv</code> and stores everything in its own database, <code>apollo_emea/data/news.db</code>. The two public registers (CQC and Find a Tender) are separate scripts that write their own files. Free sources only; LinkedIn and Indeed are not scraped because their terms forbid it.</p>
+      </div>
+      <div class="sample">
+        <span class="eyebrow">Belmont at this point</span>
+        <p>Five of the seven collectors find something (no parent company, no public contracts). Results are under each collector below.</p>
+      </div>
+      <div class="par wide" style="margin-top:12px">
+        <div class="mini">
+          <span class="tag gather">Gathering</span>
+          <h3>Companies House + Gazette</h3>
+          <p>Monthly bulk company file (status, incorporation, UK SIC, accounts, past names) and Gazette insolvency notices. Exact match on normalised legal name ("Ltd" = "Limited", "&amp;" = "and").</p>
+          <span class="belmont">BELMONT HEALTHCARE LIMITED · 02784277 · Active · inc. 1993 · SIC 82990 · no insolvency notice</span>
+        </div>
+        <div class="mini">
+          <span class="tag gather">Gathering</span><span class="tag rule">Rules</span>
+          <h3>News</h3>
+          <p>Google News RSS, Bing News RSS and the company's own newsroom feed. A quick match score (name in headline +0.6, in summary +0.4, domain +0.3, location +0.15, own site = 1.0) decides what is stored (≥ 0.4). Up to 5 article texts are read per company.</p>
+          <span class="belmont">14 matched articles · 10 from its own website · 4 from publishers</span>
+        </div>
+        <div class="mini">
+          <span class="tag gather">Gathering</span>
+          <h3>Jobs</h3>
+          <p>Finds the careers page, reads job-system feeds (Greenhouse, Lever, Workable…) or JobPosting data, then a headless-browser pass (Playwright) for pages built with JavaScript.</p>
+          <span class="belmont">careers page found (/join-our-journey/) · no roles readable</span>
+        </div>
+        <div class="mini">
+          <span class="tag gather">Gathering</span>
+          <h3>Website card</h3>
+          <p>The home page's description and keywords. Used as identity evidence for news matching and, later, for service lines.</p>
+          <span class="belmont">profile ok · no care service-line keywords matched</span>
+        </div>
+        <div class="mini">
+          <span class="tag gather">Gathering</span>
+          <h3>Parent companies' news</h3>
+          <p>Same news search for each parent Apollo names, e.g. HC-One for Meridian Healthcare.</p>
+          <span class="belmont">n/a (no parent)</span>
+        </div>
+        <div class="mini">
+          <span class="tag gather">Gathering</span><span class="tag rule">Rules</span>
+          <h3>CQC register (care, England)</h3>
+          <p>CQC's monthly files of every registered care location and every closed one (Open Government Licence, no key). Joined on the provider's Companies House number, else the website, else an exact multi-word name.</p>
+          <span class="belmont">matched by website · 9 provider companies · 14 locations, 13 care homes, 596 beds · Good 11, Requires improvement 2</span>
+        </div>
+        <div class="mini">
+          <span class="tag gather">Gathering</span><span class="tag rule">Rules</span>
+          <h3>Public contract awards</h3>
+          <p>Find a Tender's open-data API: every UK public contract award notice in the last year (13,727), cached by month. Matched by Companies House number (the lead's or its CQC providers') or exact 2+ word name.</p>
+          <span class="belmont">no contracts found</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="stage">
+      <div class="num">4</div>
+      <div class="card">
+        <div class="head"><h2>NLP enrichment of each article</h2><span class="tag ml">Machine learning</span></div>
+        <ul>
+          <li><strong>spaCy named entities</strong>: for small companies, rejects headlines where the name is part of another entity ("Array Technologies") or tagged as a person or place.</li>
+          <li><strong>spaCy dependency parse</strong>: extracts the event and who did what to whom ("X acquires Y" vs "X acquired by Y"), amounts, places, executive names, certainty.</li>
+          <li><strong>MiniLM sentence embeddings</strong>: how close the article is to the company's website description, and grouping the same story from several outlets into one.</li>
+          <li>Cached per story, so each story is processed once. CPU only, ~20 s for this list.</li>
+        </ul>
+        <p class="where"><code>news_scraper nlp run --stages entities,events</code></p>
+      </div>
+      <div class="sample">
+        <span class="eyebrow">Belmont at this point</span>
+        <div class="kv">
+          <span class="k">name_type</span><span class="v">distinctive</span>
+          <span class="k">entity check</span><span class="v">passes</span>
+          <span class="k">distinct stories</span><span class="v">14 (no duplicates)</span>
+          <span class="k">event detail</span><span class="v">none extracted</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="stage">
+      <div class="num">5</div>
+      <div class="card">
+        <div class="head"><h2>Judge the match and classify the event</h2><span class="tag rule">Rules</span><span class="tag ml">Machine learning</span></div>
+        <ul>
+          <li><strong>Is it really this company?</strong> Match score ≥ 0.6 plus identity checks; a volume check re-judges short names with 15+ matches and little evidence. Rejected articles go to <code>review.csv</code>. In this run 801 matched, 951 rejected.</li>
+          <li><strong>What kind of event?</strong> Two judges:
+            <ul>
+              <li>Keyword rules (<code>classify.py</code>)</li>
+              <li>A logistic regression over <strong>mpnet sentence embeddings</strong>, trained on example headlines in <code>event_examples.py</code> with the company name masked as "Acme"</li>
+            </ul>
+          </li>
+          <li>Confidence: <em>high</em> = both agree; <em>medium</em> = rules only; <em>low</em> = classifier only.</li>
+          <li>Categories: Funding, PE buyout, M&amp;A, Expansion, Restructuring, Contract / partnership win, Leadership change, Product launch, Other.</li>
+        </ul>
+        <p class="where"><code>news_scraper export --lookback-days 365</code> → <code>company_summary.csv</code>, <code>signal_events.csv</code></p>
+      </div>
+      <div class="sample">
+        <span class="eyebrow">Belmont at this point</span>
+        <p>5 of 14 articles are real events, the rest are "Other". Two examples:</p>
+        <div class="kv">
+          <span class="k">17 Sep</span><span class="v">"Belmont Healthcare expands into new region with acquisition of homes from The OSJCT" (Care Home Professional) → <span class="hl">M&amp;A, high</span></span>
+          <span class="k">9 Nov</span><span class="v">"Belmont Healthcare lines up growth with new head of commercial" (Insider Media) → <span class="hl">Leadership change, high</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 -->
+    <div class="stage">
+      <div class="num">6</div>
+      <div class="card">
+        <div class="head"><h2>Review loops</h2><span class="tag human">Human review</span><span class="tag llm">LLM</span></div>
+        <ul>
+          <li>A person or Claude checks the output and records fixes in CSVs that the next run reads:
+            <ul>
+              <li><code>overrides.csv</code>: generic names that matched someone else ("The Fed", "Titania")</li>
+              <li><code>event_overrides.csv</code>: an event given the wrong type</li>
+              <li><code>manual_events.csv</code>: an event the classifier missed, with <code>labelled_by</code></li>
+            </ul>
+          </li>
+          <li>Phrasings that will recur are taught to the classifier (<code>event_examples.py</code>). <code>eval/eval_events.py</code> then checks precision and recall didn't drop.</li>
+          <li>Claude labelled the 9 manual events and the eval gold labels (865 stories). No person has checked those labels yet.</li>
+        </ul>
+      </div>
+      <div class="sample">
+        <span class="eyebrow">Belmont at this point</span>
+        <p>Claude added 3 rows to <code>manual_events.csv</code> (18 Nov), for example:</p>
+        <div class="kv">
+          <span class="k">8 Nov</span><span class="v">"names new commercial lead" (Bdaily) → Leadership change</span>
+          <span class="k">17 Sep</span><span class="v">"adds six homes to portfolio" (LaingBuisson) → M&amp;A, confirms the event</span>
+        </div>
+        <p>Both phrasings were also added to the classifier's examples.</p>
+      </div>
+    </div>
+
+    <!-- 7 -->
+    <div class="stage">
+      <div class="num">7</div>
+      <div class="card">
+        <div class="head"><h2>Turn register records into dated events</h2><span class="tag rule">Rules</span></div>
+        <ul>
+          <li><strong>Takeover (M&amp;A):</strong> a CQC location registered under the lead within 90 days of a location at the same postcode closing under another provider.</li>
+          <li><strong>Expansion:</strong> a location registered under the lead with no such predecessor. A home moving between the lead's own companies is ignored.</li>
+          <li><strong>Leadership change:</strong> a different registered manager from last month's snapshot. Shown but not scored, because turnover at one home is common.</li>
+          <li><strong>Contract / partnership win:</strong> each public contract award.</li>
+          <li>These go in the same queue as the hand-labelled events, at full strength and labelled with their source. The strongest event still decides.</li>
+        </ul>
+        <p class="where"><code>apollo_emea/cqc.py</code> → <code>cqc_events.csv</code> · <code>apollo_emea/contracts.py</code> → <code>contract_awards.csv</code> · read by <code>register_events()</code></p>
+      </div>
+      <div class="sample">
+        <span class="eyebrow">Belmont at this point</span>
+        <div class="kv">
+          <span class="k">15 Sep</span><span class="v">"Took over 6 care homes from The Orders of St John Care Trust, 239 beds" (CQC register) → <span class="hl">M&amp;A</span></span>
+          <span class="k">contracts</span><span class="v">none</span>
+        </div>
+        <p>This is the same OSJCT deal the news found, confirmed from the register alone. The news article is two days newer, so it stays the scored event.</p>
+      </div>
+    </div>
+
+    <!-- 8 -->
+    <div class="stage">
+      <div class="num">8</div>
+      <div class="card">
+        <div class="head"><h2>Join internal data</h2><span class="tag internal">Internal data</span><span class="tag ml">Machine learning</span><span class="tag llm">LLM</span></div>
+        <ul>
+          <li><strong>Priority list (MyStaff + HubSpot)</strong>: does the website or email domain belong to an active client?</li>
+          <li><strong>Client Propensity prospect profiles</strong>: <em>logistic regression</em> models trained on past Cloudstaff clients give each industry's chance of growing to 5+ seats in 1 year or 10+ in 2 years, and of adding a second department. All countries are used, since there are only 26 UK clients.</li>
+          <li><strong>Roles we fill</strong> (<code>roles.py</code>): each job title posted is matched to Staff Central JP titles with <em>MiniLM similarity</em> (≥ 0.80 we fill, 0.62–0.80 possible).</li>
+          <li><strong>Competitor-client map</strong>: competitor → client pairs extracted by rules from candidates' CVs (18,302 rows). Uncertain rows are reviewed by a person, with a local <em>Qwen 4B LLM</em> (Ollama) pre-filling suggestions.</li>
+          <li><strong>UK market trend</strong>: context only, not scored.</li>
+        </ul>
+        <p class="where"><code>grade_leads.py</code>: <code>match_internal()</code>, <code>add_fit()</code>, <code>add_roles()</code>, <code>add_competitor_clients()</code></p>
+      </div>
+      <div class="sample">
+        <span class="eyebrow">Belmont at this point</span>
+        <div class="kv">
+          <span class="k">existing client</span><span class="v">no</span>
+          <span class="k">fit profile</span><span class="v">Healthcare &amp; Wellness | all countries</span>
+          <span class="k">5+ seats, 1 yr</span><span class="v">3.0% vs 9.6% usual → Low</span>
+          <span class="k">10+ seats, 2 yr</span><span class="v">1.1% vs 4.6% usual → Low</span>
+          <span class="k">2nd department</span><span class="v"><span class="hl">36.3% vs 27.2% usual → High</span></span>
+          <span class="k">outlook</span><span class="v">Likely to expand</span>
+          <span class="k">roles we fill</span><span class="v">n/a (no postings)</span>
+          <span class="k">competitor client</span><span class="v">no match</span>
+          <span class="k">market trend</span><span class="v">0.658 (context)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9 -->
+    <div class="stage">
+      <div class="num">9</div>
+      <div class="card">
+        <div class="head"><h2>Target-industry check, sub-sector and gates</h2><span class="tag rule">Rules</span></div>
+        <ul>
+          <li><strong>Target check</strong> uses evidence in order, because Apollo's industry label is often wrong: Companies House SIC for furniture or building trades, then Apollo SIC / NAICS activity codes, then website service lines, then Apollo's industry.</li>
+          <li><strong>Gates</strong> before scoring:
+            <ul>
+              <li>Distressed (administration, liquidation, strike-off) → <em>Excluded</em></li>
+              <li>Active client → <em>Existing client</em></li>
+              <li>Renamed to another lead in the list → <em>Duplicate</em></li>
+              <li>Not in the target industry → <em>Check fit</em>: scored but not tiered</li>
+            </ul>
+          </li>
+        </ul>
+        <ul>
+          <li><strong>Sub-sector</strong> (descriptive, no points): from CQC service types when registered, else the activity codes. Care: nursing, residential, learning disability / mental health, home care, staffing agency. Cyber: services, software product, managed services, training. Each comes with a pitch hint.</li>
+        </ul>
+        <p class="where"><code>target_check()</code>, <code>add_subsectors()</code>, <code>gate()</code></p>
+      </div>
+      <div class="sample">
+        <span class="eyebrow">Belmont at this point</span>
+        <div class="kv">
+          <span class="k">fit_basis</span><span class="v">activity codes: SIC 8052, 8051, 8059 (nursing / care)</span>
+          <span class="k">on target</span><span class="v"><span class="hl">yes</span></span>
+          <span class="k">distressed</span><span class="v">no (Active)</span>
+          <span class="k">existing client</span><span class="v">no</span>
+          <span class="k">sub-sectors</span><span class="v">Nursing homes · Residential care · Home care (CQC service types)</span>
+          <span class="k">result</span><span class="v"><span class="hl">goes on to scoring</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10 -->
+    <div class="stage">
+      <div class="num">10</div>
+      <div class="card">
+        <div class="head"><h2>Priority Score (out of 100)</h2><span class="tag rule">Rules</span></div>
+        <ul>
+          <li>The live Priority Score code (<code>priority_scoring.py</code>, profile <code>dashboard_v3</code>, New Logo) without the HubSpot parts. Their 40 points are shared out across the rest.</li>
+          <li><strong>News</strong>: events add up. Reports of the same kind within 30 days are grouped into one event (news, hand-labelled, CQC or contract). Each is worth strength × recency; they combine as 1 − (1−a)(1−b)…, capped at the 25 points. M&amp;A strength is 0.8; 31–90 days old is ×0.7.</li>
+          <li><strong>Fit</strong>: 75% growth (High = full) + 25% second department.</li>
+          <li><strong>Act now bonus</strong>: +15 per trigger (fresh funding or buyout, hiring spike, fresh restructuring or leadership news). It only fires from the event that is scored.</li>
+        </ul>
+        <p class="where"><code>../format data/priority_scoring.py</code></p>
+      </div>
+      <div class="sample">
+        <span class="eyebrow">Belmont's score</span>
+        <div class="tbl">
+          <table class="score">
+            <thead><tr><th>Part</th><th>Working</th><th style="text-align:right">Pts</th></tr></thead>
+            <tbody>
+              <tr><td>News (25)</td><td>M&amp;A 0.8 × 0.7 = 0.56, plus leadership change 0.3 × 1.0 = 0.30 → 1 − 0.44 × 0.70 = 0.69</td><td class="n">17.3</td></tr>
+              <tr><td>Hiring (25)</td><td>no roles found</td><td class="n">0.0</td></tr>
+              <tr><td>Fit (33)</td><td>0.75 × Low + 0.25 × High = 0.25</td><td class="n">8.3</td></tr>
+              <tr><td>Competitor (17)</td><td>no match</td><td class="n">0.0</td></tr>
+              <tr><td>Web, referral</td><td>pre-HubSpot</td><td class="n">0.0</td></tr>
+              <tr><td>Act now</td><td>Keys off the strongest event (M&amp;A), which is not a trigger</td><td class="n">0</td></tr>
+              <tr class="total"><td>Total</td><td></td><td class="n">26</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11 -->
+    <div class="stage">
+      <div class="num">11</div>
+      <div class="card">
+        <div class="head"><h2>Tier within the Apollo list</h2><span class="tag rule">Rules</span></div>
+        <ul>
+          <li>Ranked within each list (care and cyber are separate campaigns): top 10% Tier 1, next 30% Tier 2, the rest Tier 3.</li>
+          <li>Ties are broken by <strong>readiness</strong> (0–4, one point each): an Apollo funding label · a decision-maker with a verified email · news in the last 180 days · in the target industry. Readiness never adds points.</li>
+        </ul>
+        <p class="where"><code>grade()</code>, <code>readiness()</code></p>
+      </div>
+      <div class="sample">
+        <span class="eyebrow">Belmont at this point</span>
+        <div class="kv">
+          <span class="k">readiness</span><span class="v">2 / 4 (recent news, target industry)</span>
+          <span class="k">missing</span><span class="v">funding label; verified decision-maker</span>
+          <span class="k">grade</span><span class="v"><span class="hl">Tier 1</span> of 16 in UK care homes (175)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12 -->
+    <div class="stage">
+      <div class="num">12</div>
+      <div class="card">
+        <div class="head"><h2>Write outputs and build the dashboard</h2><span class="tag out">Output</span></div>
+        <ul>
+          <li><code>grade_leads.py</code> writes <code>lead_grades_apollo_emea.xlsx</code> (leads, contacts, news) and <code>.json</code> (the page's data). Both stay out of the repo because they hold contact names and emails.</li>
+          <li><code>build_dashboard.py</code> embeds the JSON in <code>dashboard_template.html</code> to make one offline HTML file. <code>check_page.py</code> must report <code>errors: []</code>.</li>
+          <li>The page has a leads table (Why chips, readiness), a lead panel, and pages for data gathered, fit and market, how grading works, and QA. Filters include sub-sector.</li>
+        </ul>
+        <p class="where"><code>&lt;Data&gt;/&lt;date&gt;_EMEA_Lead_Grades.html</code>, owned by BDM Marketing</p>
+      </div>
+      <div class="sample">
+        <span class="eyebrow">What BDM Marketing sees</span>
+        <div class="kv">
+          <span class="k">row</span><span class="v">Belmont Healthcare · Tier 1 · 22 · readiness 2/4</span>
+        </div>
+        <div class="chips"><span class="chip sig">M&amp;A · Sep 2026</span></div>
+        <p>Clicking the row opens the lead panel:</p>
+        <ul style="margin:0;padding-left:18px;font-size:.82rem">
+          <li>Fit detail: second department likely; outlook "Likely to expand"</li>
+          <li>Company profile: sub-sectors with pitch hints, and a CQC size chip</li>
+          <li>Companies House record</li>
+          <li>CQC register: 14 locations with beds, ratings and services</li>
+          <li>News list, including the new head of commercial</li>
+          <li>Careers page link</li>
+          <li>Score breakdown</li>
+          <li>Contacts</li>
+        </ul>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="notes">
+    <div class="note">
+      <h3>Where the models are</h3>
+      <ul>
+        <li>spaCy entities and dependency parse (identity, event details)</li>
+        <li>MiniLM embeddings (website fit, story de-duplication, job title → Cloudstaff role)</li>
+        <li>mpnet embeddings + logistic regression (headline event classifier)</li>
+        <li>Logistic regression on past clients (Client Propensity fit)</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h3>Where LLMs are</h3>
+      <ul>
+        <li>Claude: labelled missed events in <code>manual_events.csv</code> and the eval gold labels, in a working session, not during a run</li>
+        <li>Qwen 4B (local, Ollama): pre-fills suggestions for the competitor-client review queue</li>
+        <li>Possible next step: a local LLM for medium and low confidence events only</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h3>What's rules-only</h3>
+      <ul>
+        <li>News match score, keyword event rules, Companies House matching</li>
+        <li>Target check, gates, Priority Score, tiers and readiness</li>
+        <li>Rename split, CQC takeover rule, contract matching, sub-sectors</li>
+        <li>Every threshold is a setting at the top of <code>grade_leads.py</code></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="note">
+      <h3>Public registers used</h3>
+      <ul>
+        <li>Companies House and the Gazette: status, SIC, accounts, insolvency</li>
+        <li>CQC (England's care regulator): locations, beds, services, ratings; monthly files</li>
+        <li>Find a Tender: UK public contract awards; a year is cached, later runs fetch only new months</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h3>Known gaps</h3>
+      <ul>
+        <li>CQC covers England only (not Scotland, Wales or Northern Ireland)</li>
+        <li>Contracts Finder and the devolved portals aren't read; care spot placements get no notice</li>
+        <li>Care contracts can be published up to about 4 months after signing</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+</body></html>

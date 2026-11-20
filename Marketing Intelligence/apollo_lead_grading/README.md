@@ -52,6 +52,8 @@ The repo's `.venv` (Python 3.12) with the `nlp` dependency group (spaCy, sentenc
 | 5 | Parent companies' news | `News Scraper` | `… run --companies apollo_emea/data/parents.csv --db apollo_emea/data/news.db` | <1 min |
 | 6 | Event details | `News Scraper` | `… nlp run --db apollo_emea/data/news.db --scope company --stages entities,events` | ~20 s |
 | 7 | Export | `News Scraper` | `… export --db apollo_emea/data/news.db --out apollo_emea/out --lookback-days 365` | ~1 min |
+| 7a | CQC register (care, England) | `News Scraper` | `../.venv/Scripts/python.exe apollo_emea/cqc.py --download` | ~30 s (+3 min per new monthly file) |
+| 7b | Public contract awards | `News Scraper` | `../.venv/Scripts/python.exe apollo_emea/contracts.py` | ~15 min first time, then ~1 min |
 | 8 | Competitor-client map (when the CV export is refreshed) | `Client Extraction (CS Jobs)` | run `competitor_client_extraction.ipynb`, then `../.venv/Scripts/python.exe export_client_map.py` | ~3 min |
 | 9 | UK market trend (weekly, optional; context only) | `News Scraper` | `… segment run --groups "Technology;Healthcare & Wellness" --countries UK`, then `… segment export` | ~2 min |
 | 10 | Grade | `Marketing Intelligence` | `../.venv/Scripts/python.exe apollo_lead_grading/grade_leads.py` | ~30 s |
@@ -66,6 +68,7 @@ The repo's `.venv` (Python 3.12) with the `nlp` dependency group (spaCy, sentenc
 |---|---|---|
 | A company name that matched someone else ("The Fed", "Titania") | `News Scraper/apollo_emea/overrides.csv` | `ambiguous = yes`; re-run step 3 for those companies, then 7 |
 | An event with the wrong type | `event_overrides.csv` (here) | company, start of the headline, correct category, `labelled_by` |
+| A CQC or contract match made on a name only ("Check match" chip, "needs review" badge) | `register_match_reviews.csv` (here) | company_name, source (`CQC register` / `Find a Tender`), notice (Find a Tender id; blank for CQC), verdict `confirmed` (flag cleared) or `rejected` (match dropped), reviewed_by, reviewed_on, note. Flagged matches score until rejected |
 | An event the classifier missed | `manual_events.csv` (here) | company, date, category, headline, url, publisher, `labelled_by`, note |
 | A missed phrasing that will recur | `News Scraper/news_scraper/event_examples.py` (+ `classify.py` rules) | then check `News Scraper/eval/eval_events.py` didn't get worse |
 
@@ -81,6 +84,7 @@ The repo's `.venv` (Python 3.12) with the `nlp` dependency group (spaCy, sentenc
 |---|---|---|
 | **Excluded: distressed** | Companies House / Gazette: administration, liquidation, receivership, strike-off, dissolved, insolvency notice | `DISTRESS` |
 | **Existing client** | Website or email domain matches an active MyStaff client in the priority list | `match_internal()` |
+| **Duplicate** | Apollo's name holds a rename ("Monarch Healthcare Now RDCP Care") and the new name is already another lead in the list. That lead is graded; this one keeps its contacts (§4.6, renamed companies) | `DUPLICATE`, `split_renamed()` |
 | **Check fit** | Not in the list's target industry (§4.4). Scored, not tiered | `CHECK_FIT`, `target_check()` |
 
 ### 4.2 Score (out of 100)
@@ -96,7 +100,7 @@ The live Priority Score code, New Logo, **without the HubSpot parts** (these lea
 
 ### 4.3 News rules
 - **Strength:** Funding round 1.0 · PE buyout 1.0 · M&A 0.8 · Expansion / new office 0.7 · Restructuring 0.5 · **Contract / partnership win 0.5** · Leadership change 0.3 · **Product launch 0.3**. Recency: 0–30 days ×1.0 · 31–90 ×0.7 · 91–180 ×0.4 · older 0. The two in bold were added 18 Nov with first-guess strengths (`NEW_EVENT_STRENGTH`, passed to the scoring code as the profile's `news_strength_extra`).
-- **One event per lead:** the strongest by strength × recency × factor. A weaker event the same lead also has (e.g. Belmont's new commercial lead, under its six-homes acquisition) shows in its news list but doesn't add points or triggers.
+- **Events add up** (changed 20 Nov, `COMPOUND_EVENTS`): a lead's reports (news, own site, hand-labelled, CQC, contracts, its parent's event) are grouped into distinct events (same type within `EVENT_WINDOW_DAYS` = 30 days is one event, so one deal in three outlets and CQC counts once). Each event is worth strength × confidence × recency; they combine as 1 − (1−a)(1−b)…, so one event scores as before, each extra one adds part of what is left, and news never passes its 25 points. Belmont: acquisition 0.56 and new commercial lead 0.30 → 0.69 (17.3 points, was 14). A reviewed headline (`event_overrides.csv`) decides for its whole event. Passed to the shared scoring as the optional column `news_compound` (blank = strongest event only, so the main pipeline is unchanged). Act now still keys off the strongest event. The lead panel lists the grouped events; a "2+ separate events" chip and filter mark leads with several.
 - **"Other" news earns nothing** (`OTHER_NEWS_POINTS = False`), so a company's own blog posts count only when they report one of the events above.
 - **Factors** (`news_strength_factor`, read by `priority_scoring._news_factor()`; blank = 1, so the main pipeline is unaffected): medium / low classifier confidence ×0.5 (`CONFIDENCE_FACTOR`); a parent company's event ×0.5 (`PARENT_FACTOR`), used only when it beats the lead's own; corrected (`event_overrides.csv`) and hand-labelled (`manual_events.csv`) events ×1.0.
 - **Industry trend is not in the score** (`TREND_IN_SCORE = False`): tiers rank within each list, where every lead shares the same trend.
@@ -119,6 +123,9 @@ A lead put in the target gets the target's industry group for fit (`industry_apo
 - **Roles we fill** (`roles.py`): each posted job title is cleaned (`shared/jp_titles.py`) and matched to Staff Central's JP titles with the scraper's MiniLM model. ≥ 0.80 = we fill (counted); 0.62–0.80 = possible (shown, not counted); care and facilities roles that must be done in person = on-site (`ONSITE`). Only the JP Title / JP Category columns of the Staff Central export are read.
 - **Event details** (scraper `nlp run`): "bought by SecureSky", "buying four Yorkshire homes", "new Managing Director: Charly Davis", "raised £18.2m". The fullest detail among the company's articles on that event (`best_detail()`); only describes an event already counted.
 - **Competitor-client map** (`Client Extraction (CS Jobs)/export_client_map.py` → `competitor_clients.csv`, company names only, competitors' own brands dropped): matched by `competitor_matches()` with `shared/company_keys.py`. One-word names need an exact match and no contradicting location; close names need 2+ words, 10+ letters and similarity ≥ 0.95 (`COMPETITOR_FUZZY`).
+- **Registers** (added 20 Nov): `cqc.py` and `contracts.py` (News Scraper/apollo_emea) write dated events that are read like `manual_events.csv`, keyed by account, at full strength, labelled with their source: CQC takeovers (**M&A**), new CQC registrations (**Expansion / new office**) and Find a Tender awards (**Contract / partnership win**) score (`REGISTER_SCORED`); a new registered manager at one home is shown, not scored (turnover is common and it would trigger Act now). The CQC profile (locations, beds, home-care offices, services, people supported, ratings, councils) is shown in the lead panel; homes rated below Good in the last 6 months get a no-points chip.
+- **Sub-sector** (`SUBSECTORS`, `add_subsectors()`): from CQC service types when the lead is registered, else from Apollo US SIC / NAICS (4 digits) and the Companies House UK SIC. Care: nursing homes, residential care, learning disability / mental health, home care, care staffing agency. Cyber: services / consultancy, software product, managed / hosted, training. A lead can have several. Descriptive, no points; each comes with a pitch hint (`SUBSECTOR_PITCH`, a first draft for BDM Marketing to correct) and is a filter on the page.
+- **Renamed companies** (`reference_code/company_keys.py` `split_renamed()`, used by both `prepare.py` and here, added 20 Nov): Apollo sometimes stores a rebrand in the name, "Old Now New" (also "now known as", "now part of", "New formerly Old"). Splitting on "Now" alone is unsafe ("Here and Now Care"), so the name is split only when the website, a contact's email domain or the LinkedIn slug starts with one of the two names, or the new name is another account in the list. Then the new name is searched and shown as "New (was Old)", with a "Renamed" chip; with no evidence the name is left alone with a "Check the name" chip. The old name is not searched (Monarch Healthcare pulls US companies); add it to `overrides.csv` aliases if wanted. "Now part of X" keeps the company's own name.
 - **Apollo funding vs the news** (`apollo_vs_news()`): matches (same kind of event) / news shows a different event / not in the news. Shown, never scored.
 
 ### 4.7 The page
@@ -135,6 +142,7 @@ A lead put in the target gets the target's industry group for fit (`industry_apo
 | File | What it is |
 |---|---|
 | `grade_leads.py` | The pipeline: Apollo → internal matches → News Scraper results (news rules, own-site rule, parents, event details, manual events, jobs, roles, service lines) → competitor clients → target check → fit → gates → score → tiers → chips → xlsx + json. Every rule is a setting at the top |
+| `../../News Scraper/apollo_emea/cqc.py`, `contracts.py` | CQC register and public contract awards (§4.6, Registers) |
 | `roles.py` | Posted job titles → Cloudstaff roles (§4.6) |
 | `dashboard_template.html` | The page (house format, `cs-dashboard` skill) |
 | `event_overrides.csv` | Corrections of an event's type (leads and parents), with `labelled_by` |
@@ -209,7 +217,7 @@ Tier 1, care: Lilian Faithfull Care, Strong Life Care, Forge Care, Dunham Care, 
 2. **Strengths of the two new event types** (0.5 and 0.3 are first guesses). When agreed, add them to `Marketing Intelligence/reference materials/data/scoring_settings.json` so the main pipeline uses the same values.
 3. **The bottom of Tier 1:** some leads reach it on readiness alone (no scored signal). Optional rule: Tier 1 needs a scored signal.
 4. **On-site hiring scores nothing.** To count it as a growth sign: `HIRING_SCORE = "all"`.
-5. **One event per lead.** A lead with two events (Belmont: acquisition and a new commercial lead) scores only the stronger; a second event could add a smaller bonus.
+5. ~~One event per lead~~ events add up since 20 Nov (§4.3). Open: whether the 30-day grouping window and the combining rule are right.
 
 **Next steps, in order of value**
 1. **Accuracy check on UK data:** a person marks `article_check.xlsx` (~100 rows), including some new-category events; then the eval scripts score them.

@@ -203,7 +203,11 @@ def _signals(r, as_of, S):
         strength = 0 if _blank(news) else _strengths(S).get(news, NEWS_STRENGTH[NEWS_UNMAPPED]) * _news_factor(r)
         rec = 1 if _blank(news) or _blank(ndate) else _recency((as_of - ndate).days)
         hire = 1 if r["hiring_spike"] == "Yes" else min(_num(r["job_postings_30d"]) / N["jobs_cap"], 1)
-        nj = rnd_sig(N["news_share"] * strength * rec + N["jobs_share"] * hire)
+        # optional column news_compound (0-1): several distinct events combined, set by lead grading (20 Nov 2026).
+        # Blank or missing = the strongest event only, so the main pipeline scores as before.
+        compound = r.get("news_compound")
+        news_val = strength * rec if _blank(compound) else float(compound)
+        nj = rnd_sig(N["news_share"] * news_val + N["jobs_share"] * hire)
     seat_max = S["max_points"][r["goal"]].get("seat", 0)
     seats = r.get("seats_added_6m")
     seat = None if not seat_max or _blank(seats) else _seat_share(float(seats), S["seat_bands"])

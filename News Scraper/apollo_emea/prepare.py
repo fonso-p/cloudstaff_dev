@@ -24,6 +24,8 @@ from urllib.parse import urlparse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "data")
+sys.path.insert(0, os.path.join(HERE, "..", "..", "reference_code"))
+from company_keys import split_renamed  # noqa: E402  'Old Name Now New Name', checked against the website (shared with lead grading)
 
 COUNTRY_CODES = {"united kingdom": "UK", "ireland": "IE", "australia": "AU", "new zealand": "NZ",
                  "united states": "US", "canada": "CA", "singapore": "SG", "philippines": "PH"}
@@ -81,17 +83,26 @@ def main(argv=None):
     for r in rows:
         by_co[r.get("Apollo Account Id") or root_domain(r.get("Website")) or r.get("Company Name")].append(r)
 
-    def apply_overrides(row, overrides):
+    def apply_overrides(row, overrides, also=""):
+        o = overrides.get(row["company_name"].lower()) or overrides.get(also.lower()) or {}   # new name, or Apollo's own
         for k in ("aliases", "context", "ambiguous"):
-            v = (overrides.get(row["company_name"].lower(), {}).get(k) or "").strip()
+            v = (o.get(k) or "").strip()
             if v:
                 row[k] = v
         return row
 
-    companies, parents = [], {}
+    companies, parents, renamed = [], {}, []
+    others = {acc: (clean_name(rs[0].get("Company Name", "")), rs[0].get("Website", "")) for acc, rs in by_co.items()}
     for acc, rs in by_co.items():
         r0 = rs[0]
-        name = clean_name(r0.get("Company Name", ""))
+        apollo_name = name = clean_name(r0.get("Company Name", ""))
+        # "Monarch Healthcare Now RDCP Care": search the current name, but only when the website, email or LinkedIn
+        # (or another account in the list) backs the split; otherwise the name is left alone and listed for a check
+        rn = split_renamed(name, [r0.get("Website"), r0.get("Company Linkedin Url")] + [x.get("Email", "") for x in rs],
+                           [v for k, v in others.items() if k != acc])
+        if rn:
+            name = rn["name"]
+            renamed.append(f"  {apollo_name} -> {name}: {rn['basis']}")
         email_name = clean_name(r0.get("Company Name for Emails", ""))
         short = re.sub(LEGAL, "", name, flags=re.I).strip(" ,.")
         aliases = [email_name] if email_name and not short.lower().startswith(email_name.lower()) else []
@@ -105,7 +116,7 @@ def main(argv=None):
             "employees": r0.get("# Employees", "").strip(),
             "lookback_days": a.funded_lookback_days if r0.get("Latest Funding", "").strip() else a.lookback_days,
         }
-        apply_overrides(row, overrides)
+        apply_overrides(row, overrides, also=apollo_name)
         companies.append(row)
         # Apollo's parent company, "Name (domain)": its news is searched too and shown on the lead as parent news
         m = re.match(r"\s*(.+?)\s*\(([^()]+)\)\s*$", r0.get("Parent company (Apollo data)", "") or "")
@@ -123,6 +134,9 @@ def main(argv=None):
             w.writerows(data)
     print(f"read {len(rows)} contacts from {len(files)} file(s) -> {len(companies)} companies "
           f"({sum(1 for c in companies if c['website'])} with a website), {len(parents)} parent companies -> {a.out}")
+    if renamed:
+        print("names with 'Now' / 'formerly' (the old name is not searched; add it to overrides.csv aliases if wanted):")
+        print("\n".join(renamed))
 
 
 if __name__ == "__main__":
