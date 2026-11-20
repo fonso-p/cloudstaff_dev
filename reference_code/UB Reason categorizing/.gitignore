@@ -1,0 +1,4 @@
+# Everything here except the notebook holds staff/client names from disengagement notes: never commit.
+artifacts/
+taxonomy/
+outputs/
