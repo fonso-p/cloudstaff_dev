@@ -3,7 +3,8 @@
 Reads the JSON written by prep.py and writes one CSV per table (see HANDOFF.md, section 14, for the data dictionary).
 Client data: the output goes beside the JSON on the Desktop, never into the repo.
 
-Usage:  .venv/Scripts/python.exe Lickimat/export_handoff.py [OUT_DIR]
+Usage:  .venv/Scripts/python.exe Lickimat/export_handoff.py [JSON_DIR] [DEST_DIR]
+        JSON_DIR = folder with lickimat_replenishment.json; DEST_DIR defaults to JSON_DIR/handoff_data
 """
 import json
 import os
@@ -13,7 +14,7 @@ import pandas as pd
 
 OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser(r"~/Desktop/Projects/Client/Lickimat/Dashboards")
 D = json.load(open(os.path.join(OUT, "lickimat_replenishment.json"), encoding="utf-8"))
-dst = os.path.join(OUT, "handoff_data")
+dst = sys.argv[2] if len(sys.argv) > 2 else os.path.join(OUT, "handoff_data")
 os.makedirs(dst, exist_ok=True)
 
 
