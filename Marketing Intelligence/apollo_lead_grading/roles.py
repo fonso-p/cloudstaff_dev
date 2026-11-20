@@ -7,7 +7,7 @@ Turns "Hiring 6-10 roles" into "2 roles we fill (Accounting, Administrative)". T
   no match      neither: shown as such, never guessed
 
 Only the JP Title and JP Category columns of the Staff Central export are read (no staff data). Titles are cleaned
-with shared/jp_titles.py (typos, seniority and level stripped) on both sides, so "Accounts Payable Officer Level 1" and
+with reference_code/JP_titles_cat_cleaning/jp_titles.py (typos, seniority and level stripped) on both sides, so "Accounts Payable Officer Level 1" and
 "Senior AP Officer" compare as title bases.
 """
 import html
@@ -18,7 +18,8 @@ from pathlib import Path
 import pandas as pd
 
 REPO = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO / "shared"))
+JP_DIR = next(d for d in [REPO / "reference_code" / "JP_titles_cat_cleaning", REPO / "shared"] if (d / "jp_titles.py").is_file())
+sys.path.insert(0, str(JP_DIR))   # jp_titles.py moved from shared/ to reference_code/JP_titles_cat_cleaning/
 from jp_titles import strip_title   # noqa: E402
 
 MODEL = "sentence-transformers/all-MiniLM-L6-v2"     # the News Scraper's embedding model (already cached)
