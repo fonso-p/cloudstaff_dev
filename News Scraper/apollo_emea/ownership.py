@@ -445,6 +445,25 @@ def statements(recs):
             for r in recs if r.get("kind", "").endswith("statement")]
 
 
+BANDS = [("75-to-100", 75, "75–100%"), ("50-to-75", 50, "50–75%"), ("25-to-50", 25, "25–50%")]
+
+
+def stake(natures):
+    """A controller's stake from its natures of control: label ('50–75% shares, appoints directors'), lowest share or
+    vote % of its band, and whether it controls the company (majority of shares or votes, or appoints the board)."""
+    nat = " ".join(natures or [])
+
+    def band(kind):
+        return next(((lo, lbl) for k, lo, lbl in BANDS if f"{kind}-{k}" in nat), (0, ""))
+    (s_lo, s_lbl), (v_lo, v_lbl) = band("ownership-of-shares"), band("voting-rights")
+    board = "appoint-and-remove-directors" in nat
+    sig = "significant-influence-or-control" in nat
+    label = ", ".join(x for x in [f"{s_lbl} shares" if s_lbl else "", f"{v_lbl} votes" if v_lbl and v_lbl != s_lbl else "",
+                                  "appoints directors" if board else "",
+                                  "significant influence" if sig and not (s_lbl or v_lbl or board) else ""] if x)
+    return {"band": label, "lo": max(s_lo, v_lo), "control": max(s_lo, v_lo) >= 50 or board}
+
+
 def assess(number, owners, children, recs, basic):
     """Ownership of one company: class, evidence, chain text, top owner, group size."""
     paths = chain_of(number, owners)
@@ -462,11 +481,50 @@ def assess(number, owners, children, recs, basic):
     group = max([len(descendants(t, children)) for t, *_ in tops if t] + [1])
     chain_txt = " | ".join(" ← ".join([o["name"] + ("" if o["uk"] else f" ({o['place'] or 'overseas'})") for o in p]
                                         + ([f"{len(t[1])} individual(s)"] if t[1] else [])) for p, t in zip(paths, tops) if p)
-    # the same chain as data, for links: each step's company number (UK) or country (overseas); the people at the top
-    # are a count, linked to the ownership page of the company they control
-    steps = [[{"name": o["name"], "number": o["reg"] if o["uk"] else "", "place": "" if o["uk"] else (o["place"] or ("legal body" if o["kind"] == "legal person" else "no number filed"))}
-              for o in p] + ([{"name": f"{len(t[1])} individual(s)", "number": t[3] or "", "people": True}] if t[1] else [])
-             for p, t in zip(paths, tops) if p]
+    # the same chain as data, for links and stakes: each step's company number (UK) or country (overseas) and the stake
+    # it holds in the company below; the people at the top with theirs. People who hold the lead's own company directly
+    # (alongside a company owner, or alone) are a route of their own. Every route says whether it carries control
+    # (each link a majority or the right to appoint the board), so a 25-50% founder next to a 50-75% group owner shows
+    # as a minority owner, not the owner (The Fordy Group, 23 Nov 2026).
+    def rec_of(child, name):
+        return next((x for x in recs.get(child, []) if x.get("name") == name and not x.get("kind", "").startswith("individual")), {})
+
+    def person(x):
+        return {"name": x.get("name", ""), **stake(x.get("natures_of_control"))}
+
+    steps, routes = [], []                                 # routes: (people, carries control, via)
+    for p, t in zip(paths, tops):
+        if not p:
+            continue
+        child, path, ctl = number, [], True
+        for o in p:
+            st = stake(rec_of(child, o["name"]).get("natures_of_control"))
+            ctl = ctl and st["control"]
+            path.append({"name": o["name"], "number": o["reg"] if o["uk"] else "", "band": st["band"],
+                         "place": "" if o["uk"] else (o["place"] or ("legal body" if o["kind"] == "legal person" else "no number filed"))})
+            child = o["reg"] if o["uk"] else None
+        people = [person(x) for x in t[1]]
+        if people:
+            path.append({"name": "; ".join(x["name"] for x in people), "number": t[3] or "", "people": people})
+        steps.append(path)
+        routes.append((people, ctl, p[-1]["name"]))
+    if indiv_here:                                         # people on the lead's own register entry
+        people = [person(x) for x in indiv_here]
+        steps.append([{"name": "; ".join(x["name"] for x in people), "number": number, "people": people, "direct": True}])
+        routes.append((people, True, "direct"))
+    # roles: owner = controls it (through a route that carries control); minority owner = someone else (a person or a
+    # company) controls it; co-owner = nobody controls it alone (e.g. two 25-50% founders)
+    roles = []
+    for ppl, c, via in routes:
+        for x in ppl:
+            roles.append({"name": x["name"], "band": x["band"], "via": via, "_ctl": c and x["control"]})
+    any_person_ctl = any(r["_ctl"] for r in roles)
+    company_ctl = any(stake(rec_of(number, p[0]["name"]).get("natures_of_control"))["control"] for p in paths if p)
+    for r in roles:
+        r["role"] = "owner" if r.pop("_ctl") else "minority owner" if (any_person_ctl or company_ctl) else "co-owner"
+    roles.sort(key=lambda r: ["owner", "co-owner", "minority owner"].index(r["role"]))
+    lead_owner = next((r for r in roles if r["role"] == "owner"), None) or next(iter(roles), None)
+    route = None if lead_owner is None else "direct" if lead_owner["via"] == "direct" else "via holding company"
     top_names = "; ".join(sorted({t["name"] for t, *_ in tops if t}))
     ev = []
     if any(PUBLIC_STRICT.search(o["name"]) for o in nodes) or \
@@ -506,9 +564,9 @@ def assess(number, owners, children, recs, basic):
         cls = "Unknown"; ev.append("register: " + statements(own_recs)[0])
     else:
         cls = "Unknown"; ev.append("no controller filed in the register")
-    people = sorted({r.get("name", "") for _, ind, *_ in tops for r in ind} | {r.get("name", "") for r in indiv_here} - {""})
+    people = list(dict.fromkeys(r["name"] for r in roles if r["name"]))          # controlling owners first
     return {"class": cls, "evidence": "; ".join(ev), "chain": chain_txt, "steps": steps, "top_owner": top_names, "group_companies": group,
-            "owners_named": "; ".join(people), "depth": max(len(p) for p in paths)}
+            "owners_named": "; ".join(people), "depth": max(len(p) for p in paths), "roles": roles, "route": route}
 
 
 RANK = ["Public body", "Charity / not-for-profit", "Investor-backed", "Part of a corporate group", "Owner-managed group",
@@ -572,7 +630,8 @@ def main(argv=None):
             n, src, best = min(res, key=lambda x: RANK.index(x[2]["class"]) if x[2]["class"] != "Unknown" else 99)
         else:
             n, src, best = "", "", {"class": "Unknown", "evidence": "no company number found", "chain": "", "steps": [], "top_owner": "",
-                                    "group_companies": None, "owners_named": "", "depth": 0}
+                                    "group_companies": None, "owners_named": "", "depth": 0,
+                                    "roles": [], "route": None}
         cls, ev = best["class"], [best["evidence"]]
         if sector and re.search(r"local authority|nhs", sector, re.I):
             cls, ev = "Public body", [f"CQC provider type: {sector}"] + ev
@@ -617,6 +676,7 @@ def main(argv=None):
             "company_type": basic.get(n, {}).get("type", ""), "owner_chain": best["chain"],
             "owner_chain_steps": json.dumps(best["steps"], ensure_ascii=False) if best["steps"] else "", "top_owner": best["top_owner"],
             "group_companies": best["group_companies"], "owners_named": best["owners_named"], "chain_depth": best["depth"],
+            "owner_roles": json.dumps(best["roles"], ensure_ascii=False) if best["roles"] else "", "ownership_route": best["route"] or "",
             "cqc_charity_number": charity, "cqc_provider_sector": sector, "website_number_page": web.get(r.company_id, ("", ""))[1]
             if r.company_id in web_ok else "", "psc_snapshot": date,
         })

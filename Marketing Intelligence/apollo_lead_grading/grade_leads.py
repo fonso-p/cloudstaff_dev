@@ -773,7 +773,7 @@ def add_ownership(leads, ev, as_of):
     OWNERSHIP_ORDER), `ownership_evidence` and `ownership_check` (a conflict for a person to look at)."""
     cols = ["ownership", "ownership_evidence", "ownership_number", "ownership_number_source", "ownership_number_name",
             "company_numbers", "company_type", "owner_chain", "owner_chain_steps", "top_owner", "group_companies", "owners_named",
-            "cqc_charity_number", "cqc_provider_sector", "website_number_page", "psc_snapshot",
+            "owner_roles", "ownership_route", "cqc_charity_number", "cqc_provider_sector", "website_number_page", "psc_snapshot",
             "charity_number", "charity_name", "charity_status", "charity_income", "charity_match", "charity_note"]
     if OWNERSHIP.exists():
         o = pd.read_csv(OWNERSHIP, dtype=str, keep_default_na=False, na_values=[""])
@@ -807,13 +807,9 @@ def add_ownership(leads, ev, as_of):
         checks.append("; ".join(notes) or None)
     leads["ownership_check"] = checks
     leads["ownership_target"] = leads["ownership"].eq("Owner-managed")
-    # how the people at the top hold it: directly (named on the lead's own register entry, no company in between) or
-    # through a holding company. Direct = the owners are the shareholders of the operating company itself
-    private = leads["ownership"].isin(OWNERSHIP_PRIVATE)
-    no_chain = leads["owner_chain_steps"].isna() | leads["owner_chain_steps"].eq("")
-    leads["ownership_route"] = None
-    leads.loc[private & no_chain & leads["owners_named"].notna(), "ownership_route"] = "direct"
-    leads.loc[private & ~no_chain, "ownership_route"] = "via holding company"
+    # how the controlling owner holds it (ownership.py): directly (named on the lead's own register entry) or through a
+    # holding company. Shown for privately owned leads only
+    leads.loc[~leads["ownership"].isin(OWNERSHIP_PRIVATE), "ownership_route"] = None
     return leads
 
 
@@ -827,19 +823,40 @@ def person_key(name):
     return (w[0], w[-1]) if len(w) >= 2 else None
 
 
+ROLE_ORDER = ["owner", "co-owner", "minority owner"]   # owner = controls it; co-owner = nobody controls it alone;
+                                                       # minority owner = someone else (a person or a company) controls it
+
+
 def match_owner_contacts(leads, contacts):
     """Apollo contacts who are named owners (Companies House register), matched on first + last name within the same
-    lead. Marks contacts["is_owner"]; writes owner_contacts and owners_to_find (named owners with no Apollo contact).
+    lead. Marks contacts["is_owner"] and contacts["owner_role"] ("owner", "co-owner", "minority owner", with the stake);
+    writes owner_contacts and owners_to_find (named owners with no Apollo contact, as JSON with role and stake).
     Only the name is used: never the register's birth date, nationality or address."""
-    owners = {r.account_id: {person_key(o): o for o in str(r.owners_named).split("; ") if person_key(o)}
-              for r in leads.itertuples() if isinstance(r.owners_named, str) and r.owners_named}
-    contacts["is_owner"] = [person_key(n) in owners.get(a, {}) for a, n in zip(contacts["account_id"], contacts["name"])]
-    found = contacts[contacts["is_owner"]].groupby("account_id")["name"].agg("; ".join)
-    leads["owner_contacts"] = leads["account_id"].map(found)
-    have = {a: {person_key(n) for n in g["name"]} for a, g in contacts[contacts["is_owner"]].groupby("account_id")}
-    leads["owners_to_find"] = [("; ".join(v for k, v in owners.get(a, {}).items() if k not in have.get(a, set())) or None)
-                               for a in leads["account_id"]]
-    return leads, contacts
+    owners = {}
+    for r in leads.itertuples():
+        try:
+            roles = json.loads(r.owner_roles) if isinstance(r.owner_roles, str) and r.owner_roles else []
+        except ValueError:
+            roles = []
+        d = {}
+        for x in roles:                                # a person on two routes keeps their strongest role
+            k = person_key(x["name"])
+            if k and (k not in d or ROLE_ORDER.index(x["role"]) < ROLE_ORDER.index(d[k]["role"])):
+                d[k] = x
+        owners[r.account_id] = d
+    hit = [owners.get(a, {}).get(person_key(n)) for a, n in zip(contacts["account_id"], contacts["name"])]
+    contacts["is_owner"] = [h is not None for h in hit]
+    contacts["owner_role"] = [None if h is None else h["role"] + (f" ({h['band']})" if h.get("band") else "") for h in hit]
+    contacts["_role_rank"] = [ROLE_ORDER.index(h["role"]) if h else 9 for h in hit]
+    contacts.sort_values(["account_id", "_role_rank"], kind="stable", inplace=True)
+    contacts.drop(columns="_role_rank", inplace=True)
+    own = contacts[contacts["is_owner"]]
+    leads["owner_contacts"] = leads["account_id"].map(own.groupby("account_id")["name"].agg("; ".join))
+    leads["best_owner_role"] = leads["account_id"].map(own.groupby("account_id")["owner_role"].first())
+    have = {a: {person_key(n) for n in g["name"]} for a, g in own.groupby("account_id")}
+    leads["owners_to_find"] = [json.dumps([v for k, v in owners.get(a, {}).items() if k not in have.get(a, set())], ensure_ascii=False)
+                               if any(k not in have.get(a, set()) for k in owners.get(a, {})) else None for a in leads["account_id"]]
+    return leads, contacts.reset_index(drop=True)
 
 
 def owners_export(leads, as_of):
@@ -848,10 +865,12 @@ def owners_export(leads, as_of):
     rows = []
     live = ~leads["grade"].astype(str).str.startswith("Excluded") & leads["grade"].ne(DUPLICATE)   # not distressed / duplicate
     for r in leads[leads["ownership"].isin(OWNERSHIP_PRIVATE) & leads["owners_to_find"].notna() & live].itertuples():
-        for full in r.owners_to_find.split("; "):
-            w = re.sub(PERSON_TITLE, "", full.strip(), flags=re.I).split()
+        for o in json.loads(r.owners_to_find):
+            w = re.sub(PERSON_TITLE, "", o["name"].strip(), flags=re.I).split()
             rows.append({"first_name": w[0] if w else "", "last_name": w[-1] if len(w) > 1 else "",
-                         "full_name": " ".join(w), "company_name": r.company_name, "website": r.website_domain,
+                         "full_name": " ".join(w), "owner_role": o["role"], "stake": o.get("band", ""),
+                         "held": "directly" if o.get("via") == "direct" else f"through {o.get('via')}",
+                         "company_name": r.company_name, "website": r.website_domain,
                          "lead_list": r.lead_list, "grade": r.grade, "priority_score": r.priority_score,
                          "ownership": r.ownership, "ownership_route": r.ownership_route,
                          "registered_company": r.ownership_number_name, "company_number": r.ownership_number,
@@ -860,7 +879,9 @@ def owners_export(leads, as_of):
     order = {"Tier 1": 0, "Tier 2": 1, "Tier 3": 2, CHECK_FIT: 3}
     out = pd.DataFrame(rows)
     if len(out):
-        out = out.assign(_o=out["grade"].map(order).fillna(9)).sort_values(["_o", "priority_score"], ascending=[True, False]).drop(columns="_o")
+        # best leads first; within a lead, the person who controls it before co-owners and minority owners
+        out = out.assign(_o=out["grade"].map(order).fillna(9), _r=out["owner_role"].map(ROLE_ORDER.index)).sort_values(
+            ["_o", "priority_score", "company_name", "_r"], ascending=[True, False, True, True]).drop(columns=["_o", "_r"])
     path = DATA_DIR / f"owners_to_find_{as_of:%Y-%m-%d}.csv"
     out.to_csv(path, index=False, encoding="utf-8-sig")
     return path, len(out)
