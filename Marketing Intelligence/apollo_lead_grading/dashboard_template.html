@@ -165,6 +165,16 @@ details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
 .kv div{font-size:var(--font-size-xs)} .kv b{display:block;color:var(--color-text-base-muted);font-weight:var(--font-weight-semibold)}
 .pts td{padding:5px 10px}
 a.ext{color:var(--color-brand-primary-strong)}
+/* company panel: header, one-line lists with source tags, collapsed evidence */
+.lead-head{border:1px solid var(--border-color-default);border-radius:var(--radius-lg);padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:var(--font-size-xs);line-height:1.5}
+.lead-head .lh-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.lead-head .lh-score{font-size:var(--font-size-lg);font-family:var(--font-family-heading)}
+.lead-head .lh-why{font-size:var(--font-size-sm);font-weight:var(--font-weight-semibold)}
+.detail ul.lines{margin:6px 0 0;padding-left:18px;line-height:1.7;font-size:var(--font-size-xs)}
+.src-tag{display:inline-block;margin-left:4px;padding:0 6px;border-radius:var(--radius-pill);background:var(--color-surface-secondary);color:var(--color-text-base-muted);font-size:var(--font-size-2xs);white-space:nowrap}
+details.ev-box{border:1px solid var(--border-color-default);border-radius:var(--radius-md);margin-top:6px}
+details.ev-box summary{cursor:pointer;padding:8px 12px;font-weight:var(--font-weight-semibold);font-size:var(--font-size-xs)}
+details.ev-box .ev-body{padding:4px 12px 12px}
 </style>
 </head>
 <body>
@@ -562,113 +572,211 @@ function rLeads(f, rows) {
   const sel = selected && out.find(r => r.account_id === selected);
   if (sel) showDetail(sel, false); else $('detailCard').style.display = 'none';
 }
+// Company panel, answer first: header (tier, why, main contact) → relevant events → why this score → pitch angles →
+// who to talk to → evidence (collapsed). Each fact is shown once; fields with nothing to say are left out.
+const openBoxes = new Set();   // evidence sections the reader opened stay open when the panel redraws
 function showDetail(r, scroll = true) {
   $('detailCard').style.display = '';
   $('detailTitle').textContent = r.company_name;
   $('detailSub').textContent = `${r.grade}${r.priority_score !== null ? ' · score ' + r.priority_score : ''}`;
   const link = (u, t) => u ? `<a class="ext" href="${esc(u)}" target="_blank" rel="noopener">${esc(t || u)}</a>` : '–';
-  const kv = pairs => `<div class="kv">${pairs.map(([k, v]) => `<div><b>${esc(k)}</b>${v}</div>`).join('')}</div>`;
-  const web = r.website_domain ? link('https://' + r.website_domain, r.website_domain) : '–';
-  const ev = r.relevant_events || [];
-  let h = `<h4>Relevant events (last 12 months${ev.length ? ', ' + fmt(ev.length) : ''})</h4>`;
-  h += ev.length ? '<div class="note" style="margin:0 0 6px">News, CQC register, public contracts and parent-company events in one list, newest first. Only the relevant types: funding, PE buyout, M&amp;A, expansion, restructuring, leadership change, contract or partnership win, product launch. Reports of the same event within ' + (M.event_window || 30) + ' days are one row: open "reports" to see every source. <span class="badge b-pink">Needs review</span> = a person should check it (hover for why); an event is marked only when none of its reports is confirmed.</div>'
-    + '<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Event</th><th>Source</th><th>What happened</th><th>Notes</th></tr></thead><tbody>'
-    + ev.map(e => `<tr><td class="n">${esc(e.first || e.date)}</td><td>${esc(e.type)}${e.review ? ` <span class="badge b-pink" title="${esc(e.review)}">Needs review</span>` : ''}</td>`
-      + `<td>${e.parent ? `<span class="badge b-parent">${PARENT_ICON}${esc(e.source)}</span>` : esc(e.source)}</td>`
-      + `<td>${link(e.url, e.title)}${e.detail ? `<br><span class="note">${esc(e.detail)}</span>` : ''}${(e.homes || []).length ? '<br><span class="note">CQC pages: </span>' + e.homes.map(x => link(x.url, x.name + (x.city ? ' (' + x.city + ')' : ''))).join(' · ') : ''}${e.publisher && !e.detail ? `<br><span class="note">${esc(e.publisher)}</span>` : ''}${e.reports > 1 ? `<details class="ev-src"><summary>${fmt(e.reports)} reports</summary>` + e.items.map(x => `<div><span class="note">${esc(x.date)} · ${esc(x.source)}${x.publisher ? ' · ' + esc(x.publisher) : ''}</span> ${link(x.url, x.title)}${x.detail ? ` <span class="note">(${esc(x.detail)})</span>` : ''}${x.review ? ` <span class="badge b-pink" title="${esc(x.review)}">Needs review</span>` : ''}</div>`).join('') + '</details>' : ''}</td>`
-      + `<td class="note">${esc([e.notes, e.review].filter(Boolean).join(' · ') || '–')}</td></tr>`).join('') + '</tbody></table></div>'
-    : '<div class="note">No relevant event found in the last 12 months.</div>';
-  const pc = (p, u) => p === null || p === undefined ? '–' : `${pct(p, 0)}${u ? ` (usual ${pct(u, 0)})` : ''}`;
-  h += '<h4>Fit (Client Propensity, past clients in the same industry)</h4>' + kv([
-    ['5+ seats in a year', `${pc(r.fit_growth_p, r.fit_growth_usual)} · ${esc(r.fit_growth_band || '–')}`],
-    ['10+ seats in 2 years', `${pc(r.fit_reach_10_p, r.fit_reach_10_usual)} · ${esc(r.fit_reach_10_band || '–')}`],
-    ['A 2nd department in a year', `${pc(r.fit_branch_1y_p, r.fit_branch_1y_usual)} · ${esc(r.fit_branch_1y_band || '–')}`],
-    ['Most likely first new department', esc(r.likely_first_new_dept || '–')], ['Outlook', esc(r.fit_outlook || '–')],
-    ['Target industry?', `${r.on_target === false ? 'no' : r.on_target ? 'yes' : '–'} · ${esc(r.fit_basis || '')}`]]);
-  h += '<h4>Company profile</h4>' + ((r.profile_chips || []).length ? chipHtml(r.profile_chips) + '<div class="note" style="margin:4px 0 10px">Service lines from its website, pitch hints from its software stack, and group membership. Descriptive: no points.</div>' : '') + kv([['Website', web], ['Apollo industry', esc(r.industry_raw || '–')], ['Industry group', esc(r.industry || 'unmapped')],
-    ['Sub-sector', esc(r.sub_sectors ? r.sub_sectors + ' (from ' + r.sub_sector_basis + ')' : '–')],
-    ['Activity codes', esc([r.sic_us ? 'SIC ' + r.sic_us : '', r.naics ? 'NAICS ' + r.naics : ''].filter(Boolean).join(' · ') || '–')],
-    ['Staff (Apollo)', fmt(r.employee_count)], ['Revenue (Apollo estimate)', r.annual_revenue ? '£/$ ' + fmt(r.annual_revenue) : '–'], ['City', esc(r.city || '–')],
-    ['Apollo funding label', esc(r.apollo_latest_funding || '–')], ['Parent company', esc(r.parent_company || '–')], ['LinkedIn', link(r.company_linkedin, 'company page')]]);
+  const empty = v => v === null || v === undefined || v === '' || v === '–';
+  const kv = pairs => { const p = pairs.filter(([, v]) => !empty(v)); return p.length ? `<div class="kv">${p.map(([k, v]) => `<div><b>${esc(k)}</b>${v}</div>`).join('')}</div>` : ''; };
+  const day = s => s && /^\d{4}-\d{2}-\d{2}/.test(s) ? dmy(s) : esc(s || '–');
+  const dates = s => esc(s || '').replace(/\d{4}-\d{2}-\d{2}/g, m => dmy(m));   // ISO dates inside a text, as 3 Apr 2026
+  const src = t => ` <span class="src-tag">${esc(t)}</span>`;
+  const pj = v => { try { return v ? JSON.parse(v) : []; } catch (e) { return []; } };
+  const box = (key, title, sum, body) => `<details class="ev-box" data-k="${key}"${openBoxes.has(key) ? ' open' : ''}><summary>${title}${sum ? ` <span class="note">· ${sum}</span>` : ''}</summary><div class="ev-body">${body}</div></details>`;
+  // Companies House stake bands: the board right becomes a badge instead of a sentence
+  const BOARD = /,?\s*right to appoint or remove most of the board/;
+  const stakeHtml = b => { if (!b) return '–'; const s = String(b).replace(BOARD, '').trim();
+    return (s ? esc(s) : '') + (BOARD.test(b) ? `${s ? ' ' : ''}<span class="badge b-ok" title="Right to appoint or remove most of the board">controls board</span>` : '') || '–'; };
+  const splitRole = s => { const m = /^(.*?) \((.*)\)$/.exec(s || ''); return m ? [m[1], m[2]] : [s || '', '']; };
   const chUrl = n => 'https://find-and-update.company-information.service.gov.uk/company/' + n;
   const pscUrl = n => chUrl(n) + '/persons-with-significant-control';
-  // each step links to its Companies House ownership page (overseas owners have none: name and country only)
-  let steps = [];
-  try { steps = r.owner_chain_steps ? JSON.parse(r.owner_chain_steps) : []; } catch (e) { steps = []; }
-  // each step shows the stake it holds in the company below it (Companies House bands)
-  const stake = b => b ? ` <span class="note">[${esc(b)}]</span>` : '';
+  const contacts = r.contacts || [], toFind = pj(r.owners_to_find);
+  const okJobs = r.jobs_status === 'ok';
+  const jobsLine = () => {
+    if (!okJobs) return `careers page ${esc(r.jobs_status || 'not checked')}`;
+    if (!r.open_roles) return 'no open roles';
+    const fill = r.roles_we_fill === null || r.roles_we_fill === undefined ? ''
+      : r.roles_we_fill > 0 ? `${fmt(r.roles_we_fill)} we fill${r.roles_we_fill_categories ? ' (' + esc(r.roles_we_fill_categories) + ')' : ''}`
+      : r.roles_onsite && r.roles_onsite === r.roles_listed ? 'none we fill (all on-site)' : 'none we fill';
+    const rec = r.jobs_new_30d > 0 ? `${fmt(r.jobs_new_30d)} posted in the last 30 days`
+      : r.jobs_new_90d > 0 ? `${fmt(r.jobs_new_90d)} posted in the last 90 days, none in 30`
+      : r.jobs_newest ? `none posted in 90 days, newest ${dmy(r.jobs_newest)} <span class="badge b-warn">stale</span>` : 'posting dates not given';
+    return [`${fmt(r.open_roles)} open role${r.open_roles > 1 ? 's' : ''}`, fill, rec].filter(Boolean).join(' · ');
+  };
+
+  // ---- 1. header: tier and why, the company in one line, the main contact, anything to check
+  const MP = M.max_points;
+  const scored = r.priority_score !== null && r.priority_score !== undefined;
+  let why;
+  if (!isTier(r)) why = {'Check fit': 'Scored, but outside the list\'s target industry: check the fit before calling.',
+    'Existing client': esc(r.internal_match || 'Already a client') + ': sent to the account manager, not graded.',
+    'Duplicate': 'Same business as another lead in the list: not graded.'}[r.grade]
+    || (String(r.grade).startsWith('Excluded') ? 'Administration, liquidation or strike-off at Companies House: not graded.' : '');
+  else if (!r.scored_signal) why = 'No live signal: no scored event, no roles we fill posted in 30 days, no competitor-client link. The score is industry fit only.';
+  else why = [r.scoring_events > 0 ? `${fmt(r.scoring_events)} scored event${r.scoring_events > 1 ? 's' : ''}${r.news_signal && r.news_signal !== 'None' ? ' (strongest: ' + esc(r.news_signal) + ')' : ''}` : '',
+    r.job_postings_30d > 0 ? `${fmt(r.job_postings_30d)} role${r.job_postings_30d > 1 ? 's' : ''} we fill posted in 30 days` : '',
+    r.prior_bpo_flag === 'Yes' ? 'competitor client' : '', r.act_now ? 'act now: ' + esc(r.act_now_triggers) : ''].filter(Boolean).join(' · ');
+  const parts = scored ? [['Signals', r.news_jobs_pts, MP.news], ['Competitor', r.bpo_pts, MP.bpo], ['Fit', r.fit_pts, MP.fit]]
+    .map(([k, p, m]) => `<span class="badge b-no">${k} ${fmt(p, 0)}/${m}</span>`).join(' ') + (r.act_now_bonus > 0 ? ` <span class="badge b-ok">act now +${fmt(r.act_now_bonus, 0)}</span>` : '') : '';
+  const rev = v => '$' + (v >= 1e6 ? fmt(v / 1e6, 1) + 'M' : v >= 1e3 ? fmt(v / 1e3, 0) + 'K' : fmt(v));
+  const facts = [r.website_domain ? link('https://' + r.website_domain, r.website_domain) : '', r.company_linkedin ? link(r.company_linkedin, 'LinkedIn') : '',
+    esc(r.city || ''), r.employee_count ? fmt(r.employee_count) + ' staff' : '',
+    r.annual_revenue ? `${rev(r.annual_revenue)} revenue <span class="note">(Apollo estimate)</span>` : ''].filter(Boolean).join(' · ');
+  const sector = [esc(r.industry || 'Industry not mapped'), esc(r.sub_sectors || ''),
+    r.on_target === false ? '<span class="badge b-pink">other industry: check fit</span>' : ''].filter(Boolean).join(' · ');
+  const c0 = contacts[0];
+  const mail = c => c.email ? `<a class="ext" href="mailto:${esc(c.email)}">${esc(c.email)}</a>${c.email_status && c.email_status !== 'Verified' ? ` <span class="badge b-warn">${esc(c.email_status)}</span>` : ''}` : '';
+  const main = c0 ? [`<b>${esc(c0.name)}</b>${c0.owner_role ? ' ' + roleBadge(splitRole(c0.owner_role)[0]) : ''}`, esc(c0.title || ''), mail(c0), c0.linkedin ? link(c0.linkedin, 'LinkedIn') : '']
+      .filter(Boolean).join(' · ') + (contacts.length > 1 ? ` <span class="note">+${contacts.length - 1} more below</span>` : '')
+    : 'No contact in Apollo' + (toFind.length ? ` <span class="note">· owner to find: ${esc(toFind[0].name)}</span>` : '');
+  const checks = (r.chips || []).filter(c => c[1] === 'warn');
+  let h = `<div class="lead-head"><div class="lh-top">${gradeHtml(r.grade)}${scored ? ` <b class="lh-score">${fmt(r.priority_score)}</b><span class="note">/100</span> ${parts}` : ''}</div>`
+    + (why ? `<div class="lh-why">${why}</div>` : '')
+    + (facts ? `<div>${facts}</div>` : '') + `<div>${sector}</div>`
+    + `<div><span class="note">Main contact</span> ${main}</div>`
+    + (checks.length || r.events_to_review ? `<div>${chipHtml(checks)}${r.events_to_review ? `<span class="badge b-pink">${fmt(r.events_to_review)} event${r.events_to_review > 1 ? 's' : ''} to review</span>` : ''}</div>` : '')
+    + '</div>';
+
+  // ---- 2. relevant events, then the other things checked for signals (one line each)
+  const ev = r.relevant_events || [];
+  const evHelp = `News, CQC register, public contracts and parent-company events, newest first. Only the relevant types: funding, PE buyout, M&A, expansion, restructuring, leadership change, contract or partnership win, product launch. Reports of the same event within ${M.event_window || 30} days are one row. Needs review = a person should check it (hover for why).`;
+  h += `<h4>Relevant events (last 12 months${ev.length ? ', ' + fmt(ev.length) : ''}) <i class="fa-regular fa-circle-question note" title="${esc(evHelp)}"></i></h4>`;
+  h += ev.length ? '<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Event</th><th>Source</th><th>What happened</th><th>Notes</th></tr></thead><tbody>'
+    + ev.map(e => `<tr><td class="n">${day(e.first || e.date)}</td><td>${esc(e.type)}${e.review ? ` <span class="badge b-pink" title="${esc(e.review)}">Needs review</span>` : ''}</td>`
+      + `<td>${e.parent ? `<span class="badge b-parent">${PARENT_ICON}${esc(e.source)}</span>` : esc(e.source)}</td>`
+      + `<td>${link(e.url, e.title)}${e.detail ? `<br><span class="note">${esc(e.detail)}</span>` : ''}${(e.homes || []).length ? '<br><span class="note">CQC pages: </span>' + e.homes.map(x => link(x.url, x.name + (x.city ? ' (' + x.city + ')' : ''))).join(' · ') : ''}${e.publisher && !e.detail ? `<br><span class="note">${esc(e.publisher)}</span>` : ''}${e.reports > 1 ? `<details class="ev-src"><summary>${fmt(e.reports)} reports</summary>` + e.items.map(x => `<div><span class="note">${day(x.date)} · ${esc(x.source)}${x.publisher ? ' · ' + esc(x.publisher) : ''}</span> ${link(x.url, x.title)}${x.detail ? ` <span class="note">(${esc(x.detail)})</span>` : ''}${x.review ? ` <span class="badge b-pink" title="${esc(x.review)}">Needs review</span>` : ''}</div>`).join('') + '</details>' : ''}</td>`
+      + `<td class="note">${esc([e.notes, e.review].filter(Boolean).join(' · ') || '–')}</td></tr>`).join('') + '</tbody></table></div>'
+    : '<div class="note">No relevant event found in the last 12 months.</div>';
+  const nNews = (r.news || []).length;
+  const also = [
+    ['News search', esc(r.news_status || 'not checked') + (nNews ? ` · ${fmt(nNews)} article${nNews > 1 ? 's' : ''} under Evidence` : '')],
+    ['Hiring', jobsLine()],
+    ['Companies House', r.filing_signal && r.filing_signal !== 'None' ? esc(r.filing_signal) + ' · ' + day(r.filing_signal_date) : 'no filing event in the last year'],
+    r.cqc_needs_improvement_180d > 0 ? ['CQC ratings', `<span class="badge b-pink">${fmt(r.cqc_needs_improvement_180d)} location${r.cqc_needs_improvement_180d > 1 ? 's' : ''} below Good in 6 months</span>`] : null,
+    r.apollo_latest_funding ? ['Apollo funding label', `${APOLLO_ICON} ${esc(r.apollo_latest_funding)}${r.apollo_vs_news ? ' · ' + esc(r.apollo_vs_news) : ''} <span class="note">(undated, no points)</span>`] : null,
+  ].filter(Boolean);
+  h += `<ul class="lines">${also.map(([k, v]) => `<li><b>${k}:</b> ${v}</li>`).join('')}</ul>`;
+
+  // ---- 3. why this score
+  const pc = (p, u) => p === null || p === undefined ? '–' : `${pct(p, 0)}${u ? ` (usual ${pct(u, 0)})` : ''}`;
+  if (scored) {
+    const comp = r.prior_bpo_flag === 'Yes' ? 'competitor client' + (r.competitor_client ? ': ' + r.competitor_client : '')
+      : r.competitor_client ? `possible, to check: ${r.competitor_client}` : 'no data yet: counts as No';
+    const rows = [
+      ['News and hiring', r.news_jobs_pts, MP.news, (r.scoring_events > 1 ? `${r.scoring_events} events added up (combined ${fmt(r.news_compound, 2)}); strongest: ` : '') + (r.news_signal === 'None' ? 'no scored event' : r.news_signal ? `${r.news_from === 'parent' ? 'Parent ' + r.parent_name + ': ' : ''}${r.news_signal}${r.event_detail && r.news_from !== 'parent' ? ' (' + r.event_detail + ')' : ''}${r.news_signal_date ? ' · ' + r.news_signal_date : ''}${r.news_strength_factor < 1 ? ' · half weight' : ''}` : 'not checked')
+        + (okJobs ? ` · ${fmt(r.job_postings_30d)} roles we fill posted in 30 days` : ' · jobs unknown')],
+      ['Competitor client', r.bpo_pts, MP.bpo, comp],
+      ['Fit', r.fit_pts, MP.fit, `${r.industry || 'Unknown'}: 5+ seats ${r.fit_growth_band || '–'}, 2nd department ${r.fit_branch_1y_band || '–'}`]];
+    h += '<h4>Why this score</h4><table class="pts"><thead><tr><th>Part</th><th class="n">Points</th><th class="n">Max</th><th>Based on</th></tr></thead><tbody>'
+      + rows.map(([a, p, m, b]) => `<tr><td>${a}</td><td class="n">${fmt(p, 1)}</td><td class="n">${m}</td><td>${dates(b)}</td></tr>`).join('')
+      + (r.act_now_bonus > 0 ? `<tr><td>+ Act now bonus</td><td class="n">${fmt(r.act_now_bonus, 1)}</td><td></td><td>${esc(r.act_now_triggers || '')}</td></tr>` : '')
+      + `<tr><td><b>Priority score</b></td><td class="n"><b>${fmt(r.priority_score)}</b></td><td class="n">100</td><td>${esc(r.estimated_fields ? 'estimated: ' + r.estimated_fields : '')}</td></tr></tbody></table>`;
+  } else h += '<h4>Why this score</h4><div class="note">Not scored.</div>';
+  h += `<div class="note" style="margin:10px 0 4px">Fit: how past ${esc(r.industry || '')} clients grew (Client Propensity)</div>` + kv([
+    ['5+ seats in a year', r.fit_growth_p === null || r.fit_growth_p === undefined ? '' : `${pc(r.fit_growth_p, r.fit_growth_usual)} · ${esc(r.fit_growth_band || '–')}`],
+    ['10+ seats in 2 years', r.fit_reach_10_p === null || r.fit_reach_10_p === undefined ? '' : `${pc(r.fit_reach_10_p, r.fit_reach_10_usual)} · ${esc(r.fit_reach_10_band || '–')}`],
+    ['A 2nd department in a year', r.fit_branch_1y_p === null || r.fit_branch_1y_p === undefined ? '' : `${pc(r.fit_branch_1y_p, r.fit_branch_1y_usual)} · ${esc(r.fit_branch_1y_band || '–')}`],
+    ['Industry outlook', r.fit_outlook ? esc(r.fit_outlook) + ' <span class="note">(whole industry, not this company)</span>' : '']]);
+
+  // ---- 4. pitch angles: each line says where it came from (a sub-sector default is the same for every company in it)
+  const pitch = [];
+  for (const [t, k] of r.profile_chips || []) {
+    const m = /^Pitch \((.+?)\): (.*)$/.exec(t);
+    if (m) pitch.push([`<b>Typical back-office work in ${esc(m[1])}:</b> ${esc(m[2])}`, 'sub-sector default']);
+  }
+  if (r.likely_first_new_dept) {
+    const overall = / \(overall\)$/.test(r.likely_first_new_dept);
+    pitch.push([`<b>Most likely first department:</b> ${esc(r.likely_first_new_dept.replace(/ \(overall\)$/, ''))}`, overall ? 'all past clients (too few in this industry)' : `past ${r.industry || ''} clients`]);
+  }
+  for (const [t, k] of r.profile_chips || []) if (k === 'pitch' && !t.startsWith('Pitch (')) pitch.push([`<b>${esc(t)}</b>`, 'Apollo tech stack']);
+  if (r.roles_we_fill > 0) pitch.push([`<b>Hiring roles we fill:</b> ${esc(r.roles_we_fill_categories || fmt(r.roles_we_fill) + ' roles')}`, 'careers page']);
+  const svc = (r.profile_chips || []).filter(c => c[1] === 'service').map(c => c[0]);
+  if (svc.length) pitch.push([`<b>Service lines:</b> ${esc(svc.join(', '))}`, 'website']);
+  if (r.cqc_locations) pitch.push([`<b>Care footprint:</b> ${fmt(r.cqc_locations)} location${r.cqc_locations > 1 ? 's' : ''}${r.cqc_care_homes ? ` (${fmt(r.cqc_care_homes)} care homes, ${fmt(r.cqc_beds)} beds)` : ''}${r.cqc_homecare_locations ? ` (${fmt(r.cqc_homecare_locations)} home-care offices)` : ''}${r.cqc_local_authorities ? ' across ' + esc(r.cqc_local_authorities.split('; ').join(', ')) : ''}${r.cqc_ratings ? ' · rated ' + esc(r.cqc_ratings) : ''}`, 'CQC']);
+  for (const [t, k] of r.profile_chips || []) if (k === 'info' && !/^(Sub-sector|CQC):/.test(t)) pitch.push([esc(t), 'profile']);
+  h += '<h4>Pitch angles</h4>' + (pitch.length ? `<ul class="lines">${pitch.map(([t, s]) => `<li>${t}${src(s)}</li>`).join('')}</ul>`
+    + (pitch.some(p => p[1] === 'sub-sector default') ? '<div class="note" style="margin-top:4px">Sub-sector defaults are a first draft for BDM Marketing to correct.</div>' : '')
+    : '<div class="note">No pitch hints for this company yet.</div>');
+
+  // ---- 5. who to talk to: ownership in one line, then one table of people (Apollo contacts and named owners not in Apollo)
+  const ownBits = [ownHtml(r)];
+  if (r.top_owner && r.ownership !== 'Owner-managed') ownBits.push('ultimate owner ' + esc(r.top_owner) + (r.group_companies > 1 ? ` (controls ${r.group_companies >= 2000 ? '2,000+' : fmt(r.group_companies)} companies)` : ''));
+  if (r.parent_company) ownBits.push(`${APOLLO_ICON} Apollo parent: ${esc(r.parent_company)}`);
+  if (r.charity_number) ownBits.push(link('https://register-of-charities.charitycommission.gov.uk/charity-search/-/charity-details/' + r.charity_number, 'registered charity ' + r.charity_number));
+  if (r.ownership_number) ownBits.push(link(pscUrl(r.ownership_number), 'owners on Companies House'));
+  const toFindNote = OWN_PRIVATE.includes(r.ownership) ? 'not in Apollo: on the owners-to-find list' : 'not in Apollo';
+  h += `<h4>Who to talk to (${fmt(contacts.length)} in Apollo${toFind.length ? `, ${fmt(toFind.length)} owner${toFind.length > 1 ? 's' : ''} not in Apollo` : ''})</h4>`
+    + `<div style="margin-bottom:8px">${ownBits.join(' · ')}</div>`;
+  if (contacts.length || toFind.length) h += '<div class="tbl-wrap"><table><thead><tr><th>Person</th><th>Role</th><th>Stake</th><th>Email</th><th>LinkedIn</th></tr></thead><tbody>'
+    + contacts.map(c => { const [role, band] = splitRole(c.owner_role);
+      return `<tr><td>${c.owner_role ? '<b>' + esc(c.name) + '</b>' : esc(c.name)}</td><td>${esc(c.title || c.seniority || '–')}${c.owner_role ? ' ' + roleBadge(role) : ''}</td><td>${c.owner_role ? stakeHtml(band) : '–'}</td><td>${mail(c) || '–'}</td><td>${link(c.linkedin, 'profile')}</td></tr>`; }).join('')
+    + toFind.map(x => `<tr><td>${esc(x.name)}${x.via && x.via !== 'direct' ? `<br><span class="note">through ${esc(x.via)}</span>` : ''}</td><td>${roleBadge(x.role)}</td><td>${stakeHtml(x.band)}</td><td colspan="2" class="note">${toFindNote}</td></tr>`).join('')
+    + '</tbody></table></div>';
+
+  // ---- 6. evidence: the source records, closed until opened
+  h += '<h4>Evidence</h4>';
+  h += box('ch', 'Companies House', [esc(r.registered_status || r.filings_status || ''), esc(r.company_number || '')].filter(Boolean).join(' · '), kv([
+    ['Status', esc(r.registered_status || r.filings_status || '')], ['Legal name', esc(r.registered_name || '')],
+    ['Company number', r.company_number ? link(chUrl(r.company_number), r.company_number) : ''], ['Company type', esc(r.company_type || '')],
+    ['Incorporated', r.registered_on ? dmy(r.registered_on) : ''],
+    ['Accounts', r.uk_accounts ? dates(r.uk_accounts.charAt(0) + r.uk_accounts.slice(1).toLowerCase()) : '']]));
+  let steps = pj(r.owner_chain_steps);
+  const stake = b => b ? ` <span class="note">[${stakeHtml(b)}]</span>` : '';
   const stepHtml = s => s.people ? s.people.map(x => (s.number ? link(pscUrl(s.number), x.name) : esc(x.name)) + stake(x.band)).join(' + ')
     : (s.number ? link(pscUrl(s.number), s.name) + ` <span class="note">${esc(s.number)}</span>` : `${esc(s.name)} <span class="note">(${esc(s.place || 'no number filed')}: no Companies House page)</span>`) + stake(s.band);
-  const pj = v => { try { return v ? JSON.parse(v) : []; } catch (e) { return []; } };
-  const roles = pj(r.owner_roles), toFind = pj(r.owners_to_find);
   const leadStep = r.ownership_number ? link(pscUrl(r.ownership_number), r.ownership_number_name || r.company_name) : esc(r.company_name);
   const chainHtml = steps.length ? steps.map(p => [leadStep, ...p.map(stepHtml)].join(' ← ')).join('<br>')
-    : r.ownership_number && r.owners_named ? `${leadStep} ← ${link(pscUrl(r.ownership_number), 'owned directly by individuals')}` : '–';
-  h += '<h4>Ownership (who controls it)</h4>' + kv([['Ownership', ownHtml(r)], ['Evidence', esc(r.ownership_evidence || '–')],
-    ['Owner chain (each step links to Companies House)', chainHtml],
-    ['Company number found on', r.website_number_page ? link(r.website_number_page, r.website_number_page.replace(/^https?:\/\//, '')) : r.ownership_number_source ? esc(r.ownership_number_source) : '–'],
-    ['Ultimate owner', esc(r.top_owner || '–') + (r.group_companies > 1 ? ` · controls ${r.group_companies >= 2000 ? '2,000+' : fmt(r.group_companies)} companies` : '')],
-    ['People named, and their role', roles.length ? roles.map(x => `${roleBadge(x.role)} ${esc(x.name)}${stake(x.band)} <span class="note">${x.via === 'direct' ? 'holds the company directly' : 'through ' + esc(x.via)}</span>`).join('<br>') : esc(r.owners_named || '–')],
-    ['Owners in Apollo', r.owner_contacts ? esc(r.owner_contacts) + (r.best_owner_role ? ' ' + roleBadge(r.best_owner_role) : '') : '–'],
-    ['Owners not in Apollo', toFind.length ? toFind.map(x => `${esc(x.name)} <span class="note">(${esc(x.role)})</span>`).join(' · ') + ' <span class="note">(in the owners_to_find CSV when owner-managed or an owner-managed group)</span>' : '–'],
-    ['Company checked', r.ownership_number ? link(chUrl(r.ownership_number) + '/persons-with-significant-control', r.ownership_number) + ` · ${esc(r.ownership_number_name || '')} (from ${esc(r.ownership_number_source || '')})` : '–'],
-    ['Company type', esc(r.company_type || '–')],
+    : r.ownership_number && r.owners_named ? `${leadStep} ← ${link(pscUrl(r.ownership_number), 'owned directly by individuals')}` : '';
+  h += box('own', 'Ownership', esc(r.ownership_evidence || r.ownership || ''), kv([
+    ['Evidence', esc(r.ownership_evidence || '')], ['Owner chain (each step links to Companies House)', chainHtml],
+    ['Company number from', r.website_number_page ? link(r.website_number_page, r.website_number_page.replace(/^https?:\/\//, '')) : r.ownership_number ? `${esc(r.ownership_number)} · ${esc(r.ownership_number_name || '')} <span class="note">(${esc(r.ownership_number_source || '')})</span>` : ''],
     ['Charity Commission', r.charity_number ? link('https://register-of-charities.charitycommission.gov.uk/charity-search/-/charity-details/' + r.charity_number, `${r.charity_name} · no. ${r.charity_number}`)
-      + ` <span class="note">${esc(r.charity_status || '')}${r.charity_income ? ' · income £' + fmt(+r.charity_income) : ''} · matched by ${esc(r.charity_match || '')}</span>` : 'not a registered charity (England & Wales)'],
-    ['CQC charity / provider type', esc([r.cqc_charity_number ? 'charity ' + r.cqc_charity_number : '', r.cqc_provider_sector].filter(Boolean).join(' · ') || '–')],
-    ['To check', r.ownership_check ? `<span class="badge b-pink">check</span> ${esc(r.ownership_check)}` : '–']]);
-  h += '<h4>Companies House</h4>' + kv([['Status', esc(r.registered_status || r.filings_status || '–')], ['Legal name', esc(r.registered_name || '–')],
-    ['Company number', r.company_number ? link('https://find-and-update.company-information.service.gov.uk/company/' + r.company_number, r.company_number) : '–'],
-    ['Incorporated', dmy(r.registered_on)], ['Latest filing event', esc(r.filing_signal && r.filing_signal !== 'None' ? r.filing_signal + ' · ' + r.filing_signal_date : 'none in the last year')],
-    ['Accounts', esc(r.uk_accounts || '–')], ['SIC', esc(r.uk_sic || '–')]]);
+      + ` <span class="note">${esc(r.charity_status || '')}${r.charity_income ? ' · income £' + fmt(+r.charity_income) : ''} · matched by ${esc(r.charity_match || '')}</span>` : ''],
+    ['CQC charity / provider type', esc([r.cqc_charity_number ? 'charity ' + r.cqc_charity_number : '', r.cqc_provider_sector].filter(Boolean).join(' · '))],
+    ['To check', r.ownership_check ? `<span class="badge b-pink">check</span> ${esc(r.ownership_check)}` : '']]));
   if (r.cqc_match) {
     const needs = m => m === 'name' || m === 'name (pooled with the same-named lead)';
-    h += '<h4>CQC register (England)</h4>' + kv([['Matched by', esc(r.cqc_match) + (needs(r.cqc_match) ? ' <span class="badge b-pink">needs review</span>' : '')], ['Registered providers', esc(r.cqc_providers || '–')],
+    h += box('cqc', 'CQC register (England)', `${fmt(r.cqc_locations)} location${r.cqc_locations > 1 ? 's' : ''}${r.cqc_ratings ? ' · ' + esc(r.cqc_ratings) : ''}${needs(r.cqc_match) ? ' · <span class="badge b-pink">match needs review</span>' : ''}`, kv([
+      ['Matched by', esc(r.cqc_match) + (needs(r.cqc_match) ? ' <span class="badge b-pink">needs review</span>' : '')], ['Registered providers', esc(r.cqc_providers || '')],
       ['Locations', `${fmt(r.cqc_locations)}${r.cqc_care_homes ? ` · ${fmt(r.cqc_care_homes)} care homes, ${fmt(r.cqc_beds)} beds` : ''}${r.cqc_homecare_locations ? ` · ${fmt(r.cqc_homecare_locations)} home-care offices` : ''}`],
       ['Added / closed in the last year', `${fmt(r.cqc_new_locations)} / ${fmt(r.cqc_closed_locations)}`],
-      ['Service types', esc(r.cqc_service_types || '–')], ['People supported', esc(r.cqc_user_groups || '–')],
-      ['Ratings', esc(r.cqc_ratings || '–') + (r.cqc_needs_improvement_180d > 0 ? ` <span class="badge b-pink">${fmt(r.cqc_needs_improvement_180d)} below Good in 6 months</span>` : '')],
-      ['Councils', esc(r.cqc_local_authorities || '–')], ['Provider page', link(r.cqc_url, 'CQC')]]);
-    if ((r.cqc_list || []).length) h += '<div class="tbl-wrap" style="margin-top:8px"><table><thead><tr><th>Location</th><th>Registered</th><th class="n">Beds</th><th>Rating</th><th>Services</th></tr></thead><tbody>'
-      + r.cqc_list.slice(0, 25).map(l => `<tr><td>${link('https://www.cqc.org.uk/location/' + l.location_id, l.location_name)}<br><span class="note">${esc(l.city || '')}</span></td><td class="n">${esc(l.registered_on || '–')}</td><td class="n">${esc(l.beds && l.beds !== '0' ? l.beds : '–')}</td><td>${esc(l.rating || 'not rated yet')}${l.rating_published ? `<br><span class="note">${esc(l.rating_published)}</span>` : ''}</td><td class="note">${esc(l.service_types || '')}</td></tr>`).join('')
-      + '</tbody></table></div>' + (r.cqc_list.length > 25 ? `<div class="note">and ${r.cqc_list.length - 25} more</div>` : '');
+      ['Service types', esc(r.cqc_service_types || '')], ['People supported', esc(r.cqc_user_groups || '')],
+      ['Ratings', esc(r.cqc_ratings || '') + (r.cqc_needs_improvement_180d > 0 ? ` <span class="badge b-pink">${fmt(r.cqc_needs_improvement_180d)} below Good in 6 months</span>` : '')],
+      ['Councils', esc(r.cqc_local_authorities || '')], ['Provider page', r.cqc_url ? link(r.cqc_url, 'CQC') : '']])
+      + ((r.cqc_list || []).length ? '<div class="tbl-wrap" style="margin-top:8px"><table><thead><tr><th>Location</th><th>Registered</th><th class="n">Beds</th><th>Rating</th><th>Services</th></tr></thead><tbody>'
+        + r.cqc_list.slice(0, 25).map(l => `<tr><td>${link('https://www.cqc.org.uk/location/' + l.location_id, l.location_name)}<br><span class="note">${esc(l.city || '')}</span></td><td class="n">${day(l.registered_on)}</td><td class="n">${esc(l.beds && l.beds !== '0' ? l.beds : '–')}</td><td>${esc(l.rating || 'not rated yet')}${l.rating_published ? `<br><span class="note">${day(l.rating_published)}</span>` : ''}</td><td class="note">${esc(l.service_types || '')}</td></tr>`).join('')
+        + '</tbody></table></div>' + (r.cqc_list.length > 25 ? `<div class="note">and ${r.cqc_list.length - 25} more</div>` : '') : ''));
   }
-  if ((r.contracts || []).length) {
-    h += `<h4>Public contracts won (Find a Tender, ${r.contracts.length})</h4><div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Buyer</th><th>Contract</th><th class="n">Value</th><th>Matched by</th></tr></thead><tbody>`
-      + r.contracts.map(c => `<tr><td class="n">${esc(c.date)}</td><td>${esc(c.buyer)}</td><td>${link(c.url, c.headline.replace(/^Won /, ''))}<br><span class="note">${esc(c.cpv_desc || '')}</span></td><td class="n">${c.value ? fmt(+c.value) + ' ' + esc(c.currency || '') : '–'}</td><td class="note">${esc(c.match)}${c.supplier_name ? ': ' + esc(c.supplier_name) : ''}${c.match === 'name' ? ' <span class="badge b-pink">needs review</span>' : ''}</td></tr>`).join('') + '</tbody></table></div>';
+  if ((r.contracts || []).length)
+    h += box('con', 'Public contracts won (Find a Tender)', fmt(r.contracts.length), '<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Buyer</th><th>Contract</th><th class="n">Value</th><th>Matched by</th></tr></thead><tbody>'
+      + r.contracts.map(c => `<tr><td class="n">${day(c.date)}</td><td>${esc(c.buyer)}</td><td>${link(c.url, c.headline.replace(/^Won /, ''))}<br><span class="note">${esc(c.cpv_desc || '')}</span></td><td class="n">${c.value ? fmt(+c.value) + ' ' + esc(c.currency || '') : '–'}</td><td class="note">${esc(c.match)}${c.supplier_name ? ': ' + esc(c.supplier_name) : ''}${c.match === 'name' ? ' <span class="badge b-pink">needs review</span>' : ''}</td></tr>`).join('') + '</tbody></table></div>');
+  if (okJobs || (r.jobs || []).length) {
+    const VERDICT = {'we fill': 'b-ok', 'possible': 'b-warn', 'on-site': 'b-no', 'no match': 'b-no'};
+    h += box('jobs', 'Jobs', jobsLine(), kv([['Careers page', r.careers_url ? link(r.careers_url, 'open') + ` <span class="note">(${esc(r.jobs_status || '')})</span>` : esc(r.jobs_status || '')]])
+      + ((r.jobs || []).length ? '<div class="tbl-wrap" style="margin-top:8px"><table><thead><tr><th>Role posted</th><th>Posted</th><th>Can Cloudstaff fill it?</th><th>Nearest Cloudstaff title</th><th class="n">Similarity</th></tr></thead><tbody>'
+        + r.jobs.map(j => `<tr><td>${esc(j.title)}</td><td class="n">${day(j.posted)}</td><td><span class="badge ${VERDICT[j.verdict] || 'b-no'}">${esc(j.verdict === 'on-site' ? 'no: on-site' : j.verdict === 'no match' ? 'no match' : j.verdict)}</span></td><td>${esc(j.jp_title ? j.jp_title + ' (' + (j.jp_category || '') + ')' : '–')}</td><td class="n">${j.similarity === null ? '–' : fmt(j.similarity, 2)}</td></tr>`).join('') + '</tbody></table></div>' : ''));
   }
-  if ((r.event_list || []).length) {
-    h += `<h4>Events, grouped (${r.event_list.length} distinct${r.scoring_events ? `, ${r.scoring_events} scoring` : ''})</h4><div class="note" style="margin:0 0 6px">Reports of the same kind within ${M.event_window || 30} days are one event. Each event is worth strength × confidence × recency; they add up as 1 − (1−a)(1−b)…, so more events score higher but never above the news maximum.</div>`
+  h += box('news', 'News articles', esc(r.news_status || 'not checked') + (nNews ? ' · ' + fmt(nNews) : ''), nNews
+    ? '<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Headline</th><th>Source</th></tr></thead><tbody>' + r.news.map(n =>
+      `<tr><td class="n">${day(n.date)}</td><td>${esc(n.category)}${n.confidence ? ` <span class="badge b-no">${esc(n.confidence)}</span>` : ''}</td><td>${n.parent ? `<span class="badge b-parent">${PARENT_ICON}Parent ${esc(n.parent)}</span> ` : ''}${link(n.url, n.title)}</td><td>${esc(n.source === 'newsroom' ? (n.parent ? 'parent website' : 'own website (no points unless an event)') : n.publisher || n.source)}</td></tr>`).join('') + '</tbody></table></div>'
+    : '<div class="note">No article confirmed to be about this company in the last year.</div>');
+  if ((r.event_list || []).length)
+    h += box('evs', 'How the event points add up', `${r.event_list.length} distinct${r.scoring_events ? `, ${r.scoring_events} scoring` : ''}`, `<div class="note" style="margin:0 0 6px">Reports of the same kind within ${M.event_window || 30} days are one event. Each event is worth strength × confidence × recency; they add up as 1 − (1−a)(1−b)…, so more events score higher but never above the news maximum.</div>`
       + '<div class="tbl-wrap"><table><thead><tr><th>Event</th><th>Date</th><th>Reports</th><th>Sources</th><th class="n">Value</th><th>Best report</th></tr></thead><tbody>'
-      + r.event_list.map(e => `<tr><td>${esc(e.type)}</td><td class="n">${esc(e.date)}${e.last !== e.date ? ' – ' + esc(e.last) : ''}</td><td class="n">${fmt(e.reports)}</td><td>${esc(e.sources)}</td><td class="n">${e.value > 0 ? fmt(e.value, 2) : '<span class="note">0 (over 180 days)</span>'}</td><td class="note">${e.url ? link(e.url, e.title) : esc(e.title)}${(e.homes || []).length ? '<br>CQC pages: ' + e.homes.map(x => link(x.url, x.name + (x.city ? ' (' + x.city + ')' : ''))).join(' · ') : ''}</td></tr>`).join('')
-      + `</tbody></table></div><div class="note">Combined news value: ${r.news_compound === null || r.news_compound === undefined ? '–' : fmt(r.news_compound, 2)} of 1</div>`;
-  }
-  h += `<h4>News (${r.news_status || 'not checked'})</h4>`;
-  h += r.news && r.news.length ? '<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Headline</th><th>Source</th></tr></thead><tbody>' + r.news.map(n =>
-    `<tr><td class="n">${esc(n.date)}</td><td>${esc(n.category)}${n.confidence ? ` <span class="badge b-no">${esc(n.confidence)}</span>` : ''}</td><td>${n.parent ? `<span class="badge b-parent">${PARENT_ICON}Parent ${esc(n.parent)}</span> ` : ''}${link(n.url, n.title)}</td><td>${esc(n.source === 'newsroom' ? (n.parent ? 'parent website' : 'own website (no points unless an event)') : n.publisher || n.source)}</td></tr>`).join('') + '</tbody></table></div>'
-    : '<div class="note">No article confirmed to be about this company in the last year.</div>';
-  const okJobs = r.jobs_status === 'ok';
-  h += '<h4>Jobs</h4>' + kv([['Careers page', esc(r.jobs_status || 'not checked')], ['Open roles', okJobs ? fmt(r.open_roles) : 'unknown'],
-    ['Posted in the last 30 / 90 days', okJobs && r.jobs_newest ? `${fmt(r.jobs_new_30d)} / ${fmt(r.jobs_new_90d)}` : okJobs && r.open_roles > 0 ? 'dates not given' : '–'],
-    ['Newest posting', dmy(r.jobs_newest)], ['Roles we fill', r.roles_we_fill === null || r.roles_we_fill === undefined ? '–' : `${fmt(r.roles_we_fill)} of ${fmt(r.roles_listed)} listed${r.roles_we_fill_categories ? ' (' + esc(r.roles_we_fill_categories) + ')' : ''}`],
-    ['Page', link(r.careers_url, 'careers page')]]);
-  const VERDICT = {'we fill': 'b-ok', 'possible': 'b-warn', 'on-site': 'b-no', 'no match': 'b-no'};
-  if ((r.jobs || []).length) h += '<div class="tbl-wrap" style="margin-top:8px"><table><thead><tr><th>Role posted</th><th>Posted</th><th>Cloudstaff role?</th><th>Nearest Cloudstaff title</th><th class="n">Similarity</th></tr></thead><tbody>'
-    + r.jobs.map(j => `<tr><td>${esc(j.title)}</td><td class="n">${esc(j.posted || '–')}</td><td><span class="badge ${VERDICT[j.verdict] || 'b-no'}">${esc(j.verdict)}</span></td><td>${esc(j.jp_title ? j.jp_title + ' (' + (j.jp_category || '') + ')' : '–')}</td><td class="n">${j.similarity === null ? '–' : fmt(j.similarity, 2)}</td></tr>`).join('') + '</tbody></table></div>';
-  if (r.priority_score !== null) {
-    const rows = [
-      ['News and hiring', r.news_jobs_pts, M.max_points.news, (r.scoring_events > 1 ? `${r.scoring_events} events added up (combined ${fmt(r.news_compound, 2)}); strongest: ` : '') + (r.news_signal === 'None' ? 'no news' : r.news_signal ? `${r.news_from === 'parent' ? 'Parent ' + r.parent_name + ': ' : ''}${r.news_signal}${r.event_detail && r.news_from !== 'parent' ? ' (' + r.event_detail + ')' : ''}${r.news_signal_date ? ' · ' + r.news_signal_date : ''}${r.news_strength_factor < 1 ? ' · half weight' : ''}` : 'not checked')
-        + (r.jobs_status === 'ok' ? ` · ${fmt(r.job_postings_30d)} roles we fill posted in 30 days` : ' · jobs unknown')],
-      ['Competitor client', r.bpo_pts, M.max_points.bpo, 'no data yet: counts as No'],
-      ['Fit', r.fit_pts, M.max_points.fit, `${r.industry || 'Unknown'}: 5+ seats ${r.fit_growth_band || '–'}, 2nd department ${r.fit_branch_1y_band || '–'}`]];
-    h += '<h4>Score</h4><table class="pts"><thead><tr><th>Part</th><th class="n">Points</th><th class="n">Max</th><th>Based on</th></tr></thead><tbody>'
-      + rows.map(([a, p, m, b]) => `<tr><td>${a}</td><td class="n">${fmt(p, 1)}</td><td class="n">${m}</td><td>${esc(b)}</td></tr>`).join('')
-      + `<tr><td>+ Act now bonus</td><td class="n">${fmt(r.act_now_bonus, 1)}</td><td></td><td>${esc(r.act_now_triggers || 'none')}</td></tr>`
-      + `<tr><td><b>Priority score</b></td><td class="n"><b>${fmt(r.priority_score)}</b></td><td class="n">100</td><td>${esc(r.estimated_fields ? 'estimated: ' + r.estimated_fields : '')}</td></tr></tbody></table>`;
-  }
-  h += `<h4>Contacts (${(r.contacts || []).length})</h4><div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Title</th><th>Seniority</th><th>Email</th><th>LinkedIn</th></tr></thead><tbody>`
-    + (r.contacts || []).map(c => `<tr><td>${esc(c.name)}${c.owner_role ? ' ' + roleBadge(c.owner_role) : ''}</td><td>${esc(c.title)}</td><td>${esc(c.seniority)}</td><td>${c.email ? `<a class="ext" href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : '–'}${c.email_status && c.email_status !== 'Verified' ? ` <span class="badge b-warn">${esc(c.email_status)}</span>` : ''}</td><td>${link(c.linkedin, 'profile')}</td></tr>`).join('') + '</tbody></table></div>';
+      + r.event_list.map(e => `<tr><td>${esc(e.type)}</td><td class="n">${day(e.date)}${e.last !== e.date ? ' – ' + day(e.last) : ''}</td><td class="n">${fmt(e.reports)}</td><td>${esc(e.sources)}</td><td class="n">${e.value > 0 ? fmt(e.value, 2) : '<span class="note">0 (over 180 days)</span>'}</td><td class="note">${e.url ? link(e.url, e.title) : esc(e.title)}${(e.homes || []).length ? '<br>CQC pages: ' + e.homes.map(x => link(x.url, x.name + (x.city ? ' (' + x.city + ')' : ''))).join(' · ') : ''}</td></tr>`).join('')
+      + `</tbody></table></div><div class="note">Combined news value: ${r.news_compound === null || r.news_compound === undefined ? '–' : fmt(r.news_compound, 2)} of 1</div>`);
+  h += box('ind', 'Industry and activity codes', esc(r.industry_raw || ''), kv([
+    ['Apollo industry', esc(r.industry_raw || '')], ['Industry group', esc(r.industry || 'unmapped')],
+    ['Sub-sector', esc(r.sub_sectors ? r.sub_sectors + ' (from ' + r.sub_sector_basis + ')' : '')],
+    ['Target industry?', `${r.on_target === false ? 'no' : r.on_target ? 'yes' : '–'}${r.fit_basis ? ' · ' + esc(r.fit_basis) : ''}`],
+    ['Activity codes (Apollo: US SIC, NAICS)', esc([r.sic_us ? 'SIC ' + r.sic_us : '', r.naics ? 'NAICS ' + r.naics : ''].filter(Boolean).join(' · '))],
+    ['SIC (Companies House, UK 2007)', esc(r.uk_sic || '')]]));
   $('detailBody').innerHTML = h;
+  $('detailBody').querySelectorAll('details.ev-box').forEach(d => d.ontoggle = () => d.open ? openBoxes.add(d.dataset.k) : openBoxes.delete(d.dataset.k));
   if (scroll) $('detailCard').scrollIntoView({behavior: 'smooth', block: 'start'});
 }
 $('listSearch').oninput = () => render();
