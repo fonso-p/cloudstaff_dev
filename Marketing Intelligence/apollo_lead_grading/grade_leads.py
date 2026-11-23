@@ -65,6 +65,14 @@ NEWS_EVENTS = ["Funding round", "PE buyout", "M&A", "Expansion / new office", "R
 REGISTER_FILES = {"CQC register": SCRAPER_OUT / "cqc_events.csv", "Find a Tender": SCRAPER_OUT / "contract_awards.csv"}
 REGISTER_SCORED = {"M&A", "Expansion / new office", "Contract / partnership win"}
 CQC_PROVIDERS, CQC_LOCATIONS = SCRAPER_OUT / "cqc_providers.csv", SCRAPER_OUT / "cqc_locations.csv"
+# Ownership (News Scraper/apollo_emea/ownership.py, Companies House PSC register): a flag, never points. BDM feedback
+# 23 Nov 2026: companies not owned by a parent, an umbrella group or an investor, and not run on public money, have
+# fewer layers of sign-off and buy faster. "Owner-managed" is that target.
+OWNERSHIP = SCRAPER_OUT / "ownership.csv"
+OWNERSHIP_ORDER = ["Owner-managed", "Owner-managed group", "Part of a corporate group", "Investor-backed",
+                   "Charity / not-for-profit", "Public body", "Unknown", "Not checked"]
+OWNERSHIP_PRIVATE = {"Owner-managed", "Owner-managed group"}
+OWNERSHIP_EVENT_DAYS = 730                         # a PE buyout in the news this recent overrides an older register filing
 # Sub-sector: what kind of business, from CQC's service types when the lead is in the CQC register (care, England),
 # else from its activity codes (Apollo US SIC 4-digit, NAICS 4-digit, Companies House UK SIC prefixes).
 # Descriptive: no points. A lead can have several.
@@ -734,6 +742,45 @@ def add_subsectors(leads):
     return leads
 
 
+def add_ownership(leads, ev, as_of):
+    """Who owns the lead (ownership.py), cross-checked with Apollo's parent and the news. Writes `ownership` (one of
+    OWNERSHIP_ORDER), `ownership_evidence` and `ownership_check` (a conflict for a person to look at)."""
+    cols = ["ownership", "ownership_evidence", "ownership_number", "ownership_number_source", "ownership_number_name",
+            "company_numbers", "company_type", "owner_chain", "owner_chain_steps", "top_owner", "group_companies", "owners_named",
+            "cqc_charity_number", "cqc_provider_sector", "website_number_page", "psc_snapshot"]
+    if OWNERSHIP.exists():
+        o = pd.read_csv(OWNERSHIP, dtype=str, keep_default_na=False, na_values=[""])
+        o["account_id"] = "AP-" + o.pop("company_id").str.replace("^apollo-", "", regex=True)
+        o["group_companies"] = pd.to_numeric(o["group_companies"], errors="coerce")
+        leads = leads.merge(o[["account_id"] + [c for c in cols if c in o.columns]], on="account_id", how="left")
+    for c in cols:
+        if c not in leads.columns:
+            leads[c] = None
+    leads["ownership"] = leads["ownership"].fillna("Not checked")
+    recent = ev[(ev["published"] >= as_of - pd.Timedelta(days=OWNERSHIP_EVENT_DAYS))] if len(ev) else ev
+    pe = recent[recent["category"] == "PE buyout"].groupby("account_id")["published"].max() if len(ev) else pd.Series(dtype=object)
+    ma = recent[recent["category"] == "M&A"].groupby("account_id")["published"].max() if len(ev) else pd.Series(dtype=object)
+    checks = []
+    for i, r in leads.iterrows():
+        cls, evid, notes = r["ownership"], r["ownership_evidence"], []
+        if r["account_id"] in pe.index and cls in OWNERSHIP_PRIVATE | {"Unknown", "Not checked"}:
+            cls, evid = "Investor-backed", f"PE buyout in the news ({pe[r['account_id']]:%b %Y})" + ("" if blank(evid) else f"; register: {evid}")
+        if not blank(r.get("parent_company")):
+            if cls in ("Unknown", "Not checked"):
+                cls, evid = "Part of a corporate group", f"Apollo names a parent: {r['parent_company']}" + ("" if blank(evid) else f"; {evid}")
+            elif cls in OWNERSHIP_PRIVATE:
+                notes.append(f"Apollo names a parent ({r['parent_company']}) but Companies House shows individuals at the top")
+        if r["account_id"] in ma.index and cls in OWNERSHIP_PRIVATE:
+            notes.append(f"M&A in the news ({ma[r['account_id']]:%b %Y}): check who bought whom; the owner may have changed")
+        if r.get("ownership_number_source") == "website":
+            notes.append(f"company number read from its website ({r.get('ownership_number_name')}): confirm it is the same business")
+        leads.at[i, "ownership"], leads.at[i, "ownership_evidence"] = cls, evid
+        checks.append("; ".join(notes) or None)
+    leads["ownership_check"] = checks
+    leads["ownership_target"] = leads["ownership"].eq("Owner-managed")
+    return leads
+
+
 def add_collected(leads, out_dir, as_of):
     s_all = pd.read_csv(out_dir / "company_summary.csv", keep_default_na=False, na_values=[""], dtype=str)
     parents = s_all[s_all["company_id"].str.startswith("parent-")].set_index("company_id")
@@ -857,6 +904,7 @@ def add_collected(leads, out_dir, as_of):
     leads = review_flags(leads)
     leads = target_check(leads)                    # needs the Companies House UK SIC, so after the scraper results
     leads = add_subsectors(leads)
+    leads = add_ownership(leads, ev, as_of)
     leads["apollo_vs_news"] = [apollo_vs_news(a, s) for a, s in zip(leads["apollo_latest_funding"], leads["news_signal"])]
     leads["parent_detail"] = [best_detail(pev[pev["company_id"] == p], s, d) if not blank(s) else None
                               for p, s, d in zip(leads["parent_id"], leads["parent_signal"], leads["parent_signal_date"])]
@@ -988,6 +1036,8 @@ def chips(r, as_of):
         out.append([f"{int(r['scoring_events'])} separate events in 6 months (added up)", "signal"])
     if not blank(r.get("match_review")):
         out.append([f"Check match: {r['match_review']}", "warn"])
+    if not blank(r.get("ownership_check")):
+        out.append([f"Check ownership: {r['ownership_check']}", "warn"])
     if isinstance(r.get("internal_match"), str):
         out.append([r["internal_match"], "warn"])
     for p in filter(None, str(r.get("pitch") or "").split("; ")):
@@ -1069,6 +1119,8 @@ def readout(leads, events, apollo_files, n_contacts):
         "parents": int(L["parent_name"].notna().sum()), "parent_events": int(L["parent_signal"].notna().sum()),
         "parent_scored": int((L["news_from"] == "parent").sum()),
         "own_site_only": int(((L["news_signal"].isin(["None"]) | L["news_signal"].isna()) & (L["own_site_posts"] > 0)).sum()),
+        "ownership": L["ownership"].value_counts().to_dict(),
+        "ownership_checks": int(L["ownership_check"].notna().sum()),
     }
 
 
@@ -1189,6 +1241,8 @@ def main(argv=None):
           {"step": "Companies (one per Apollo account)", "rows": int(len(leads))},
           {"step": "  of which news checked by News Scraper", "rows": int(leads["news_status"].isin(["found", "checked, nothing found"]).sum())},
           {"step": "  of which found in Companies House", "rows": int((leads["filings_status"] == "found in Companies House").sum())},
+          {"step": "  of which ownership known (Companies House PSC, Apollo parent or PE news)",
+           "rows": int((~leads["ownership"].isin(["Unknown", "Not checked"])).sum())},
           {"step": "Excluded: distressed (administration, liquidation, strike-off)", "rows": int((leads["grade"] == "Excluded: distressed").sum())},
           {"step": "Existing client (sent to the AM, not graded)", "rows": int((leads["grade"] == "Existing client").sum())},
           {"step": "Duplicate (renamed to another lead in the list, not graded)", "rows": int((leads["grade"] == DUPLICATE).sum())},
