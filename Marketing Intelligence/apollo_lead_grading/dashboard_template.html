@@ -143,6 +143,7 @@ details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
 .g-x{background:var(--color-feature-03-soft);color:var(--color-text-base-primary)}
 .g-cf{background:var(--color-feature-02-soft);color:var(--color-text-base-primary)}
 /* parent-company news: same chip, marked with a small group icon and a dashed outline */
+.ev-src{margin-top:4px}.ev-src summary{cursor:pointer;color:var(--color-brand-primary);font-size:12px}.ev-src div{margin:3px 0 0 12px;font-size:12px}
 .b-parent{background:var(--color-surface-primary);color:var(--color-text-base-secondary);border:1px dashed var(--border-color-default)}
 .b-parent i{font-size:9px;margin-right:3px;color:var(--color-brand-primary)}
 .b-warn i{font-size:9px;margin-right:3px;opacity:.7}
@@ -223,13 +224,13 @@ a.ext{color:var(--color-brand-primary-strong)}
     <section class="page show" id="p-leads">
       <div class="kpis" id="kpisLeads"></div>
       <div class="card"><div class="card-head"><h3>Leads, best first</h3><span id="leadsSub"></span></div><div class="card-body">
-        <div class="note" style="margin:0 0 10px">Why shows signals only: <span class="badge b-ok">scored signal</span> event, or hiring of roles we fill ·
+        <div class="note" style="margin:0 0 10px">Events &amp; signals: <span class="badge b-ok">scored signal</span> event, or hiring of roles we fill ·
           <span class="badge b-news">other news event</span> a different kind of event, no points (only the strongest counts); hover a <i class="fa-regular fa-newspaper"></i> chip for its headlines ·
           <span class="badge b-blue">hiring / filing</span> no points (older or on-site hiring, Companies House changes) ·
           <span class="badge b-parent"><i class="fa-solid fa-sitemap"></i>parent</span> parent company's event ·
-          <span class="badge b-warn"><i class="fa-solid fa-database"></i>Apollo funding</span> undated, no points ·
-          <span class="badge b-purple">fit</span> clearly above the usual rate · <span class="badge b-pink">check</span> needs a look.
-          What the company does (service lines, software, group) is in its profile: click a row. Readiness (0–4) only orders equal scores.</div>
+          <span class="badge b-purple">fit</span> clearly above the usual rate · <span class="badge b-pink">check</span> needs a look (including events that need review).
+          The <span class="badge b-warn"><i class="fa-solid fa-database"></i>Apollo</span> column holds what comes from the Apollo export: its funding label (undated, no points), parent company, and an owner who is an Apollo contact.
+          What the company does (service lines, software, group) is in its profile: click a row.</div>
         <div class="tools"><input id="listSearch" placeholder="Search company, city, contact, reason"><span class="note" style="margin:0">Click a row for the evidence, the score and the contacts. Click a column header to sort.</span></div>
         <div class="tbl-wrap" id="tLeads"></div></div></div>
       <div class="card" id="detailCard" style="display:none"><div class="card-head"><h3 id="detailTitle"></h3><span id="detailSub"></span></div><div class="card-body detail" id="detailBody"></div></div>
@@ -240,15 +241,13 @@ a.ext{color:var(--color-brand-primary-strong)}
       <div class="kpis" id="kpisOver"></div>
       <div class="grid g2">
         <div class="card"><div class="card-head"><h3>Grade by Apollo list</h3><span>leads</span></div>
-          <div class="card-body"><div class="chart"><canvas id="cGrade"></canvas></div><div class="note">Tiers are ranks within each Apollo list (separate campaigns): the top 10% of a list are Tier 1, the next 30% Tier 2. Equal scores and readiness share the higher tier, so a tier can be larger than its share. Check fit = outside the list's target industry, scored but not tiered. Excluded = in administration, liquidation or strike-off.</div></div></div>
+          <div class="card-body"><div class="chart"><canvas id="cGrade"></canvas></div><div class="note">Tiers are ranks within each Apollo list (separate campaigns): the top 10% of a list are Tier 1, the next 30% Tier 2. Equal scores share the higher tier, so a tier can be larger than its share. Check fit = outside the list's target industry, scored but not tiered. Excluded = in administration, liquidation or strike-off.</div></div></div>
         <div class="card"><div class="card-head"><h3>Where the points come from</h3><span>average points per lead, by list</span></div>
           <div class="card-body"><div class="chart"><canvas id="cPts"></canvas></div><div class="note" id="ptsNote"></div></div></div>
       </div>
-      <div class="grid g2">
+      <div class="grid">
         <div class="card"><div class="card-head"><h3>Priority score distribution</h3><span>leads per score band</span></div>
           <div class="card-body"><div class="chart"><canvas id="cScore"></canvas></div><div class="note">Most leads sit in a narrow band because little is known about them yet: no website activity, and news for only a few. The spread grows as signals are added.</div></div></div>
-        <div class="card"><div class="card-head"><h3>Lead readiness</h3><span>leads by readiness points (0–4), by list</span></div>
-          <div class="card-body"><div class="chart"><canvas id="cReady"></canvas></div><div class="note">Readiness breaks ties between equal scores and never adds points. One point each: an Apollo funding label, a decision-maker with a verified email, news or own-website posts in the last 180 days, and being in the list's target industry.</div></div></div>
       </div>
     </section>
 
@@ -488,6 +487,7 @@ const SIGNALS = [
   ['fit', 'Fit above usual', 'Client Propensity, 1.5x the usual rate'],
   ['filing', 'Companies House change', 'new registration, name change; no points'],
   ['owner', 'Owner is an Apollo contact', 'a person named as owner in the Companies House register is one of its Apollo contacts (matched on first + last name)'],
+  ['needs_review', 'Event needs review', 'an event in the company panel is marked Needs review: the news classifier was unsure (medium or low confidence), a CQC or contract match was made on the name only, or Claude labelled it and no person has checked it'],
   ['review', 'Match needs review', 'CQC or a contract matched on a name only: confirm or reject in register_match_reviews.csv'],
 ];
 $('fSigs').innerHTML = SIGNALS.map(([k, t, d]) => `<label title="${esc(d)}"><input type="checkbox" value="${k}">${esc(t)} <span class="cnt">(${fmt(R.filter(r => (r.signals || []).includes(k)).length)})</span></label>`).join('');
@@ -530,20 +530,20 @@ function render() {
 const LEAD_COLS = [
   {k: 'grade', label: 'Grade', f: v => gradeHtml(v)},
   {k: 'priority_score', label: 'Score', n: 1, f: v => v === null ? '–' : fmt(v)},
-  {k: 'readiness', label: '<span title="Tie-break only, never points. One each: an Apollo funding label · a decision-maker with a verified email · in the news (or a relevant event on its own site) in the last 180 days · in the list\'s target industry">Readiness <i class="fa-regular fa-circle-question"></i></span>', n: 1, f: (v, r) => `<span title="${esc(r.readiness_why || 'none')}">${fmt(v)}/4</span>`},
   {k: 'company_name', label: 'Company', f: (v, r) => `<b>${esc(v)}</b><br><span class="note">${esc([r.city, r.employee_count ? r.employee_count + ' staff' : '', r.lead_list].filter(Boolean).join(' · '))}</span>`},
   {k: 'ownership', label: '<span title="Who controls the company (Companies House). Owner-managed = the BDM target. Hover a badge for the evidence">Ownership <i class="fa-regular fa-circle-question"></i></span>', f: (v, r) => ownHtml(r) + (r.top_owner && r.ownership !== 'Owner-managed' ? `<br><span class="note">${esc(r.top_owner)}</span>` : '')},
-  {k: 'chips', label: 'Why', f: v => chipHtml(v)},
+  {k: 'chips', label: '<span title="Events (news, CQC, public contracts, parent company) and other signals: hiring, fit, competitor client, Companies House changes, checks. The company panel lists every relevant event">Events &amp; signals <i class="fa-regular fa-circle-question"></i></span>', f: (v, r) => chipHtml(v) + (r.events_to_review ? `<span class="badge b-pink" title="Open the company panel: the Relevant events table marks which ones">${fmt(r.events_to_review)} event${r.events_to_review > 1 ? 's' : ''} need${r.events_to_review > 1 ? '' : 's'} review</span>` : '')},
+  {k: 'apollo_chips', label: '<span title="From the Apollo export: its Latest Funding label (undated, compared with the news), its parent company, and whether a Companies House owner is one of its Apollo contacts">Apollo <i class="fa-regular fa-circle-question"></i></span>', f: v => (v || []).length ? chipHtml(v) : '–'},
   {k: 'best_contact', label: 'Best contact', f: (v, r) => v ? `${esc(v)}${r.owner_contacts && r.owner_contacts.split('; ').includes(v) && r.best_owner_role ? ' ' + roleBadge(r.best_owner_role) : ''}<br><span class="note">${esc(r.best_title || '')}${r.n_contacts > 1 ? ` · +${r.n_contacts - 1} more` : ''}</span>` : '–'},
 ];
 let sortKey = null, sortDir = -1, selected = null;
 const GRADE_ORDER = Object.fromEntries(GRADES.map((g, i) => [g, i]));
 function leadRows(rows) {
   const q = ($('listSearch').value || $('topSearch').value).trim().toLowerCase();
-  const hay = r => [r.company_name, r.city, r.industry_raw, r.website_domain, (r.chips || []).map(c => c[0]).join(' '), (r.contacts || []).map(c => c.name + ' ' + c.title).join(' ')].join(' ').toLowerCase();
+  const hay = r => [r.company_name, r.city, r.industry_raw, r.website_domain, (r.chips || []).map(c => c[0]).join(' '), (r.apollo_chips || []).map(c => c[0]).join(' '), (r.contacts || []).map(c => c.name + ' ' + c.title).join(' ')].join(' ').toLowerCase();
   const out = rows.filter(r => !q || hay(r).includes(q));
-  if (!sortKey) return out;   // default: the order the grading wrote (grade, score, readiness)
-  const val = r => sortKey === 'grade' ? GRADE_ORDER[r.grade] : sortKey === 'chips' ? (r.chips || []).length : r[sortKey];
+  if (!sortKey) return out;   // default: the order the grading wrote (grade, score)
+  const val = r => sortKey === 'grade' ? GRADE_ORDER[r.grade] : ['chips', 'apollo_chips'].includes(sortKey) ? (r[sortKey] || []).length : r[sortKey];
   return out.sort((a, b) => { const x = val(a), y = val(b); return x === y ? 0 : (x === null ? 1 : y === null ? -1 : (x > y ? 1 : -1) * sortDir); });
 }
 function rLeads(f, rows) {
@@ -565,11 +565,19 @@ function rLeads(f, rows) {
 function showDetail(r, scroll = true) {
   $('detailCard').style.display = '';
   $('detailTitle').textContent = r.company_name;
-  $('detailSub').textContent = `${r.grade}${r.priority_score !== null ? ' · score ' + r.priority_score : ''} · readiness ${r.readiness}/4`;
+  $('detailSub').textContent = `${r.grade}${r.priority_score !== null ? ' · score ' + r.priority_score : ''}`;
   const link = (u, t) => u ? `<a class="ext" href="${esc(u)}" target="_blank" rel="noopener">${esc(t || u)}</a>` : '–';
   const kv = pairs => `<div class="kv">${pairs.map(([k, v]) => `<div><b>${esc(k)}</b>${v}</div>`).join('')}</div>`;
   const web = r.website_domain ? link('https://' + r.website_domain, r.website_domain) : '–';
-  let h = '<h4>Why</h4>' + chipHtml(r.chips) + (r.readiness_why ? `<div class="note">Readiness: ${esc(r.readiness_why)}</div>` : '');
+  const ev = r.relevant_events || [];
+  let h = `<h4>Relevant events (last 12 months${ev.length ? ', ' + fmt(ev.length) : ''})</h4>`;
+  h += ev.length ? '<div class="note" style="margin:0 0 6px">News, CQC register, public contracts and parent-company events in one list, newest first. Only the relevant types: funding, PE buyout, M&amp;A, expansion, restructuring, leadership change, contract or partnership win, product launch. Reports of the same event within ' + (M.event_window || 30) + ' days are one row: open "reports" to see every source. <span class="badge b-pink">Needs review</span> = a person should check it (hover for why); an event is marked only when none of its reports is confirmed.</div>'
+    + '<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Event</th><th>Source</th><th>What happened</th><th>Notes</th></tr></thead><tbody>'
+    + ev.map(e => `<tr><td class="n">${esc(e.first || e.date)}</td><td>${esc(e.type)}${e.review ? ` <span class="badge b-pink" title="${esc(e.review)}">Needs review</span>` : ''}</td>`
+      + `<td>${e.parent ? `<span class="badge b-parent">${PARENT_ICON}${esc(e.source)}</span>` : esc(e.source)}</td>`
+      + `<td>${link(e.url, e.title)}${e.detail ? `<br><span class="note">${esc(e.detail)}</span>` : ''}${(e.homes || []).length ? '<br><span class="note">CQC pages: </span>' + e.homes.map(x => link(x.url, x.name + (x.city ? ' (' + x.city + ')' : ''))).join(' · ') : ''}${e.publisher && !e.detail ? `<br><span class="note">${esc(e.publisher)}</span>` : ''}${e.reports > 1 ? `<details class="ev-src"><summary>${fmt(e.reports)} reports</summary>` + e.items.map(x => `<div><span class="note">${esc(x.date)} · ${esc(x.source)}${x.publisher ? ' · ' + esc(x.publisher) : ''}</span> ${link(x.url, x.title)}${x.detail ? ` <span class="note">(${esc(x.detail)})</span>` : ''}${x.review ? ` <span class="badge b-pink" title="${esc(x.review)}">Needs review</span>` : ''}</div>`).join('') + '</details>' : ''}</td>`
+      + `<td class="note">${esc([e.notes, e.review].filter(Boolean).join(' · ') || '–')}</td></tr>`).join('') + '</tbody></table></div>'
+    : '<div class="note">No relevant event found in the last 12 months.</div>';
   const pc = (p, u) => p === null || p === undefined ? '–' : `${pct(p, 0)}${u ? ` (usual ${pct(u, 0)})` : ''}`;
   h += '<h4>Fit (Client Propensity, past clients in the same industry)</h4>' + kv([
     ['5+ seats in a year', `${pc(r.fit_growth_p, r.fit_growth_usual)} · ${esc(r.fit_growth_band || '–')}`],
@@ -665,10 +673,11 @@ function showDetail(r, scroll = true) {
 }
 $('listSearch').oninput = () => render();
 $('topSearch').oninput = () => { if (page !== 'leads') go('leads'); else render(); };
-const CSV_COLS = ['grade', 'priority_score', 'readiness', 'company_name', 'lead_list', 'city', 'employee_count', 'website_domain', 'industry', 'industry_raw',
+const CSV_COLS = ['grade', 'priority_score', 'company_name', 'lead_list', 'city', 'employee_count', 'website_domain', 'industry', 'industry_raw',
   'news_signal', 'news_signal_date', 'signal_confidence', 'news_headline', 'news_url', 'filing_signal', 'registered_status', 'company_number', 'jobs_status', 'open_roles',
-  'apollo_latest_funding', 'apollo_vs_news', 'event_detail', 'service_lines', 'roles_we_fill', 'roles_we_fill_categories', 'hiring_band', 'parent_company', 'act_now_triggers', 'readiness_why', 'best_contact', 'best_title', 'n_contacts'].map(k => ({k, label: k}));
-$('btnCsv').onclick = () => download('lead_grades.csv', leadRows(current).map(r => ({...r, reasons: (r.chips || []).map(c => c[0]).join('; ')})), [...CSV_COLS, {k: 'reasons', label: 'reasons'}]);
+  'apollo_latest_funding', 'apollo_vs_news', 'event_detail', 'service_lines', 'roles_we_fill', 'roles_we_fill_categories', 'hiring_band', 'parent_company', 'act_now_triggers', 'best_contact', 'best_title', 'n_contacts'].map(k => ({k, label: k}));
+$('btnCsv').onclick = () => download('lead_grades.csv', leadRows(current).map(r => ({...r, events_and_signals: (r.chips || []).map(c => c[0]).join('; '), apollo: (r.apollo_chips || []).map(c => c[0]).join('; ')})),
+  [...CSV_COLS, {k: 'events_and_signals', label: 'events_and_signals'}, {k: 'apollo', label: 'apollo'}, {k: 'events_to_review', label: 'events_to_review'}]);
 $('btnCsvC').onclick = () => download('lead_contacts.csv', leadRows(current).flatMap(r => (r.contacts || []).map(c => ({grade: r.grade, priority_score: r.priority_score, company_name: r.company_name, ...c}))),
   ['grade', 'priority_score', 'company_name', 'name', 'title', 'seniority', 'email', 'email_status', 'linkedin'].map(k => ({k, label: k})));
 
@@ -691,8 +700,6 @@ function rOverview(f, rows) {
   const bands = ['0-9', '10-14', '15-19', '20-24', '25-29', '30-39', '40+'], b = s => s < 10 ? 0 : s < 15 ? 1 : s < 20 ? 2 : s < 25 ? 3 : s < 30 ? 4 : s < 40 ? 5 : 6;
   draw('cScore', {type: 'bar', data: {labels: bands, datasets: lists.map(l => ({label: l, backgroundColor: LIST_COLOUR[l], data: bands.map((_, i) => t.filter(r => r.lead_list === l && b(r.priority_score) === i).length)}))},
     options: {scales: {y: {title: {display: true, text: 'Leads'}}}}});
-  draw('cReady', {type: 'bar', data: {labels: ['0', '1', '2', '3', '4'], datasets: lists.map(l => ({label: l, backgroundColor: LIST_COLOUR[l], data: [0, 1, 2, 3, 4].map(k => rows.filter(r => r.lead_list === l && r.readiness === k).length)}))},
-    options: {scales: {x: {title: {display: true, text: 'Readiness points'}}, y: {title: {display: true, text: 'Leads'}}}}});
 }
 
 // ---------------- Data gathered (the readout)
@@ -786,11 +793,11 @@ function rMethod() {
   const rc = M.recency.map(([d, f], i) => `${d}${M.recency[i + 1] ? '–' + (M.recency[i + 1][0] - 1) : '+'} days × ${f}`).join(' · ');
   $('methodBody').innerHTML = `<ul class="rules">
     <li><b>The Priority Score, without HubSpot.</b> Each Apollo company is scored as a New Logo account with the live Priority Score code (<span class="mono">${esc(M.info.scoring_profile)}</span>). These leads are pre-HubSpot, so website activity and Diamond referral are left out, and their 40 points are shared out in the live profile's own proportions: news and hiring ${M.max_points.news}, fit ${M.max_points.fit}, Competitor client ${M.max_points.bpo}.</li>
-    <li><b>What we have (Apollo):</b> website, industry, staff, city, funding label, technologies and contacts. The funding label has no date, so it earns <b>no points</b> until the news dates it (D1); it shows as a chip and a readiness point.</li>
+    <li><b>What we have (Apollo):</b> website, industry, staff, city, funding label, technologies and contacts. The funding label has no date, so it earns <b>no points</b> until the news dates it (D1); it shows in the Apollo column.</li>
     <li><b>What we gather (News Scraper):</b> news events score type × recency. Types: ${ns}. Recency: ${rc}. Medium- and low-confidence events count at <b>half strength</b> (D2). <b>"Other" news earns no points</b> (only the event types above count), so a company's own blog posts count only when they report a relevant event. A <b>parent company's</b> event (Apollo's parent) counts at half strength when it beats the lead's own news, and is marked <span class="badge b-parent">${PARENT_ICON}Parent</span>. Half-strength news never triggers Act now. Event details (who bought whom, amounts, new executives) come from the scraper's language pass and only describe an event already counted. <b>Hiring points count only roles Cloudstaff fills</b>: each posted title is matched to Staff Central's JP titles (close matches only; looser ones show as "possible", on-site care and facilities roles as "on-site"), roles posted in the last 30 days, 20+ = full. All open roles still show in the hiring chip, in bands, with how recent they are. <b>Service lines</b> come from the company's website and carry no points. Companies House status gates the lead.</li>
     <li><b>What we know internally:</b> existing clients (MyStaff) are taken off the list, and known HubSpot prospects are flagged. Fit uses Client Propensity's industry profile from all countries, because there are only 26 UK clients.</li>
     <li><b>Unknown parts</b> (news where the search didn't run) are scored at the average of the leads where they are known, or 25% when none is known, and listed as estimated.</li>
-    <li><b>Grades:</b> ranked <b>within each Apollo list</b>, since each list is its own campaign: Tier 1 = top 10% of the list, Tier 2 = next 30%, Tier 3 = the rest (D3). Equal scores are ordered by <b>readiness</b> (0–4): an Apollo funding label, a decision-maker with a verified email, in the news (or a relevant event on its own site) in the last 180 days, being in the list's target industry. Readiness never adds points.</li>
+    <li><b>Grades:</b> ranked <b>within each Apollo list</b>, since each list is its own campaign: Tier 1 = top 10% of the list, Tier 2 = next 30%, Tier 3 = the rest (D3). Equal scores share the higher tier.</li>
     <li><b>Registers:</b> the CQC register (England's care regulator, monthly) gives each care lead's locations, beds, services and ratings. A home that re-registers under the lead after leaving another provider is a takeover (M&amp;A); a home with no predecessor is an expansion. Public contract awards from Find a Tender count as a Contract / partnership win. Both count at full strength, like hand-labelled events. A new registered manager at one home is shown but not scored.</li>
     <li><b>Sub-sector:</b> what kind of business it is (nursing, residential, home care, learning disability; cyber services, software product…), from CQC's service types when the lead is registered, else from its activity codes. Descriptive only, with pitch hints.</li>
     <li><b>Ownership</b> (a flag, no points): BDMs prefer companies that are not owned by a parent, an umbrella group or an investor, and not run on public money: fewer layers of sign-off and a faster decision. From the Companies House register of people with significant control, followed up the chain of owning companies: <span class="badge b-ok">Owner-managed</span> individuals at the top, directly or through a small holding company (the target) · <span class="badge b-blue">Owner-managed group</span> individuals at the top of a group of more than 5 companies · <span class="badge b-no">Part of a corporate group</span> the top owner is a company with no individual named (overseas, listed, or not identified) · <span class="badge b-warn">Investor-backed</span> a limited partnership or investment vehicle (Bidco, Topco, Capital, Equity, Fund…) in the chain, or a PE buyout in the news in the last 2 years · <span class="badge b-purple">Charity / not-for-profit</span> a CQC charity number, a guarantee or community-interest company, or a charity in the chain · <span class="badge b-pink">Public body</span> a council, NHS body or government in the chain, or CQC provider type. A <span class="badge b-pink">check</span> marks a conflict: Apollo names a parent, recent M&amp;A news, or a company number read from the website.</li>

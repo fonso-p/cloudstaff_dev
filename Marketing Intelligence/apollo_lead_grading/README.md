@@ -106,6 +106,8 @@ The live Priority Score code, New Logo, **without the HubSpot parts** (these lea
 - **Factors** (`news_strength_factor`, read by `priority_scoring._news_factor()`; blank = 1, so the main pipeline is unaffected): medium / low classifier confidence ×0.5 (`CONFIDENCE_FACTOR`); a parent company's event ×0.5 (`PARENT_FACTOR`), used only when it beats the lead's own; corrected (`event_overrides.csv`) and hand-labelled (`manual_events.csv`) events ×1.0.
 - **Industry trend is not in the score** (`TREND_IN_SCORE = False`): tiers rank within each list, where every lead shares the same trend.
 
+**Needs review** (Relevant events table, 23 Nov 2026): a row is marked when (a) the news classifier rated it medium or low confidence (scored at half weight); (b) a CQC or Find a Tender match was made on the company name only and is not confirmed in `register_match_reviews.csv` (scored in full until rejected); or (c) Claude labelled it in `manual_events.csv` and the classifier does not also find it at high confidence. It clears when a person corrects or confirms the article in `event_overrides.csv` or confirms the match in `register_match_reviews.csv`. High-confidence mistakes are not caught by the rule: only a person's correction fixes those. A grouped event is marked only when every one of its reports is; the flag never changes the score.
+
 ### 4.4 Target industry ("Check fit")
 Apollo's one-word industry is often wrong (Coxbench Hall Residential Care Home = "individual & family services"). `target_check()` uses evidence in this order and writes the reason to `fit_basis`:
 1. Companies House UK SIC for furniture or building (`OTHER_TRADE_UK_STRONG`) → check fit (suppliers' sites mention care too).
@@ -118,7 +120,8 @@ A lead put in the target gets the target's industry group for fit (`industry_apo
 
 ### 4.5 Tiers
 - **Within each Apollo list** (`TIER_GROUP = "lead_list"`): top 10% Tier 1, next 30% Tier 2, the rest Tier 3.
-- Equal scores are ordered by **readiness** (0–4), one point each: an Apollo funding label · a decision-maker (owner, founder, C-suite, partner, VP, director) with a verified email · in the news, or a relevant event on its own site, in the last 180 days · in the list's target industry. Readiness never adds points. Exact ties share the higher tier, so a tier can run over its share.
+- Exact ties share the higher tier, so a tier can run over its share.
+- **No tie-break since 23 Nov 2026** (user): the readiness tie-break (0–4: Apollo funding label, verified decision-maker email, news in 180 days, target industry) was removed. Effect on the 23 Nov run: no score changed and Tier 1 is the same 21 leads, but the large block of leads on the bottom score now ties with the last Tier 2 leads, so **all 74 former Tier 3 leads are Tier 2 and Tier 3 is empty** (care homes: 15 / 127 / 0; cybersecurity: 6 / 48 / 0). Open question 6 (§8).
 
 ### 4.6 Other inputs
 - **Roles we fill** (`roles.py`): each posted job title is cleaned (`shared/jp_titles.py`) and matched to Staff Central's JP titles with the scraper's MiniLM model. ≥ 0.80 = we fill (counted); 0.62–0.80 = possible (shown, not counted); care and facilities roles that must be done in person = on-site (`ONSITE`). Only the JP Title / JP Category columns of the Staff Central export are read.
@@ -133,11 +136,11 @@ A lead put in the target gets the target's industry group for fit (`industry_apo
 ### 4.7 The page
 | Where | What |
 |---|---|
-| **Why** column | Signals only: events (with details), parent events (group icon, dashed, "Parent"), hiring (roles in bands 1–2 … 21+, how recent, how many we fill), Companies House changes, Apollo funding (database icon), competitor client, fit chips (High **and** ≥ 1.5× the usual rate), check warnings. A legend above the table explains each chip |
-| **Readiness** column | n/4, with a tooltip listing which points the lead has |
-| **Lead panel** (click a row) | Fit detail (each chance against the usual rate, likely first new department, outlook, target-industry reason) · **Company profile** (service lines from its website, software-stack pitch hints, group membership) · Companies House · news list (incl. parent and hand-labelled articles) · jobs and every posted role with its Cloudstaff match · score breakdown · contacts |
+| **Events & signals** column | Events (with details), parent events (group icon, dashed, "Parent"), hiring (roles in bands 1–2 … 21+, how recent, how many we fill), Companies House changes, competitor client, fit chips (High **and** ≥ 1.5× the usual rate), check warnings, and "N events need review". A legend above the table explains each chip |
+| **Apollo** column (after Events & signals) | What comes from the Apollo export: the Latest Funding label compared with the news (database icon, no points), Apollo's parent company, and a Companies House owner who is one of its Apollo contacts |
+| **Lead panel** (click a row) | **Relevant events** first: news, CQC register, public contracts and parent-company events merged into one table, last 12 months, newest first, one row per event (reports of the same type within 30 days, as the score groups them; public contracts one row each) with an expandable list of every report, only the relevant types (`NEWS_EVENTS`, after `event_overrides.csv`); a row a person should check is marked **Needs review** (hover for why, see 4.3) · fit detail (each chance against the usual rate, likely first new department, outlook, target-industry reason) · **Company profile** (service lines from its website, software-stack pitch hints, group membership) · Companies House · news list (incl. parent and hand-labelled articles) · jobs and every posted role with its Cloudstaff match · score breakdown · contacts |
 | Other pages | Grades overview · Data gathered (news, events, filings, jobs, hiring bands and recency, Apollo funding vs news, contacts, coverage by source) · Fit and market (service lines, fit profiles, market trend as context, industry check) · How grading works · QA |
-| Filters | List, grade, Act now, hiring, service line, Apollo funding, industry. CSV export of leads and of contacts |
+| Filters | List, grade, Act now, hiring, service line, Apollo funding, industry; signal ticks incl. "Event needs review". CSV export of leads (with `events_and_signals`, `apollo`, `events_to_review`) and of contacts |
 
 ## 5. Files
 
@@ -167,7 +170,7 @@ A lead put in the target gets the target's industry group for fit (`industry_apo
 | Tiers within each Apollo list | Separate campaigns; cyber was taking most Tier 1 places on fit alone |
 | Standalone dashboard, one owner (BDM Marketing) | No SDR / BDM / Marketing split for these yet |
 | Fit from industry only, all countries | 26 UK clients is too few for a UK estimate |
-| Readiness tie-break from the data we have | Scores tie in large blocks |
+| ~~Readiness tie-break from the data we have~~ removed 23 Nov 2026 | Scores tie in large blocks; the user removed it for now |
 | "Other" news earns nothing, and isn't shown as a reason | A score must only move for a reason shown |
 | Parent news counts at half strength, marked "Parent" | Useful (HC-One's CEO left) but the parent isn't the lead |
 | Hiring counts only roles Cloudstaff fills | Care homes mostly hire carers and nurses, which we don't place |
@@ -222,9 +225,10 @@ Tier 1, care: Lilian Faithfull Care, Strong Life Care, Forge Care, Dunham Care, 
 **Open (parked)**
 1. **Reconciling Apollo funding with the news.** Suggested: a match lets Apollo raise a medium-confidence event to full weight; a different event keeps the news (Apollo's is probably older); "not in the news" gets a manual date check recorded in a date-override file, then scores like news.
 2. **Strengths of the two new event types** (0.5 and 0.3 are first guesses). When agreed, add them to `Marketing Intelligence/reference materials/data/scoring_settings.json` so the main pipeline uses the same values.
-3. **The bottom of Tier 1:** some leads reach it on readiness alone (no scored signal). Optional rule: Tier 1 needs a scored signal.
+3. ~~The bottom of Tier 1 on readiness alone~~ readiness removed 23 Nov 2026.
 4. **On-site hiring scores nothing.** To count it as a growth sign: `HIRING_SCORE = "all"`.
 5. ~~One event per lead~~ events add up since 20 Nov (§4.3). Open: whether the 30-day grouping window and the combining rule are right.
+6. **Tier 3 is empty without a tie-break** (23 Nov 2026). Options: Tier 3 = leads with no scored signal; or a BDM-led tie-break (owner-managed, an owner who is an Apollo contact); or leave it.
 
 **Next steps, in order of value**
 1. **Accuracy check on UK data:** a person marks `article_check.xlsx` (~100 rows), including some new-category events; then the eval scripts score them.

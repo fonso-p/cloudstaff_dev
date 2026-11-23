@@ -497,15 +497,13 @@ table.score tr.total td{font-weight:600;border-bottom:0}
         <div class="head"><h2>Tier within the Apollo list</h2><span class="tag rule">Rules</span></div>
         <ul>
           <li>Ranked within each list (care and cyber are separate campaigns): top 10% Tier 1, next 30% Tier 2, the rest Tier 3.</li>
-          <li>Ties are broken by <strong>readiness</strong> (0–4, one point each): an Apollo funding label · a decision-maker with a verified email · news in the last 180 days · in the target industry. Readiness never adds points.</li>
+          <li>Equal scores share the higher tier (no tie-break since 23 Nov 2026, so the bottom block of tied leads is Tier 2 and Tier 3 is empty for now).</li>
         </ul>
-        <p class="where"><code>grade()</code>, <code>readiness()</code></p>
+        <p class="where"><code>grade()</code></p>
       </div>
       <div class="sample">
         <span class="eyebrow">Belmont at this point</span>
         <div class="kv">
-          <span class="k">readiness</span><span class="v">2 / 4 (recent news, target industry)</span>
-          <span class="k">missing</span><span class="v">funding label; verified decision-maker</span>
           <span class="k">grade</span><span class="v"><span class="hl">Tier 1</span> of 16 in UK care homes (175)</span>
         </div>
       </div>
@@ -519,14 +517,14 @@ table.score tr.total td{font-weight:600;border-bottom:0}
         <ul>
           <li><code>grade_leads.py</code> writes <code>lead_grades_apollo_emea.xlsx</code> (leads, contacts, news) and <code>.json</code> (the page's data). Both stay out of the repo because they hold contact names and emails.</li>
           <li><code>build_dashboard.py</code> embeds the JSON in <code>dashboard_template.html</code> to make one offline HTML file. <code>check_page.py</code> must report <code>errors: []</code>.</li>
-          <li>The page has a leads table (Why chips, readiness), a lead panel, and pages for data gathered, fit and market, how grading works, and QA. Filters include sub-sector.</li>
+          <li>The page has a leads table (Events &amp; signals and Apollo columns), a lead panel that opens with a Relevant events table, and pages for data gathered, fit and market, how grading works, and QA. Filters include sub-sector.</li>
         </ul>
         <p class="where"><code>&lt;Data&gt;/&lt;date&gt;_EMEA_Lead_Grades.html</code>, owned by BDM Marketing</p>
       </div>
       <div class="sample">
         <span class="eyebrow">What BDM Marketing sees</span>
         <div class="kv">
-          <span class="k">row</span><span class="v">Belmont Healthcare · Tier 1 · 22 · readiness 2/4</span>
+          <span class="k">row</span><span class="v">Belmont Healthcare · Tier 1 · 22</span>
         </div>
         <div class="chips"><span class="chip sig">M&amp;A · Sep 2026</span></div>
         <p>Clicking the row opens the lead panel:</p>
@@ -567,7 +565,7 @@ table.score tr.total td{font-weight:600;border-bottom:0}
       <h3>What's rules-only</h3>
       <ul>
         <li>News match score, keyword event rules, Companies House matching</li>
-        <li>Target check, gates, Priority Score, tiers and readiness</li>
+        <li>Target check, gates, Priority Score, tiers</li>
         <li>Rename split, CQC takeover rule, contract matching, sub-sectors</li>
         <li>Every threshold is a setting at the top of <code>grade_leads.py</code></li>
       </ul>

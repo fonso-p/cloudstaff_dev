@@ -392,10 +392,7 @@ def compound_events(leads, ev, as_of):
     shared scoring), unique_events, scoring_events, event_list (for the page)."""
     by = {k: g for k, g in ev.groupby("account_id")}
     homes = cqc_event_homes()
-    overrides = {}
-    if EVENT_OVERRIDES.exists():
-        for o in pd.read_csv(EVENT_OVERRIDES, dtype=str).fillna("").itertuples():
-            overrides.setdefault(o.company_name, []).append((o.headline_starts_with, o.category))
+    overrides = load_overrides()
     comp, n_all, n_scoring, lists = [], [], [], []
     for _, r in leads.iterrows():
         g = by.get(r["account_id"])
@@ -994,7 +991,7 @@ def add_collected(leads, out_dir, as_of):
                                       "category": me["category"],
                                       "event_confidence": [("labelled by " if k == "manual" else "from ") + b for k, b in zip(me["kind"], me["labelled_by"])],
                                       "title": me["headline"], "url": me["url"], "publisher": me["publisher"],
-                                      "source": me["source"]})], ignore_index=True)
+                                      "source": me["source"], "match": me["match"] if "match" in me.columns else None})], ignore_index=True)
 
     # jobs: a count is only known when the careers page was read (blank = unknown, never zero)
     leads.loc[leads["jobs_status"] != "ok", "job_postings_30d"] = None
@@ -1125,8 +1122,11 @@ def chips(r, as_of):
         p, usual = r.get(f"{s}_p"), r.get(f"{s}_usual")
         if r.get(f"{s}_band") == FIT["chip_band"] and not blank(p) and not blank(usual) and p >= FIT["chip_min_lift"] * usual:
             out.append([f"Fit: likely {lbl} ({p:.0%} vs usual {usual:.0%})", "fit"])
-    if not blank(r.get("parent_company")):
-        out.append([f"Part of {r['parent_company']}", "info"])
+    if not blank(r.get("parent_company")):          # Apollo's parent company field: Apollo column
+        out.append([f"Part of {r['parent_company']}", "apollo"])
+    if not blank(r.get("owner_contacts")):           # a Companies House owner who is one of its Apollo contacts
+        role = r.get("best_owner_role")
+        out.append([f"Owner is an Apollo contact: {r['owner_contacts']}" + ("" if blank(role) else f" ({role})"), "apollo"])
     if not blank(r.get("competitor_client")):       # from candidates' CVs (Client Extraction)
         if r.get("competitor_client_status") == "confirmed":
             out.append([f"Competitor client: {r['competitor_client']}", "signal"])
@@ -1151,21 +1151,8 @@ def chips(r, as_of):
     return out
 
 
-def readiness(leads):
-    """Lead readiness (0-4): tie-break only, never points. Decision 2026-11-18 ("use any data points we do have"): with few
-    signals per lead, scores tie in large blocks (pilot: 129 care homes on one score), and percentile tiers then put whole
-    blocks in Tier 1. One point each for READINESS (below)."""
-    parts = pd.DataFrame({
-        "Apollo funding label": leads["apollo_latest_funding"].notna(),
-        "Decision-maker with a verified email": leads["dm_verified"].fillna(0) > 0,
-        "In the news, or a relevant event on its own site, in the last 180 days": leads["recent_activity"],
-        "In the list's target industry": leads["_on_target"].fillna(False).astype(bool),
-    })
-    return parts.sum(axis=1).astype(int), parts.apply(lambda r: "; ".join(k for k, v in r.items() if v), axis=1)
-
-
 def grade(leads, contacts, events, as_of):
-    # contact readiness: shown next to the grade, and one of the readiness points; not in the score
+    # contacts: best contact and decision-maker counts, shown on the page; not in the score
     # a named owner (Companies House) who is an Apollo contact is the best contact; the rest keep the seniority order
     if "is_owner" in contacts.columns:
         contacts = contacts.assign(_own=~contacts["is_owner"]).sort_values(["account_id", "_own"], kind="stable").drop(columns="_own")
@@ -1174,10 +1161,6 @@ def grade(leads, contacts, events, as_of):
     agg = c.groupby("account_id").agg(n_contacts=("name", "size"), decision_makers=("_dm", "sum"), verified_emails=("_ver", "sum"),
                                       dm_verified=("_dmv", "sum"), best_contact=("name", "first"), best_title=("title", "first"))
     leads = leads.merge(agg, on="account_id", how="left")
-    counts = (events["source"] != OWN_SITE_SOURCE) | events["category"].isin(NEWS_EVENTS)   # own blog posts only when a relevant event
-    recent = set(events.loc[counts & (events["published"] >= as_of - pd.Timedelta(days=180)), "account_id"])
-    leads["recent_activity"] = leads["account_id"].isin(recent)
-    leads["readiness"], leads["readiness_why"] = readiness(leads)
 
     leads["grade"] = leads.apply(gate, axis=1)
     scorable = leads["grade"].isna() | (leads["grade"] == CHECK_FIT)
@@ -1189,8 +1172,9 @@ def grade(leads, contacts, events, as_of):
     # website activity is not part of lead scoring (0 points), so it is not an "estimated" part either
     leads["estimated_fields"] = leads["estimated_fields"].map(
         lambda s: (", ".join(x for x in str(s).split(", ") if x != "Website") or None) if isinstance(s, str) else s)
-    # tiers within each Apollo list (D3, per list since 18 Nov), ranked on the score and then readiness; exact ties share the higher tier
-    key = leads.loc[elig, "priority_score"].astype(float) * 10 + leads.loc[elig, "readiness"]
+    # tiers within each Apollo list (D3, per list since 18 Nov), ranked on the score; exact ties share the higher tier.
+    # The readiness tie-break (0-4) was removed on 23 Nov 2026 (user).
+    key = leads.loc[elig, "priority_score"].astype(float)
     leads["tier"] = None
     leads.loc[elig, "tier"] = percentile_tier(key, leads.loc[elig, TIER_GROUP], SCORING)
     leads.loc[elig, "grade"] = leads.loc[elig, "tier"]
@@ -1199,11 +1183,13 @@ def grade(leads, contacts, events, as_of):
     leads["_news_by_cat"] = leads["account_id"].map(news_by_category(events, as_of))
     allchips = leads.apply(lambda r: chips(r, as_of), axis=1)
     # Why = relevant signals only (decision 2026-11-18); service lines, pitch and group membership go to the company profile
-    leads["chips"] = allchips.map(lambda cs: [c for c in cs if c[1] not in PROFILE_KINDS])
+    # Events & signals column; Apollo-sourced chips (funding label, parent, owner contact) get their own column (23 Nov 2026)
+    leads["chips"] = allchips.map(lambda cs: [c for c in cs if c[1] not in PROFILE_KINDS | {"apollo"}])
+    leads["apollo_chips"] = allchips.map(lambda cs: [c for c in cs if c[1] == "apollo"])
     leads["profile_chips"] = allchips.map(lambda cs: [c for c in cs if c[1] in PROFILE_KINDS])
     order = {"Tier 1": 0, "Tier 2": 1, "Tier 3": 2, CHECK_FIT: 3, "Existing client": 4, DUPLICATE: 5, "Excluded: distressed": 6}
     leads["_o"] = leads["grade"].map(order)
-    leads = leads.sort_values(["_o", "priority_score", "readiness"], ascending=[True, False, False]).drop(columns="_o")
+    leads = leads.sort_values(["_o", "priority_score"], ascending=[True, False]).drop(columns="_o")
     return leads.reset_index(drop=True)
 
 
@@ -1231,6 +1217,108 @@ def readout(leads, events, apollo_files, n_contacts):
         "ownership": L["ownership"].value_counts().to_dict(),
         "ownership_checks": int(L["ownership_check"].notna().sum()),
     }
+
+
+RELEVANT_DAYS = 365                                # Relevant events table: the last 12 months (user, 23 Nov 2026)
+SOURCE_LABEL = {"cqc": "CQC register", "fts": "Public contract", "manual": "Hand-labelled", OWN_SITE_SOURCE: "Own website"}
+
+
+def load_overrides():
+    """event_overrides.csv: {company name: [(headline prefix, category)]}, a person's (or Claude's) correction of one headline."""
+    out = {}
+    if EVENT_OVERRIDES.exists():
+        for o in pd.read_csv(EVENT_OVERRIDES, dtype=str).fillna("").itertuples():
+            out.setdefault(o.company_name, []).append((o.headline_starts_with, o.category))
+    return out
+
+
+def relevant_events(r, e, pe, contracts, overrides, homes, as_of):
+    """One lead's relevant events in the last RELEVANT_DAYS, news, CQC, public contracts and its parent's, merged into one
+    list for the company panel, newest first. Relevant = NEWS_EVENTS after event_overrides.csv ("Other" drops the article).
+    review says why a person should check the row (decision 23 Nov 2026): the classifier rated it medium or low; a register
+    match made on the company name only and not confirmed; or an event Claude labelled that no person has checked."""
+    since = as_of - pd.Timedelta(days=RELEVANT_DAYS)
+    by_url = {c["url"]: c for c in contracts}
+    rows = []
+
+    def add(x, parent=None):
+        if pd.isna(x.published) or x.published < since:
+            return
+        title = "" if blank(x.title) else str(x.title)
+        names = [r["company_name"]] + ([parent] if parent else [])
+        ovr = next((c for n in names for pre, c in overrides.get(n, []) if pre and title.startswith(pre)), None)
+        cat = ovr or x.category
+        if cat not in NEWS_EVENTS:
+            return
+        src, conf = str(x.source or ""), "" if blank(x.event_confidence) else str(x.event_confidence)
+        match = getattr(x, "match", None)
+        match = "" if blank(match) else str(match)
+        review, notes, detail = None, [], None
+        if ovr:
+            notes.append("type corrected on review" if ovr != x.category else "reviewed")
+        elif conf in ("medium", "low"):
+            review = f"News classifier unsure ({conf} confidence, half weight): check it is about this company and is this event"
+        elif conf == "labelled by Claude":
+            review = "Labelled by Claude, not yet checked by a person"
+        if match.startswith("name") and "confirmed" not in match:
+            review = "Matched on the company name only, not the company number: confirm or reject in register_match_reviews.csv"
+        if src == "cqc" and cat not in REGISTER_SCORED:
+            notes.append("not scored")
+        if parent:
+            notes.append("parent's event")
+        url = None if blank(x.url) else str(x.url)
+        if src == "fts" and url in by_url:
+            c = by_url[url]
+            detail = " · ".join(filter(None, [c.get("buyer"), f"{float(c['value']):,.0f} {c.get('currency') or ''}".strip() if c.get("value") else None]))
+        h = homes.get((r["account_id"], str(x.published_at)[:10], url), []) if src == "cqc" else []
+        rows.append({"date": f"{x.published:%Y-%m-%d}", "type": cat, "_src": src,
+                     "source": f"Parent {parent}" if parent else SOURCE_LABEL.get(src, "News"),
+                     "title": title, "url": url, "publisher": None if blank(x.publisher) else x.publisher, "detail": detail,
+                     "homes": h, "notes": ", ".join(notes) or None, "review": review, "parent": bool(parent)})
+
+    for x in ([] if e is None else e.itertuples()):
+        add(x)
+    for x in ([] if pe is None else pe.itertuples()):
+        add(x, parent=r.get("parent_name"))
+    # the same article from two feeds (news + hand-labelled, or a repeated row): keep one, preferring the row needing no review
+    rows.sort(key=lambda d: d["review"] is not None)
+    seen, out = set(), []
+    for d in rows:
+        k = (d["title"].strip().lower(), d["type"], d["parent"])
+        if k not in seen:
+            seen.add(k)
+            out.append(d)
+    return group_relevant(out)
+
+
+LEAD_SOURCE = {"fts": 0, "cqc": 1, "": 2, "manual": 3, OWN_SITE_SOURCE: 4}   # which report heads a group: registers, then news
+
+
+def group_relevant(rows):
+    """Collapse reports of one event into one row (user, 23 Nov 2026): same type, own vs parent, within EVENT_WINDOW_DAYS of
+    the group's first report, as compound_events groups them for the score. Public contracts stay one row each (two awards
+    in a month are two deals). The row heads with its best report (no review needed, then registers before news, then the earliest: usually the announcement);
+    every report stays in items for the expandable source list. The event needs review only when every report does."""
+    groups = []
+    for d in sorted(rows, key=lambda d: d["date"]):
+        g = None if d["_src"] == "fts" else next(
+            (g for g in groups if g["type"] == d["type"] and g["parent"] == d["parent"] and g["_src"] != "fts"
+             and (pd.Timestamp(d["date"]) - pd.Timestamp(g["first"])).days <= EVENT_WINDOW_DAYS), None)
+        if g is None:
+            g = {"type": d["type"], "parent": d["parent"], "first": d["date"], "_src": d["_src"], "items": []}
+            groups.append(g)
+        g["items"].append(d)
+    out = []
+    for g in groups:
+        items = sorted(g["items"], key=lambda d: d["date"], reverse=True)
+        head = min(items, key=lambda d: (d["review"] is not None, LEAD_SOURCE.get(d["_src"], 2), d["date"]))
+        flagged = all(d["review"] for d in items)
+        out.append({**{k: v for k, v in head.items() if k != "_src"}, "first": g["first"], "date": items[0]["date"],
+                    "source": ", ".join(dict.fromkeys(d["source"] for d in items)),
+                    "homes": list({h["url"]: h for d in items for h in d["homes"]}.values()),
+                    "review": head["review"] if flagged else None, "reports": len(items),
+                    "items": [{k: v for k, v in d.items() if k not in ("_src", "homes")} for d in items]})
+    return sorted(out, key=lambda d: d["date"], reverse=True)
 
 
 def lead_signals(r, e):
@@ -1264,10 +1352,12 @@ def lead_signals(r, e):
 
 
 def save(leads, contacts, events, parent_events, jobs_by_lead, info, name, as_of):
-    cols_out = [c for c in leads.columns if not c.startswith("_") and c not in ("chips", "profile_chips")]
+    cols_out = [c for c in leads.columns if not c.startswith("_") and c not in ("chips", "profile_chips", "apollo_chips")]
     xlsx = DATA_DIR / f"lead_grades_{name}.xlsx"
     with pd.ExcelWriter(xlsx) as w:
-        leads.assign(reasons=leads["chips"].map(lambda cs: "; ".join(c[0] for c in cs)), profile=leads["profile_chips"].map(lambda cs: "; ".join(c[0] for c in cs)))[["reasons", "profile"] + cols_out].to_excel(w, sheet_name="leads", index=False)
+        joined = lambda k: leads[k].map(lambda cs: "; ".join(c[0] for c in cs))
+        leads.assign(events_and_signals=joined("chips"), apollo=joined("apollo_chips"), profile=joined("profile_chips"))[
+            ["events_and_signals", "apollo", "profile"] + cols_out].to_excel(w, sheet_name="leads", index=False)
         contacts.to_excel(w, sheet_name="contacts", index=False)
         events.to_excel(w, sheet_name="news_articles", index=False)
         parent_events.to_excel(w, sheet_name="parent_news_articles", index=False)
@@ -1298,9 +1388,10 @@ def save(leads, contacts, events, parent_events, jobs_by_lead, info, name, as_of
         con_awards = {k: g.sort_values("date", ascending=False)[cols].to_dict("records") for k, g in ca.groupby("account_id")}
     fields = (("date", "published_at"), ("category", "category"), ("confidence", "event_confidence"), ("title", "title"),
               ("publisher", "publisher"), ("url", "url"), ("source", "source"))
+    overrides, homes = load_overrides(), cqc_event_homes()
     for r in leads.to_dict("records"):
         row = {k: jsonable(r.get(k)) for k in cols_out}
-        row["chips"], row["profile_chips"] = r["chips"], r["profile_chips"]
+        row["chips"], row["profile_chips"], row["apollo_chips"] = r["chips"], r["profile_chips"], r["apollo_chips"]
         e, pe = ev_by.get(r["account_id"]), pev_by.get(r.get("parent_id"))
         row["news"] = ([] if e is None else [{k: jsonable(getattr(x, f)) for k, f in fields} for x in e.head(8).itertuples()]) + \
                       ([] if pe is None else [{**{k: jsonable(getattr(x, f)) for k, f in fields}, "parent": r.get("parent_name")} for x in pe.head(3).itertuples()])
@@ -1309,6 +1400,10 @@ def save(leads, contacts, events, parent_events, jobs_by_lead, info, name, as_of
         row["event_list"] = r.get("_event_list") or []
         row["cqc_list"] = cqc_by.get(r["account_id"], [])
         row["contracts"] = con_awards.get(r["account_id"], [])
+        row["relevant_events"] = relevant_events(r, e, pe, row["contracts"], overrides, homes, as_of)
+        row["events_to_review"] = sum(1 for d in row["relevant_events"] if d["review"])
+        if row["events_to_review"]:
+            row["signals"].append("needs_review")
         cg = con_by.get(r["account_id"])
         row["contacts"] = [] if cg is None else [{k: jsonable(v) for k, v in x.items() if k != "account_id"} for x in cg.to_dict("records")]
         rows.append(row)
