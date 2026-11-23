@@ -119,9 +119,10 @@ Apollo's one-word industry is often wrong (Coxbench Hall Residential Care Home =
 A lead put in the target gets the target's industry group for fit (`industry_apollo` keeps Apollo's).
 
 ### 4.5 Tiers
-- **Within each Apollo list** (`TIER_GROUP = "lead_list"`): top 10% Tier 1, next 30% Tier 2, the rest Tier 3.
+- **Within each Apollo list** (`TIER_GROUP = "lead_list"`): top 10% Tier 1, next 30% Tier 2.
+- **Tier 3 = no scored signal** (user, 23 Nov 2026; `scored_signal`): no scored event in `scoring_events` (news, CQC, contract or parent), no roles we fill posted in 30 days, not a confirmed competitor client. Fit alone doesn't count (every lead gets fit points from its industry). Read from the evidence, not the points, so an estimated news part never counts. A lead without a signal is Tier 3 whatever its score: cyber leads score 21 on fit alone, above some care leads with a signal (10). 23 Nov run: care homes 15 / 5 / 122, cybersecurity 6 / 4 / 44; only 30 of 196 tiered leads have a signal.
 - Exact ties share the higher tier, so a tier can run over its share.
-- **No tie-break since 23 Nov 2026** (user): the readiness tie-break (0–4: Apollo funding label, verified decision-maker email, news in 180 days, target industry) was removed. Effect on the 23 Nov run: no score changed and Tier 1 is the same 21 leads, but the large block of leads on the bottom score now ties with the last Tier 2 leads, so **all 74 former Tier 3 leads are Tier 2 and Tier 3 is empty** (care homes: 15 / 127 / 0; cybersecurity: 6 / 48 / 0). Open question 6 (§8).
+- **No tie-break since 23 Nov 2026** (user): the readiness tie-break (0–4: Apollo funding label, verified decision-maker email, news in 180 days, target industry) was removed. Without it the bottom block of tied leads ran into Tier 2 and left Tier 3 empty, which is why Tier 3 is now defined by signal (above).
 
 ### 4.6 Other inputs
 - **Roles we fill** (`roles.py`): each posted job title is cleaned (`shared/jp_titles.py`) and matched to Staff Central's JP titles with the scraper's MiniLM model. ≥ 0.80 = we fill (counted); 0.62–0.80 = possible (shown, not counted); care and facilities roles that must be done in person = on-site (`ONSITE`). Only the JP Title / JP Category columns of the Staff Central export are read.
@@ -228,7 +229,7 @@ Tier 1, care: Lilian Faithfull Care, Strong Life Care, Forge Care, Dunham Care, 
 3. ~~The bottom of Tier 1 on readiness alone~~ readiness removed 23 Nov 2026.
 4. **On-site hiring scores nothing.** To count it as a growth sign: `HIRING_SCORE = "all"`.
 5. ~~One event per lead~~ events add up since 20 Nov (§4.3). Open: whether the 30-day grouping window and the combining rule are right.
-6. **Tier 3 is empty without a tie-break** (23 Nov 2026). Options: Tier 3 = leads with no scored signal; or a BDM-led tie-break (owner-managed, an owner who is an Apollo contact); or leave it.
+6. ~~Tier 3 empty without a tie-break~~ Tier 3 = no scored signal since 23 Nov 2026 (§4.5). Still open: a tie-break inside Tier 3 (e.g. owner-managed, an owner who is an Apollo contact).
 
 **Next steps, in order of value**
 1. **Accuracy check on UK data:** a person marks `article_check.xlsx` (~100 rows), including some new-category events; then the eval scripts score them.

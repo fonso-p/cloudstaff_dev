@@ -1177,6 +1177,14 @@ def grade(leads, contacts, events, as_of):
     key = leads.loc[elig, "priority_score"].astype(float)
     leads["tier"] = None
     leads.loc[elig, "tier"] = percentile_tier(key, leads.loc[elig, TIER_GROUP], SCORING)
+    # Tier 3 = no scored signal (user, 23 Nov 2026): no scored event (news, CQC, contract or parent, scoring_events), no
+    # roles we fill posted in 30 days, not a confirmed competitor client. Fit alone doesn't count: every lead gets fit
+    # points from its industry. Tiers 1-2 stay percentile ranks on the score; a lead without a signal is Tier 3 wherever
+    # its score would put it.
+    leads["scored_signal"] = ((pd.to_numeric(leads["scoring_events"], errors="coerce").fillna(0) > 0)
+                              | (pd.to_numeric(leads["job_postings_30d"], errors="coerce").fillna(0) > 0)
+                              | leads["prior_bpo_flag"].eq("Yes"))
+    leads.loc[elig & ~leads["scored_signal"], "tier"] = "Tier 3"
     leads.loc[elig, "grade"] = leads.loc[elig, "tier"]
     leads["team"] = TEAM
     leads["act_now"] = leads["act_now_triggers"].notna() & scorable
