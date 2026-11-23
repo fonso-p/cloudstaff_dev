@@ -367,10 +367,31 @@ def _strength(news, factor, d, as_of):
     return STRENGTH[news] * factor * _recency((as_of - d).days)
 
 
+def cqc_event_homes():
+    """{(account_id, date, url): [homes]} from cqc.py: each home in a CQC event with its own CQC page."""
+    p = REGISTER_FILES["CQC register"]
+    if not p.exists():
+        return {}
+    c = pd.read_csv(p, dtype=str, keep_default_na=False)
+    if "locations" not in c.columns:
+        return {}
+    out = {}
+    for r in c.itertuples():
+        try:
+            homes = json.loads(r.locations) if r.locations else []
+        except ValueError:
+            homes = []
+        acc = "AP-" + re.sub("^apollo-", "", r.company_id)
+        out[(acc, r.date, r.url)] = [{"name": h.get("name"), "city": h.get("city"), "beds": h.get("beds"),
+                                      "url": "https://www.cqc.org.uk/location/" + h["id"]} for h in homes if h.get("id")]
+    return out
+
+
 def compound_events(leads, ev, as_of):
     """Distinct events per lead and their combined value (see COMPOUND_EVENTS). Writes news_compound (0-1, read by the
     shared scoring), unique_events, scoring_events, event_list (for the page)."""
     by = {k: g for k, g in ev.groupby("account_id")}
+    homes = cqc_event_homes()
     overrides = {}
     if EVENT_OVERRIDES.exists():
         for o in pd.read_csv(EVENT_OVERRIDES, dtype=str).fillna("").itertuples():
@@ -393,11 +414,14 @@ def compound_events(leads, ev, as_of):
                 if ovr:
                     f = 1.0
                 kind = {"cqc": "CQC", "fts": "contract", "manual": "hand-labelled", OWN_SITE_SOURCE: "own site"}.get(src, "news")
-                items.append({"cat": cat, "date": x.published, "f": f, "kind": kind, "title": x.title, "ovr": ovr})
+                url = x.url if isinstance(x.url, str) and x.url else None
+                items.append({"cat": cat, "date": x.published, "f": f, "kind": kind, "title": x.title, "ovr": ovr, "url": url,
+                              "homes": homes.get((r["account_id"], str(x.published_at)[:10], url), []) if src == "cqc" else []})
         if r.get("parent_signal") in NEWS_EVENTS and not pd.isna(r.get("parent_signal_date")):
             pf = CONFIDENCE_FACTOR.get(r.get("parent_confidence") or "", 1.0) * PARENT_FACTOR
             items.append({"cat": r["parent_signal"], "date": r["parent_signal_date"], "f": pf, "kind": "parent",
-                          "title": f"Parent {r.get('parent_name')}: {r.get('parent_headline') or ''}", "parent": True})
+                          "title": f"Parent {r.get('parent_name')}: {r.get('parent_headline') or ''}", "parent": True,
+                          "url": r.get("parent_url") if isinstance(r.get("parent_url"), str) and r.get("parent_url") else None})
         events = []                                    # group: same type (and own vs parent) within EVENT_WINDOW_DAYS
         for it in sorted(items, key=lambda d: d["date"]):
             e = next((e for e in events if e["cat"] == it["cat"] and e["parent"] == it.get("parent", False)
@@ -425,7 +449,9 @@ def compound_events(leads, ev, as_of):
             out.append({"type": ("Parent: " if e["parent"] else "") + e["cat"], "date": e["first"].date().isoformat(),
                         "last": max(it["date"] for it in e["items"]).date().isoformat(), "value": round(v, 3),
                         "reports": len(e["items"]), "sources": ", ".join(sorted({it["kind"] for it in e["items"]})),
-                        "title": best["title"]})
+                        "title": best["title"], "url": best.get("url") or next((it.get("url") for it in e["items"] if it.get("url")), None),
+                        # every CQC home in the event (all its reports), each linked to its CQC page
+                        "homes": list({h["url"]: h for it in e["items"] for h in it.get("homes", [])}.values())})
         out.sort(key=lambda d: (-d["value"], d["date"]))
         comp.append(round(1 - prod, 4) if events else None)
         n_all.append(len(events)); n_scoring.append(sum(1 for d in out if d["value"] > 0)); lists.append(out)
@@ -781,7 +807,63 @@ def add_ownership(leads, ev, as_of):
         checks.append("; ".join(notes) or None)
     leads["ownership_check"] = checks
     leads["ownership_target"] = leads["ownership"].eq("Owner-managed")
+    # how the people at the top hold it: directly (named on the lead's own register entry, no company in between) or
+    # through a holding company. Direct = the owners are the shareholders of the operating company itself
+    private = leads["ownership"].isin(OWNERSHIP_PRIVATE)
+    no_chain = leads["owner_chain_steps"].isna() | leads["owner_chain_steps"].eq("")
+    leads["ownership_route"] = None
+    leads.loc[private & no_chain & leads["owners_named"].notna(), "ownership_route"] = "direct"
+    leads.loc[private & ~no_chain, "ownership_route"] = "via holding company"
     return leads
+
+
+PERSON_TITLE = r"^(mr|mrs|ms|miss|mx|dr|sir|dame|lord|lady|prof|professor|rev)\.?\s+"
+
+
+def person_key(name):
+    """'Mr Michael Charles Saunders' -> ('michael', 'saunders'): first and last word, titles and punctuation dropped."""
+    w = [re.sub(r"[^a-z]", "", x) for x in re.sub(PERSON_TITLE, "", str(name or "").lower().strip()).replace("-", " ").split()]
+    w = [x for x in w if x]
+    return (w[0], w[-1]) if len(w) >= 2 else None
+
+
+def match_owner_contacts(leads, contacts):
+    """Apollo contacts who are named owners (Companies House register), matched on first + last name within the same
+    lead. Marks contacts["is_owner"]; writes owner_contacts and owners_to_find (named owners with no Apollo contact).
+    Only the name is used: never the register's birth date, nationality or address."""
+    owners = {r.account_id: {person_key(o): o for o in str(r.owners_named).split("; ") if person_key(o)}
+              for r in leads.itertuples() if isinstance(r.owners_named, str) and r.owners_named}
+    contacts["is_owner"] = [person_key(n) in owners.get(a, {}) for a, n in zip(contacts["account_id"], contacts["name"])]
+    found = contacts[contacts["is_owner"]].groupby("account_id")["name"].agg("; ".join)
+    leads["owner_contacts"] = leads["account_id"].map(found)
+    have = {a: {person_key(n) for n in g["name"]} for a, g in contacts[contacts["is_owner"]].groupby("account_id")}
+    leads["owners_to_find"] = [("; ".join(v for k, v in owners.get(a, {}).items() if k not in have.get(a, set())) or None)
+                               for a in leads["account_id"]]
+    return leads, contacts
+
+
+def owners_export(leads, as_of):
+    """owners_to_find_<date>.csv in the Data folder: named owners of owner-managed leads and owner-managed groups with no Apollo contact, one row
+    per person, for an Apollo people search (name + company + website). Best leads first."""
+    rows = []
+    live = ~leads["grade"].astype(str).str.startswith("Excluded") & leads["grade"].ne(DUPLICATE)   # not distressed / duplicate
+    for r in leads[leads["ownership"].isin(OWNERSHIP_PRIVATE) & leads["owners_to_find"].notna() & live].itertuples():
+        for full in r.owners_to_find.split("; "):
+            w = re.sub(PERSON_TITLE, "", full.strip(), flags=re.I).split()
+            rows.append({"first_name": w[0] if w else "", "last_name": w[-1] if len(w) > 1 else "",
+                         "full_name": " ".join(w), "company_name": r.company_name, "website": r.website_domain,
+                         "lead_list": r.lead_list, "grade": r.grade, "priority_score": r.priority_score,
+                         "ownership": r.ownership, "ownership_route": r.ownership_route,
+                         "registered_company": r.ownership_number_name, "company_number": r.ownership_number,
+                         "companies_house": f"https://find-and-update.company-information.service.gov.uk/company/{r.ownership_number}"
+                                            "/persons-with-significant-control" if isinstance(r.ownership_number, str) else ""})
+    order = {"Tier 1": 0, "Tier 2": 1, "Tier 3": 2, CHECK_FIT: 3}
+    out = pd.DataFrame(rows)
+    if len(out):
+        out = out.assign(_o=out["grade"].map(order).fillna(9)).sort_values(["_o", "priority_score"], ascending=[True, False]).drop(columns="_o")
+    path = DATA_DIR / f"owners_to_find_{as_of:%Y-%m-%d}.csv"
+    out.to_csv(path, index=False, encoding="utf-8-sig")
+    return path, len(out)
 
 
 def add_collected(leads, out_dir, as_of):
@@ -1063,6 +1145,9 @@ def readiness(leads):
 
 def grade(leads, contacts, events, as_of):
     # contact readiness: shown next to the grade, and one of the readiness points; not in the score
+    # a named owner (Companies House) who is an Apollo contact is the best contact; the rest keep the seniority order
+    if "is_owner" in contacts.columns:
+        contacts = contacts.assign(_own=~contacts["is_owner"]).sort_values(["account_id", "_own"], kind="stable").drop(columns="_own")
     c = contacts.assign(_dm=contacts["seniority"].str.lower().isin(DECISION_MAKER), _ver=contacts["email_status"].eq("Verified"))
     c["_dmv"] = c["_dm"] & c["_ver"]
     agg = c.groupby("account_id").agg(n_contacts=("name", "size"), decision_makers=("_dm", "sum"), verified_emails=("_ver", "sum"),
@@ -1152,6 +1237,8 @@ def lead_signals(r, e):
         out.append("fit")
     if not blank(r.get("filing_signal")) and r["filing_signal"] != "None":
         out.append("filing")
+    if not blank(r.get("owner_contacts")):
+        out.append("owner")
     return out
 
 
@@ -1233,6 +1320,7 @@ def main(argv=None):
     # fit and trend after the target check, which can correct the industry group (Companies House codes come from the scraper)
     leads, fit_src = add_fit(leads, newest("*_Propensity_Extract_prospect_profiles.csv"))
     leads, trend_src = add_trend(leads, TREND_FILE)
+    leads, contacts = match_owner_contacts(leads, contacts)   # named owners who are Apollo contacts
     leads = grade(leads, contacts, events, as_of)
 
     # checks: ids unique, every lead graded, contacts all belong to a lead
@@ -1246,6 +1334,7 @@ def main(argv=None):
           {"step": "  of which found in Companies House", "rows": int((leads["filings_status"] == "found in Companies House").sum())},
           {"step": "  of which ownership known (Companies House PSC, Apollo parent or PE news)",
            "rows": int((~leads["ownership"].isin(["Unknown", "Not checked"])).sum())},
+          {"step": "  of which a named owner is an Apollo contact", "rows": int(leads["owner_contacts"].notna().sum())},
           {"step": "Excluded: distressed (administration, liquidation, strike-off)", "rows": int((leads["grade"] == "Excluded: distressed").sum())},
           {"step": "Existing client (sent to the AM, not graded)", "rows": int((leads["grade"] == "Existing client").sum())},
           {"step": "Duplicate (renamed to another lead in the list, not graded)", "rows": int((leads["grade"] == DUPLICATE).sum())},
@@ -1256,6 +1345,8 @@ def main(argv=None):
             "scoring_profile": "dashboard_v3 (priority_scoring.py)", "qa": qa,
             "readout": readout(leads, events, files, len(contacts))}
     xlsx, js = save(leads, contacts, events, parent_events, jobs_by_lead, info, a.name, as_of)
+    owners_csv, n_owners = owners_export(leads, as_of)
+    print(f"owners to find in Apollo: {n_owners} people -> {owners_csv}")
     print(leads["grade"].value_counts().to_string())
     print(f"wrote {xlsx}\n      {js}")
 

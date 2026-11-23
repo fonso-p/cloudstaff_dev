@@ -223,9 +223,11 @@ def events(cid, mine, deact_all, own_ids, as_of, lookback):
         else:
             cat, head = "Expansion / new office", f"Registered {what} with CQC{bed_txt}: {places}"
             detail = f"registered {what}"
+        # every home in the event, each with its CQC page (url = the first one, for tables with a single link)
+        locs = [{"name": x.name, "city": x.city, "id": x.location_id, "beds": x.beds} for x in g.itertuples()]
         out.append({"company_id": cid, "date": start.date().isoformat(), "category": cat, "headline": head[:300],
                     "detail": detail, "url": "https://www.cqc.org.uk/location/" + g["location_id"].iloc[0],
-                    "publisher": "CQC register", "source": "cqc"})
+                    "publisher": "CQC register", "source": "cqc", "locations": json.dumps(locs, ensure_ascii=False)})
     return out
 
 
@@ -240,7 +242,8 @@ def manager_changes(cid, mine, prev, as_of):
             out.append({"company_id": cid, "date": as_of.isoformat(), "category": "Leadership change",
                         "headline": f"New registered manager at {where}: {new} (was {old})",
                         "detail": f"new registered manager at {where}",
-                        "url": "https://www.cqc.org.uk/location/" + r["Location ID"], "publisher": "CQC register", "source": "cqc"})
+                        "url": "https://www.cqc.org.uk/location/" + r["Location ID"], "publisher": "CQC register", "source": "cqc",
+                        "locations": json.dumps([{"name": where, "city": r["Location City"], "id": r["Location ID"]}], ensure_ascii=False)})
     return out
 
 
@@ -284,7 +287,7 @@ def main(argv=None):
     os.makedirs(a.out, exist_ok=True)
     os.makedirs(SNAP_DIR, exist_ok=True)
     pd.DataFrame(summary).to_csv(os.path.join(a.out, "cqc_providers.csv"), index=False)
-    ev_cols = ["company_id", "date", "category", "headline", "detail", "url", "publisher", "source"]
+    ev_cols = ["company_id", "date", "category", "headline", "detail", "url", "publisher", "source", "locations"]
     pd.DataFrame(evs, columns=ev_cols).sort_values(["company_id", "date"]).to_csv(os.path.join(a.out, "cqc_events.csv"), index=False)
     allocs = pd.concat(locs, ignore_index=True) if locs else pd.DataFrame()
     allocs.to_csv(os.path.join(a.out, "cqc_locations.csv"), index=False)

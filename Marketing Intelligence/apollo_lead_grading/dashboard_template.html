@@ -460,12 +460,18 @@ const OWN_BADGE = {'Owner-managed': 'b-ok', 'Owner-managed group': 'b-blue', 'Pa
 const OWN_PRIVATE = ['Owner-managed', 'Owner-managed group'];
 const OWNS = OWN_ORDER.filter(o => R.some(r => r.ownership === o));
 const ownCount = fn => fmt(R.filter(fn).length);
-fillSelect('fOwn', ['All', 'target', 'private', 'notprivate', ...OWNS],
-  ['All', `Owner-managed: BDM target (${ownCount(r => r.ownership === 'Owner-managed')})`, `Privately owned, incl. owner-managed groups (${ownCount(r => OWN_PRIVATE.includes(r.ownership))})`,
+fillSelect('fOwn', ['All', 'target', 'direct', 'holding', 'private', 'notprivate', ...OWNS],
+  ['All', `Owner-managed: BDM target (${ownCount(r => r.ownership === 'Owner-managed')})`,
+   `  owned directly by individuals (${ownCount(r => r.ownership === 'Owner-managed' && r.ownership_route === 'direct')})`,
+   `  owned via a holding company (${ownCount(r => r.ownership === 'Owner-managed' && r.ownership_route === 'via holding company')})`, `Privately owned, incl. owner-managed groups (${ownCount(r => OWN_PRIVATE.includes(r.ownership))})`,
    `Group, investor, charity or public (${ownCount(r => !OWN_PRIVATE.includes(r.ownership) && !['Unknown', 'Not checked'].includes(r.ownership))})`, ...OWNS.map(o => `${o} (${ownCount(r => r.ownership === o)})`)]);
-const ownOk = (r, o) => o === 'All' || (o === 'target' ? r.ownership === 'Owner-managed' : o === 'private' ? OWN_PRIVATE.includes(r.ownership)
+const ownOk = (r, o) => o === 'All' || (o === 'target' ? r.ownership === 'Owner-managed'
+  : o === 'direct' ? r.ownership === 'Owner-managed' && r.ownership_route === 'direct'
+  : o === 'holding' ? r.ownership === 'Owner-managed' && r.ownership_route === 'via holding company' : o === 'private' ? OWN_PRIVATE.includes(r.ownership)
   : o === 'notprivate' ? !OWN_PRIVATE.includes(r.ownership) && !['Unknown', 'Not checked'].includes(r.ownership) : r.ownership === o);
-const ownHtml = r => `<span class="badge ${OWN_BADGE[r.ownership] || 'b-no'}" title="${esc(r.ownership_evidence || '')}">${esc(r.ownership || 'Not checked')}</span>`
+const ROUTE = {direct: 'owned directly by individuals', 'via holding company': 'via a holding company'};
+const ownHtml = r => `<span class="badge ${OWN_BADGE[r.ownership] || 'b-no'}" title="${esc(r.ownership_evidence || '')}">${esc(r.ownership || 'Not checked')}${r.ownership_route === 'direct' ? ' · direct' : ''}</span>`
+  + (r.ownership_route ? ` <span class="note">${esc(ROUTE[r.ownership_route])}</span>` : '')
   + (r.ownership_check ? ' <span class="badge b-pink" title="' + esc(r.ownership_check) + '">check</span>' : '');
 // "Has these signals": present on the lead (scored or not). Only the strongest event scores; hiring and fit score too.
 const SIGNALS = [
@@ -478,6 +484,7 @@ const SIGNALS = [
   ['competitor', 'Competitor client', "named in candidates' CVs (scored)"],
   ['fit', 'Fit above usual', 'Client Propensity, 1.5x the usual rate'],
   ['filing', 'Companies House change', 'new registration, name change; no points'],
+  ['owner', 'Owner is an Apollo contact', 'a person named as owner in the Companies House register is one of its Apollo contacts (matched on first + last name)'],
   ['review', 'Match needs review', 'CQC or a contract matched on a name only: confirm or reject in register_match_reviews.csv'],
 ];
 $('fSigs').innerHTML = SIGNALS.map(([k, t, d]) => `<label title="${esc(d)}"><input type="checkbox" value="${k}">${esc(t)} <span class="cnt">(${fmt(R.filter(r => (r.signals || []).includes(k)).length)})</span></label>`).join('');
@@ -494,7 +501,7 @@ const applyFilt = f => R.filter(r => (f.list === 'All' || r.lead_list === f.list
   && (f.act === 'All' || r.act_now) && (f.target === 'All' || (f.target === 'on' ? r.on_target === true : r.on_target === false)));
 const filtText = f => [f.list === 'All' ? 'all lists' : f.list, f.grade === 'All' ? 'all grades' : f.grade, f.act === 'All' ? '' : 'Act now only',
   f.target === 'All' ? '' : f.target === 'on' ? 'target industry' : 'other industries',
-  f.hire === 'All' ? '' : $('fHire').selectedOptions[0].text.toLowerCase(), f.service === 'All' ? '' : f.service, f.sub === 'All' ? '' : f.sub, f.sigs.length ? `has ${f.sigs.length > 1 ? (f.sigMode === 'all' ? 'all of: ' : 'any of: ') : ''}${f.sigs.map(k => SIGNALS.find(s => s[0] === k)[1].toLowerCase()).join(', ')}` : '', f.apollo === 'All' ? '' : 'Apollo: ' + $('fApollo').selectedOptions[0].text.toLowerCase(), f.own === 'All' ? '' : 'ownership: ' + $('fOwn').selectedOptions[0].text.replace(/ \(\d+\)$/, '').toLowerCase()].filter(Boolean).join(' · ');
+  f.hire === 'All' ? '' : $('fHire').selectedOptions[0].text.toLowerCase(), f.service === 'All' ? '' : f.service, f.sub === 'All' ? '' : f.sub, f.sigs.length ? `has ${f.sigs.length > 1 ? (f.sigMode === 'all' ? 'all of: ' : 'any of: ') : ''}${f.sigs.map(k => SIGNALS.find(s => s[0] === k)[1].toLowerCase()).join(', ')}` : '', f.apollo === 'All' ? '' : 'Apollo: ' + $('fApollo').selectedOptions[0].text.toLowerCase(), f.own === 'All' ? '' : 'ownership: ' + $('fOwn').selectedOptions[0].text.replace(/ \(\d+\)$/, '').trim().toLowerCase()].filter(Boolean).join(' · ');
 
 // ---- pages
 const TITLES = {leads: 'Graded leads', overview: 'Grades overview', gathered: 'Data gathered', fit: 'Fit and market', method: 'How grading works', qa: 'QA and data checks'};
@@ -524,7 +531,7 @@ const LEAD_COLS = [
   {k: 'company_name', label: 'Company', f: (v, r) => `<b>${esc(v)}</b><br><span class="note">${esc([r.city, r.employee_count ? r.employee_count + ' staff' : '', r.lead_list].filter(Boolean).join(' · '))}</span>`},
   {k: 'ownership', label: '<span title="Who controls the company (Companies House). Owner-managed = the BDM target. Hover a badge for the evidence">Ownership <i class="fa-regular fa-circle-question"></i></span>', f: (v, r) => ownHtml(r) + (r.top_owner && r.ownership !== 'Owner-managed' ? `<br><span class="note">${esc(r.top_owner)}</span>` : '')},
   {k: 'chips', label: 'Why', f: v => chipHtml(v)},
-  {k: 'best_contact', label: 'Best contact', f: (v, r) => v ? `${esc(v)}<br><span class="note">${esc(r.best_title || '')}${r.n_contacts > 1 ? ` · +${r.n_contacts - 1} more` : ''}</span>` : '–'},
+  {k: 'best_contact', label: 'Best contact', f: (v, r) => v ? `${esc(v)}${r.owner_contacts && r.owner_contacts.split('; ').includes(v) ? ' <span class="badge b-ok" title="Named as an owner in the Companies House register">owner</span>' : ''}<br><span class="note">${esc(r.best_title || '')}${r.n_contacts > 1 ? ` · +${r.n_contacts - 1} more` : ''}</span>` : '–'},
 ];
 let sortKey = null, sortDir = -1, selected = null;
 const GRADE_ORDER = Object.fromEntries(GRADES.map((g, i) => [g, i]));
@@ -587,6 +594,8 @@ function showDetail(r, scroll = true) {
     ['Company number found on', r.website_number_page ? link(r.website_number_page, r.website_number_page.replace(/^https?:\/\//, '')) : r.ownership_number_source ? esc(r.ownership_number_source) : '–'],
     ['Ultimate owner', esc(r.top_owner || '–') + (r.group_companies > 1 ? ` · controls ${r.group_companies >= 2000 ? '2,000+' : fmt(r.group_companies)} companies` : '')],
     ['Individuals named', esc(r.owners_named || '–')],
+    ['Owners in Apollo', r.owner_contacts ? `<span class="badge b-ok">owner</span> ${esc(r.owner_contacts)}` : '–'],
+    ['Owners not in Apollo', r.owners_to_find ? esc(r.owners_to_find) + ' <span class="note">(in the owners_to_find CSV when owner-managed or an owner-managed group)</span>' : '–'],
     ['Company checked', r.ownership_number ? link(chUrl(r.ownership_number) + '/persons-with-significant-control', r.ownership_number) + ` · ${esc(r.ownership_number_name || '')} (from ${esc(r.ownership_number_source || '')})` : '–'],
     ['Company type', esc(r.company_type || '–')],
     ['Charity Commission', r.charity_number ? link('https://register-of-charities.charitycommission.gov.uk/charity-search/-/charity-details/' + r.charity_number, `${r.charity_name} · no. ${r.charity_number}`)
@@ -616,7 +625,7 @@ function showDetail(r, scroll = true) {
   if ((r.event_list || []).length) {
     h += `<h4>Events, grouped (${r.event_list.length} distinct${r.scoring_events ? `, ${r.scoring_events} scoring` : ''})</h4><div class="note" style="margin:0 0 6px">Reports of the same kind within ${M.event_window || 30} days are one event. Each event is worth strength × confidence × recency; they add up as 1 − (1−a)(1−b)…, so more events score higher but never above the news maximum.</div>`
       + '<div class="tbl-wrap"><table><thead><tr><th>Event</th><th>Date</th><th>Reports</th><th>Sources</th><th class="n">Value</th><th>Best report</th></tr></thead><tbody>'
-      + r.event_list.map(e => `<tr><td>${esc(e.type)}</td><td class="n">${esc(e.date)}${e.last !== e.date ? ' – ' + esc(e.last) : ''}</td><td class="n">${fmt(e.reports)}</td><td>${esc(e.sources)}</td><td class="n">${e.value > 0 ? fmt(e.value, 2) : '<span class="note">0 (over 180 days)</span>'}</td><td class="note">${esc(e.title)}</td></tr>`).join('')
+      + r.event_list.map(e => `<tr><td>${esc(e.type)}</td><td class="n">${esc(e.date)}${e.last !== e.date ? ' – ' + esc(e.last) : ''}</td><td class="n">${fmt(e.reports)}</td><td>${esc(e.sources)}</td><td class="n">${e.value > 0 ? fmt(e.value, 2) : '<span class="note">0 (over 180 days)</span>'}</td><td class="note">${e.url ? link(e.url, e.title) : esc(e.title)}${(e.homes || []).length ? '<br>CQC pages: ' + e.homes.map(x => link(x.url, x.name + (x.city ? ' (' + x.city + ')' : ''))).join(' · ') : ''}</td></tr>`).join('')
       + `</tbody></table></div><div class="note">Combined news value: ${r.news_compound === null || r.news_compound === undefined ? '–' : fmt(r.news_compound, 2)} of 1</div>`;
   }
   h += `<h4>News (${r.news_status || 'not checked'})</h4>`;
@@ -643,7 +652,7 @@ function showDetail(r, scroll = true) {
       + `<tr><td><b>Priority score</b></td><td class="n"><b>${fmt(r.priority_score)}</b></td><td class="n">100</td><td>${esc(r.estimated_fields ? 'estimated: ' + r.estimated_fields : '')}</td></tr></tbody></table>`;
   }
   h += `<h4>Contacts (${(r.contacts || []).length})</h4><div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Title</th><th>Seniority</th><th>Email</th><th>LinkedIn</th></tr></thead><tbody>`
-    + (r.contacts || []).map(c => `<tr><td>${esc(c.name)}</td><td>${esc(c.title)}</td><td>${esc(c.seniority)}</td><td>${c.email ? `<a class="ext" href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : '–'}${c.email_status && c.email_status !== 'Verified' ? ` <span class="badge b-warn">${esc(c.email_status)}</span>` : ''}</td><td>${link(c.linkedin, 'profile')}</td></tr>`).join('') + '</tbody></table></div>';
+    + (r.contacts || []).map(c => `<tr><td>${esc(c.name)}${c.is_owner ? ' <span class="badge b-ok" title="Named as an owner in the Companies House register">owner</span>' : ''}</td><td>${esc(c.title)}</td><td>${esc(c.seniority)}</td><td>${c.email ? `<a class="ext" href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : '–'}${c.email_status && c.email_status !== 'Verified' ? ` <span class="badge b-warn">${esc(c.email_status)}</span>` : ''}</td><td>${link(c.linkedin, 'profile')}</td></tr>`).join('') + '</tbody></table></div>';
   $('detailBody').innerHTML = h;
   if (scroll) $('detailCard').scrollIntoView({behavior: 'smooth', block: 'start'});
 }
