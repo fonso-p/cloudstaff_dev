@@ -60,12 +60,15 @@ sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "..", "reference_code"))
 from company_keys import name_key           # noqa: E402
 from news_scraper import http               # noqa: E402
+from news_scraper.names import root_domain  # noqa: E402
 
 REG_DIR = os.path.join(ROOT, "data", "registers")
 PSC_DIR = os.path.join(REG_DIR, "psc")
 PSC_PAGE = "https://download.companieshouse.gov.uk/en_pscdata.html"
 CQC_DIR = os.path.join(REG_DIR, "cqc")
 WEB_CACHE = os.path.join(HERE, "data", "web_company_numbers.json")
+CHARITY_DIR = os.path.join(REG_DIR, "charity")
+CHARITY_URL = "https://ccewuksprdoneregsadata1.blob.core.windows.net/data/txt/publicextract.charity.zip"
 CQC_NUMBER_BASIS = ("company number", "website")   # CQC matches trusted for company numbers (not name-only matches)
 GROUP_MAX = 5            # an owner-managed holding company controlling more companies than this is a "group"
 MAX_DEPTH = 8
@@ -328,6 +331,49 @@ def cqc_info(cqc_csv):
     return leads, prov
 
 
+def charity_register(download):
+    """Charity Commission register of charities (England & Wales), daily full extract (free, no key, ~45 MB zip), main
+    charities only (not linked subsidiaries). {by_company: {company no: rec}, by_regno: {...}, by_web: {domain: rec}}."""
+    path = os.path.join(CHARITY_DIR, "publicextract.charity.zip")
+    if download or not os.path.exists(path):
+        os.makedirs(CHARITY_DIR, exist_ok=True)
+        print("  downloading the Charity Commission register …", flush=True)
+        with requests.get(CHARITY_URL, stream=True, timeout=300, headers={"User-Agent": http.UA}) as r:
+            r.raise_for_status()
+            with open(path + ".part", "wb") as f:
+                for chunk in r.iter_content(1 << 20):
+                    f.write(chunk)
+        os.replace(path + ".part", path)
+    out = {"by_company": {}, "by_regno": {}, "by_web": {}}
+    with zipfile.ZipFile(path) as z:
+        with z.open(z.namelist()[0]) as f:
+            rd = csv.reader(io.TextIOWrapper(f, encoding="utf-8-sig", errors="replace", newline=""), delimiter="\t",
+                            quoting=csv.QUOTE_NONE)
+            h = next(rd)
+            ix = {k: h.index(k) for k in ("registered_charity_number", "linked_charity_number", "charity_name",
+                                          "charity_registration_status", "latest_income", "charity_contact_web",
+                                          "charity_company_registration_number")}
+            for row in rd:
+                if len(row) <= max(ix.values()) or row[ix["linked_charity_number"]] != "0":
+                    continue
+                rec = {"regno": row[ix["registered_charity_number"]], "name": row[ix["charity_name"]].strip(),
+                       "status": row[ix["charity_registration_status"]], "income": row[ix["latest_income"]]}
+                better = lambda d, k: k not in d or (rec["status"] == "Registered" and d[k]["status"] != "Registered")
+                co = ch_number(row[ix["charity_company_registration_number"]])
+                if co and co != "00000000" and better(out["by_company"], co):
+                    out["by_company"][co] = rec
+                if better(out["by_regno"], rec["regno"]):
+                    out["by_regno"][rec["regno"]] = rec
+                try:                                       # the register's web field is free text ("[www.x.org]", emails)
+                    web = root_domain(row[ix["charity_contact_web"]].strip()) if row[ix["charity_contact_web"]].strip() else ""
+                except ValueError:
+                    web = ""
+                if web and "." in web and better(out["by_web"], web):
+                    out["by_web"][web] = rec
+    print(f"Charity Commission register: {len(out['by_regno'])} charities", flush=True)
+    return out
+
+
 def _text(html):
     html = re.sub(r"(?is)<(script|style)[^>]*>.*?</\1>", " ", html)
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", html))
@@ -514,6 +560,7 @@ def main(argv=None):
     recs = read_records(files, sorted(lead_nums | chain_nums), os.path.join(PSC_DIR, f"records-{date}.json"))
     basic = {**basic_web, **company_data((lead_nums | chain_nums) - set(basic_web))}
 
+    cc_reg = charity_register(a.download)
     rows = []
     for r in leads.itertuples():
         got = nums[r.company_id]
@@ -531,9 +578,39 @@ def main(argv=None):
             cls, ev = "Public body", [f"CQC provider type: {sector}"] + ev
         elif charity and RANK.index(cls) > RANK.index("Charity / not-for-profit"):
             cls, ev = "Charity / not-for-profit", [f"CQC charity number {charity}"] + ev
+        # Charity Commission (England & Wales): the lead's companies, its owners up the chain, its CQC charity number,
+        # then its website. A registered charity confirms the flag and gives a charity number and page
+        chain_regs = [s["number"] for p in best["steps"] for s in p if s.get("number") and not s.get("people")]
+        cc, cc_how = None, ""
+        for num, how in [(x, "company number") for x, _ in got] + [(x, "owner company number") for x in chain_regs]:
+            if num in cc_reg["by_company"]:
+                cc, cc_how = cc_reg["by_company"][num], how; break
+        if cc is None:
+            for regno in [x.strip() for x in charity.split(";") if x.strip()]:
+                if regno in cc_reg["by_regno"]:
+                    cc, cc_how = cc_reg["by_regno"][regno], "CQC charity number"; break
+        if cc is None and r.website and root_domain(r.website) in cc_reg["by_web"]:
+            cc, cc_how = cc_reg["by_web"][root_domain(r.website)], "website"
+        charity_note = ""
+        if cc is not None and cc["status"] == "Registered" and cc_how == "website" and cls not in ("Unknown", "Charity / not-for-profit"):
+            # a shared website is weaker than the ownership register (Ablecare Homes Ltd, owned by individuals, shares
+            # its site with a small "Ablecare Homes Trust"): keep the register's answer, flag it for a person
+            charity_note = f"its website is also listed by registered charity {cc['regno']} ({cc['name']}): check which runs the homes"
+        elif cc is not None and cc["status"] == "Registered":
+            note = f"registered charity {cc['regno']} ({cc['name']}, matched by {cc_how}, Charity Commission)"
+            if RANK.index(cls) > RANK.index("Charity / not-for-profit"):
+                cls, ev = "Charity / not-for-profit", [note] + ev
+            elif cls == "Charity / not-for-profit":
+                ev = [note] + ev
+        elif cls == "Charity / not-for-profit" and cc_reg["by_company"]:
+            ev.append("not on the Charity Commission register for England & Wales (a not-for-profit company, or a "
+                      "Scottish / Northern Irish charity)")
         if len(got) > 1:
             ev.append(f"{len(got)} companies checked")
         rows.append({
+            "charity_number": cc["regno"] if cc else "", "charity_name": cc["name"] if cc else "",
+            "charity_status": cc["status"] if cc else "", "charity_income": cc["income"] if cc else "",
+            "charity_match": cc_how if cc else "", "charity_note": charity_note,
             "company_id": r.company_id, "ownership": cls, "ownership_evidence": "; ".join(ev),
             "ownership_number": n, "ownership_number_source": src.split(" (")[0] if src else "",
             "ownership_number_name": basic.get(n, {}).get("name", ""), "company_numbers": "; ".join(x for x, _ in got),

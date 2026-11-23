@@ -747,7 +747,8 @@ def add_ownership(leads, ev, as_of):
     OWNERSHIP_ORDER), `ownership_evidence` and `ownership_check` (a conflict for a person to look at)."""
     cols = ["ownership", "ownership_evidence", "ownership_number", "ownership_number_source", "ownership_number_name",
             "company_numbers", "company_type", "owner_chain", "owner_chain_steps", "top_owner", "group_companies", "owners_named",
-            "cqc_charity_number", "cqc_provider_sector", "website_number_page", "psc_snapshot"]
+            "cqc_charity_number", "cqc_provider_sector", "website_number_page", "psc_snapshot",
+            "charity_number", "charity_name", "charity_status", "charity_income", "charity_match", "charity_note"]
     if OWNERSHIP.exists():
         o = pd.read_csv(OWNERSHIP, dtype=str, keep_default_na=False, na_values=[""])
         o["account_id"] = "AP-" + o.pop("company_id").str.replace("^apollo-", "", regex=True)
@@ -772,6 +773,8 @@ def add_ownership(leads, ev, as_of):
                 notes.append(f"Apollo names a parent ({r['parent_company']}) but Companies House shows individuals at the top")
         if r["account_id"] in ma.index and cls in OWNERSHIP_PRIVATE:
             notes.append(f"M&A in the news ({ma[r['account_id']]:%b %Y}): check who bought whom; the owner may have changed")
+        if not blank(r.get("charity_note")):
+            notes.append(r["charity_note"])
         if r.get("ownership_number_source") == "website":
             notes.append(f"company number read from its website ({r.get('ownership_number_name')}): confirm it is the same business")
         leads.at[i, "ownership"], leads.at[i, "ownership_evidence"] = cls, evid

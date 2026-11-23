@@ -588,7 +588,10 @@ function showDetail(r, scroll = true) {
     ['Ultimate owner', esc(r.top_owner || '–') + (r.group_companies > 1 ? ` · controls ${r.group_companies >= 2000 ? '2,000+' : fmt(r.group_companies)} companies` : '')],
     ['Individuals named', esc(r.owners_named || '–')],
     ['Company checked', r.ownership_number ? link(chUrl(r.ownership_number) + '/persons-with-significant-control', r.ownership_number) + ` · ${esc(r.ownership_number_name || '')} (from ${esc(r.ownership_number_source || '')})` : '–'],
-    ['Company type', esc(r.company_type || '–')], ['CQC charity / provider type', esc([r.cqc_charity_number ? 'charity ' + r.cqc_charity_number : '', r.cqc_provider_sector].filter(Boolean).join(' · ') || '–')],
+    ['Company type', esc(r.company_type || '–')],
+    ['Charity Commission', r.charity_number ? link('https://register-of-charities.charitycommission.gov.uk/charity-search/-/charity-details/' + r.charity_number, `${r.charity_name} · no. ${r.charity_number}`)
+      + ` <span class="note">${esc(r.charity_status || '')}${r.charity_income ? ' · income £' + fmt(+r.charity_income) : ''} · matched by ${esc(r.charity_match || '')}</span>` : 'not a registered charity (England & Wales)'],
+    ['CQC charity / provider type', esc([r.cqc_charity_number ? 'charity ' + r.cqc_charity_number : '', r.cqc_provider_sector].filter(Boolean).join(' · ') || '–')],
     ['To check', r.ownership_check ? `<span class="badge b-pink">check</span> ${esc(r.ownership_check)}` : '–']]);
   h += '<h4>Companies House</h4>' + kv([['Status', esc(r.registered_status || r.filings_status || '–')], ['Legal name', esc(r.registered_name || '–')],
     ['Company number', r.company_number ? link('https://find-and-update.company-information.service.gov.uk/company/' + r.company_number, r.company_number) : '–'],
