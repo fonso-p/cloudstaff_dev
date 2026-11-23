@@ -471,7 +471,7 @@ const ownOk = (r, o) => o === 'All' || (o === 'target' ? r.ownership === 'Owner-
   : o === 'notprivate' ? !OWN_PRIVATE.includes(r.ownership) && !['Unknown', 'Not checked'].includes(r.ownership) : r.ownership === o);
 // owner = controls the company; co-owner = nobody controls it alone; minority owner = someone else controls it
 const roleBadge = role => { const r = String(role || ''); const cls = r.startsWith('owner') ? 'b-ok' : r.startsWith('co-owner') ? 'b-blue' : 'b-no';
-  return `<span class="badge ${cls}" title="Companies House register: owner = controls the company (majority, or appoints the board); co-owner = nobody controls it alone; minority owner = someone else controls it">${esc(r)}</span>`; };
+  return `<span class="badge ${cls}" title="Companies House register: owner = controls the company (majority of shares or votes, or the right to appoint or remove most of the board); co-owner = nobody controls it alone; minority owner = someone else controls it">${esc(r)}</span>`; };
 const ROUTE = {direct: 'owned directly by individuals', 'via holding company': 'via a holding company'};
 const ownHtml = r => `<span class="badge ${OWN_BADGE[r.ownership] || 'b-no'}" title="${esc(r.ownership_evidence || '')}">${esc(r.ownership || 'Not checked')}${r.ownership_route === 'direct' ? ' · direct' : ''}</span>`
   + (r.ownership_route ? ` <span class="note">${esc(ROUTE[r.ownership_route])}</span>` : '')

@@ -449,8 +449,8 @@ BANDS = [("75-to-100", 75, "75–100%"), ("50-to-75", 50, "50–75%"), ("25-to-5
 
 
 def stake(natures):
-    """A controller's stake from its natures of control: label ('50–75% shares, appoints directors'), lowest share or
-    vote % of its band, and whether it controls the company (majority of shares or votes, or appoints the board)."""
+    """A controller's stake from its natures of control: label ('50–75% shares, right to appoint or remove most of the board'), lowest share or
+    vote % of its band, and whether it controls the company (majority of shares or votes, or the right to appoint or remove most of the board)."""
     nat = " ".join(natures or [])
 
     def band(kind):
@@ -459,7 +459,7 @@ def stake(natures):
     board = "appoint-and-remove-directors" in nat
     sig = "significant-influence-or-control" in nat
     label = ", ".join(x for x in [f"{s_lbl} shares" if s_lbl else "", f"{v_lbl} votes" if v_lbl and v_lbl != s_lbl else "",
-                                  "appoints directors" if board else "",
+                                  "right to appoint or remove most of the board" if board else "",
                                   "significant influence" if sig and not (s_lbl or v_lbl or board) else ""] if x)
     return {"band": label, "lo": max(s_lo, v_lo), "control": max(s_lo, v_lo) >= 50 or board}
 
