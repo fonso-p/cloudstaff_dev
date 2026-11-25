@@ -487,7 +487,7 @@ In order of value for effort. Each one has a way to measure it: re-run `eval/eva
 3. **Measure it on the labelled set before trusting it**, against the current 0.954 precision on "about the company" and the holdout event scores. Keep it only where it beats the rules.
 
 **5. More signal sources (as budget allows)**
-1. **Jobs:** Adzuna API (free key) as a top-up to careers pages, since most small companies advertise on SEEK.
+1. **Jobs:** Adzuna API as a top-up to careers pages, since most small companies advertise on SEEK. The key is free, but commercial use for "sales prospecting or lead generation" needs Adzuna's written agreement ([API terms](https://developer.adzuna.com/docs/terms_of_service), read 23 Nov 2026). A trial-only coverage check for the UK Apollo leads is in `apollo_emea/adzuna_check.py`.
 2. **US filings:** SEC EDGAR (free; needs a contact email in each request), including Form D for private fundraising.
 3. **Paid trial:** Event Registry / NewsAPI.ai or PredictLeads on the same 100 companies, scored with the same labelled set. They do entity linking and event tagging out of the box and could replace much of the classification work, if they score better.
 4. **Monitoring:** re-run the evaluation monthly. Sources and phrasing drift, and the coverage table already shows which sources fail.

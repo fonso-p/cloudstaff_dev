@@ -69,6 +69,8 @@ CQC_PROVIDERS, CQC_LOCATIONS = SCRAPER_OUT / "cqc_providers.csv", SCRAPER_OUT / 
 # 23 Nov 2026: companies not owned by a parent, an umbrella group or an investor, and not run on public money, have
 # fewer layers of sign-off and buy faster. "Owner-managed" is that target.
 OWNERSHIP = SCRAPER_OUT / "ownership.csv"
+OFFICERS = SCRAPER_OUT / "officers.csv"            # current officers (Companies House API, officers.py, 24 Nov 2026)
+OFFICER_ORDER = ["director", "llp designated member", "llp member", "secretary"]   # a person on several companies keeps the first
 OWNERSHIP_ORDER = ["Owner-managed", "Owner-managed group", "Part of a corporate group", "Investor-backed",
                    "Charity / not-for-profit", "Public body", "Unknown", "Not checked"]
 OWNERSHIP_PRIVATE = {"Owner-managed", "Owner-managed group"}
@@ -157,8 +159,6 @@ SERVICE_LINES = {
 }
 TIER_GROUP = "lead_list"                           # decision 2026-11-18: tiers are ranked within each Apollo list (separate campaigns)
 DUPLICATE = "Duplicate"                            # an Apollo account renamed to another lead in the same list ("X Now Y")
-CHECK_FIT = "Check fit"                            # leads outside the list's target industry (builders, furniture, investors in
-                                                   # the care list): scored, but not tiered against the campaign's own targets
 DISTRESS = r"administration|liquidation|strike|dissolved|insolvency|receivership"
 LIST_TARGET = {                                    # Apollo list (substring, lower case) -> short name, intended industry groups
     "care home": ("UK care homes", {"Healthcare & Wellness"}),
@@ -496,7 +496,7 @@ def target_check(leads):
     """Is the lead in its list's target industry? Apollo's one-word industry is often wrong ("individual & family services"
     for Coxbench Hall Residential Care Home), so the activity codes decide: Apollo's US SIC / NAICS and the Companies House
     UK SIC, then the service lines on its website. Order: codes showing the target activity (and no other trade) -> in;
-    a UK SIC for another trade (furniture, building, staffing...) -> check fit, even if its website mentions care (suppliers'
+    a UK SIC for another trade (furniture, building, staffing...) -> outside the target, even if its website mentions care (suppliers'
     sites do); website service lines for the list -> in; otherwise Apollo's industry decides. fit_basis says which applied."""
     on, why = [], []
     for r in leads.itertuples():
@@ -841,19 +841,61 @@ def match_owner_contacts(leads, contacts):
             if k and (k not in d or ROLE_ORDER.index(x["role"]) < ROLE_ORDER.index(d[k]["role"])):
                 d[k] = x
         owners[r.account_id] = d
+    officers = load_officers()
     hit = [owners.get(a, {}).get(person_key(n)) for a, n in zip(contacts["account_id"], contacts["name"])]
+    ohit = [officers.get(a, {}).get(person_key(n)) for a, n in zip(contacts["account_id"], contacts["name"])]
     contacts["is_owner"] = [h is not None for h in hit]
     contacts["owner_role"] = [None if h is None else h["role"] + (f" ({h['band']})" if h.get("band") else "") for h in hit]
+    contacts["officer_role"] = [None if h is None else h["role"] for h in ohit]
+    # best contact: owners first (owner, co-owner, minority owner), each with officers (directors) before the rest;
+    # then officers who own nothing; then the others in Apollo's seniority order
     contacts["_role_rank"] = [ROLE_ORDER.index(h["role"]) if h else 9 for h in hit]
-    contacts.sort_values(["account_id", "_role_rank"], kind="stable", inplace=True)
-    contacts.drop(columns="_role_rank", inplace=True)
+    contacts["_not_officer"] = [h is None for h in ohit]
+    contacts.sort_values(["account_id", "_role_rank", "_not_officer"], kind="stable", inplace=True)
+    contacts.drop(columns=["_role_rank", "_not_officer"], inplace=True)
     own = contacts[contacts["is_owner"]]
     leads["owner_contacts"] = leads["account_id"].map(own.groupby("account_id")["name"].agg("; ".join))
     leads["best_owner_role"] = leads["account_id"].map(own.groupby("account_id")["owner_role"].first())
-    have = {a: {person_key(n) for n in g["name"]} for a, g in own.groupby("account_id")}
-    leads["owners_to_find"] = [json.dumps([v for k, v in owners.get(a, {}).items() if k not in have.get(a, set())], ensure_ascii=False)
-                               if any(k not in have.get(a, set()) for k in owners.get(a, {})) else None for a in leads["account_id"]]
+    off = contacts[contacts["officer_role"].notna()]
+    leads["officer_contacts"] = leads["account_id"].map(off.groupby("account_id")["name"].agg("; ".join))
+    first = contacts.groupby("account_id").first()
+    leads["best_officer_role"] = leads["account_id"].map(first["officer_role"])
+    have = {a: {person_key(n) for n in g["name"]} for a, g in contacts.groupby("account_id")}
+    # named owners with no Apollo contact; each says whether they are also an officer
+    to_find = []
+    for a in leads["account_id"]:
+        miss = [{**v, **({"officer": officers[a][k]["role"]} if k in officers.get(a, {}) else {})}
+                for k, v in owners.get(a, {}).items() if k not in have.get(a, set())]
+        to_find.append(json.dumps(miss, ensure_ascii=False) if miss else None)
+    leads["owners_to_find"] = to_find
+    # current officers who own nothing and are not Apollo contacts (hired directors, family members)
+    leads["officers_to_find"] = [json.dumps(m, ensure_ascii=False) if (m := [v for k, v in officers.get(a, {}).items()
+                                 if k not in have.get(a, set()) and k not in owners.get(a, {})]) else None for a in leads["account_id"]]
+    leads["officers_named"] = [len(officers.get(a, {})) or None for a in leads["account_id"]]
     return leads, contacts.reset_index(drop=True)
+
+
+def load_officers():
+    """{account_id: {person_key: {name, role, appointed}}}: current officers who are people, from officers.py
+    (Companies House API). Only name, role and appointment date are kept there. A person on several of the lead's
+    companies keeps their strongest role (OFFICER_ORDER) and earliest appointment."""
+    if not OFFICERS.exists():
+        return {}
+    o = pd.read_csv(OFFICERS, dtype=str, keep_default_na=False)
+    o["account_id"] = "AP-" + o["company_id"].str.replace("^apollo-", "", regex=True)
+    rank = lambda r: OFFICER_ORDER.index(r) if r in OFFICER_ORDER else len(OFFICER_ORDER)
+    out = {}
+    for r in o.itertuples():
+        k = person_key(r.name)
+        if not k:
+            continue
+        d = out.setdefault(r.account_id, {})
+        x = {"name": r.name, "role": r.role, "appointed": r.appointed_on}
+        if k not in d or rank(r.role) < rank(d[k]["role"]):
+            d[k] = x if k not in d else {**x, "appointed": min(filter(None, [x["appointed"], d[k]["appointed"]]), default="")}
+        elif r.appointed_on and (not d[k]["appointed"] or r.appointed_on < d[k]["appointed"]):
+            d[k]["appointed"] = r.appointed_on
+    return out
 
 
 def owners_export(leads, as_of):
@@ -865,7 +907,7 @@ def owners_export(leads, as_of):
         for o in json.loads(r.owners_to_find):
             w = re.sub(PERSON_TITLE, "", o["name"].strip(), flags=re.I).split()
             rows.append({"first_name": w[0] if w else "", "last_name": w[-1] if len(w) > 1 else "",
-                         "full_name": " ".join(w), "owner_role": o["role"], "stake": o.get("band", ""),
+                         "full_name": " ".join(w), "owner_role": o["role"], "stake": o.get("band", ""), "officer_role": o.get("officer", ""),
                          "held": "directly" if o.get("via") == "direct" else f"through {o.get('via')}",
                          "company_name": r.company_name, "website": r.website_domain,
                          "lead_list": r.lead_list, "grade": r.grade, "priority_score": r.priority_score,
@@ -873,7 +915,7 @@ def owners_export(leads, as_of):
                          "registered_company": r.ownership_number_name, "company_number": r.ownership_number,
                          "companies_house": f"https://find-and-update.company-information.service.gov.uk/company/{r.ownership_number}"
                                             "/persons-with-significant-control" if isinstance(r.ownership_number, str) else ""})
-    order = {"Tier 1": 0, "Tier 2": 1, "Tier 3": 2, CHECK_FIT: 3}
+    order = {"Tier 1": 0, "Tier 2": 1, "Tier 3": 2}
     out = pd.DataFrame(rows)
     if len(out):
         # best leads first; within a lead, the person who controls it before co-owners and minority owners
@@ -1026,8 +1068,7 @@ def gate(r):
         return "Existing client"
     if isinstance(r.get("duplicate_of"), str):
         return DUPLICATE                           # the other account carries the lead; this one keeps its contacts for reference
-    if r.get("_on_target") is False:
-        return CHECK_FIT                           # scored, but outside the list's tiers (not this campaign's industry)
+    # outside the list's target industry: tiered like the rest since 24 Nov 2026 (user); the company panel says to check it
     return None
 
 
@@ -1124,9 +1165,8 @@ def chips(r, as_of):
             out.append([f"Fit: likely {lbl} ({p:.0%} vs usual {usual:.0%})", "fit"])
     if not blank(r.get("parent_company")):          # Apollo's parent company field: Apollo column
         out.append([f"Part of {r['parent_company']}", "apollo"])
-    if not blank(r.get("owner_contacts")):           # a Companies House owner who is one of its Apollo contacts
-        role = r.get("best_owner_role")
-        out.append([f"Owner is an Apollo contact: {r['owner_contacts']}" + ("" if blank(role) else f" ({role})"), "apollo"])
+    # an owner or director who is an Apollo contact is not a chip (24 Nov 2026, user): the owner / director badges on
+    # Best contact already say it; the "Owner / Director is an Apollo contact" filters still find them
     if not blank(r.get("competitor_client")):       # from candidates' CVs (Client Extraction)
         if r.get("competitor_client_status") == "confirmed":
             out.append([f"Competitor client: {r['competitor_client']}", "signal"])
@@ -1137,7 +1177,7 @@ def chips(r, as_of):
     elif r.get("name_check"):
         out.append([f"Check the name: {r.get('name_note')}", "warn"])
     if r.get("_on_target") is False:
-        out.append([f"Check fit: {r.get('fit_basis') or r.get('industry_raw')}", "warn"])
+        out.append([f"Check that the industry matches the list: {r.get('fit_basis') or r.get('industry_raw')}", "warn"])
     if not blank(r.get("scoring_events")) and r["scoring_events"] > 1:
         out.append([f"{int(r['scoring_events'])} separate events in 6 months (added up)", "signal"])
     if not blank(r.get("match_review")):
@@ -1163,8 +1203,7 @@ def grade(leads, contacts, events, as_of):
     leads = leads.merge(agg, on="account_id", how="left")
 
     leads["grade"] = leads.apply(gate, axis=1)
-    scorable = leads["grade"].isna() | (leads["grade"] == CHECK_FIT)
-    elig = leads["grade"].isna()                   # on target: these are tiered
+    scorable = elig = leads["grade"].isna()        # scored and tiered (leads outside the target industry too, since 24 Nov 2026)
     scored = score_accounts(leads.loc[scorable], as_of, SCORING)
     for k in scored.columns:
         if not k.startswith("_"):
@@ -1195,7 +1234,7 @@ def grade(leads, contacts, events, as_of):
     leads["chips"] = allchips.map(lambda cs: [c for c in cs if c[1] not in PROFILE_KINDS | {"apollo"}])
     leads["apollo_chips"] = allchips.map(lambda cs: [c for c in cs if c[1] == "apollo"])
     leads["profile_chips"] = allchips.map(lambda cs: [c for c in cs if c[1] in PROFILE_KINDS])
-    order = {"Tier 1": 0, "Tier 2": 1, "Tier 3": 2, CHECK_FIT: 3, "Existing client": 4, DUPLICATE: 5, "Excluded: distressed": 6}
+    order = {"Tier 1": 0, "Tier 2": 1, "Tier 3": 2, "Existing client": 3, DUPLICATE: 4, "Excluded: distressed": 5}
     leads["_o"] = leads["grade"].map(order)
     leads = leads.sort_values(["_o", "priority_score"], ascending=[True, False]).drop(columns="_o")
     return leads.reset_index(drop=True)
@@ -1356,6 +1395,8 @@ def lead_signals(r, e):
         out.append("filing")
     if not blank(r.get("owner_contacts")):
         out.append("owner")
+    if not blank(r.get("officer_contacts")):
+        out.append("director")
     return out
 
 
@@ -1422,6 +1463,9 @@ def save(leads, contacts, events, parent_events, jobs_by_lead, info, name, as_of
                      "max_points": S["max_points"][GOAL], "news_strength": NEWS_STRENGTH, "recency": RECENCY,
                      "confidence_factor": CONFIDENCE_FACTOR, "tier_shares": S["tier"], "info": info},
             "qa": info["qa"], "rows": rows}
+    trends = DATA_DIR / "industry_trends.json"   # Industry trends page (industry_trends.py); separate from the grading
+    if trends.exists():
+        data["trends"] = json.load(open(trends, encoding="utf-8"))
     js = DATA_DIR / f"lead_grades_{name}.json"
     json.dump(data, open(js, "w", encoding="utf-8"), ensure_ascii=False, allow_nan=False, default=str)
     return xlsx, js
@@ -1459,6 +1503,7 @@ def main(argv=None):
           {"step": "  of which ownership known (Companies House PSC, Apollo parent or PE news)",
            "rows": int((~leads["ownership"].isin(["Unknown", "Not checked"])).sum())},
           {"step": "  of which a named owner is an Apollo contact", "rows": int(leads["owner_contacts"].notna().sum())},
+          {"step": "  of which a current director (Companies House officers) is an Apollo contact", "rows": int(leads["officer_contacts"].notna().sum())},
           {"step": "Excluded: distressed (administration, liquidation, strike-off)", "rows": int((leads["grade"] == "Excluded: distressed").sum())},
           {"step": "Existing client (sent to the AM, not graded)", "rows": int((leads["grade"] == "Existing client").sum())},
           {"step": "Duplicate (renamed to another lead in the list, not graded)", "rows": int((leads["grade"] == DUPLICATE).sum())},

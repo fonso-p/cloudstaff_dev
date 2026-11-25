@@ -1,0 +1,102 @@
+sic_prefix,industry_group,note
+01,,Agriculture: no matching group
+02,,Forestry: no matching group
+03,,Fishing: no matching group
+05,Energy & Environment,Coal mining
+06,Energy & Environment,Oil and gas extraction
+07,Energy & Environment,Metal ore mining
+08,Energy & Environment,Other mining and quarrying
+09,Energy & Environment,Mining support services
+10,Manufacturing & Industrial,Food
+11,Manufacturing & Industrial,Beverages
+12,Manufacturing & Industrial,Tobacco
+13,Manufacturing & Industrial,Textiles
+14,Manufacturing & Industrial,Clothing
+15,Manufacturing & Industrial,Leather
+16,Manufacturing & Industrial,Wood
+17,Manufacturing & Industrial,Paper
+18,Manufacturing & Industrial,Printing
+19,Manufacturing & Industrial,Coke and refined petroleum
+20,Manufacturing & Industrial,Chemicals
+21,Manufacturing & Industrial,Pharmaceuticals
+22,Manufacturing & Industrial,Rubber and plastics
+23,Manufacturing & Industrial,Other non-metallic minerals
+24,Manufacturing & Industrial,Basic metals
+25,Manufacturing & Industrial,Fabricated metal products
+26,Manufacturing & Industrial,Computer and electronic products
+27,Manufacturing & Industrial,Electrical equipment
+28,Manufacturing & Industrial,Machinery
+29,Manufacturing & Industrial,Motor vehicles
+30,Manufacturing & Industrial,Other transport equipment
+31,Manufacturing & Industrial,Furniture
+32,Manufacturing & Industrial,Other manufacturing
+33,Manufacturing & Industrial,Repair and installation of machinery
+35,Energy & Environment,"Electricity, gas, steam"
+36,Energy & Environment,Water supply
+37,Energy & Environment,Sewerage
+38,Energy & Environment,Waste collection and recycling
+39,Energy & Environment,Remediation
+41,Construction & Engineering,Construction of buildings
+42,Construction & Engineering,Civil engineering
+43,Construction & Engineering,Specialised construction
+45,Retail & Consumer Goods,Motor trade
+46,Retail & Consumer Goods,Wholesale
+47,Retail & Consumer Goods,Retail
+49,Transport & Logistics,Land transport
+50,Transport & Logistics,Water transport
+51,Transport & Logistics,Air transport
+52,Transport & Logistics,Warehousing and transport support
+53,Transport & Logistics,Postal and courier
+55,"Hospitality, Travel & Leisure",Accommodation
+56,"Hospitality, Travel & Leisure",Food and drink service
+58,"Marketing, Media & Creative",Publishing
+582,Technology,Software publishing
+59,"Marketing, Media & Creative","Film, TV, music"
+60,"Marketing, Media & Creative",Broadcasting
+61,Technology,Telecoms
+62,Technology,"Programming, IT consultancy"
+63,Technology,Information services
+6391,"Marketing, Media & Creative",News agencies
+64,Financial Services,"Banking, lending, funds"
+642,,Holding companies: they are the buyers
+65,Insurance,"Insurance, pensions"
+66,Financial Services,Auxiliary financial services
+662,Insurance,"Insurance brokers, risk evaluation"
+68,Real Estate,Real estate
+691,Legal,Legal
+692,Accounting,"Accounting, bookkeeping, audit, tax"
+70,Professional Services,Management consultancy
+70100,,Head offices / holding companies: they are the buyers
+70210,"Marketing, Media & Creative",Public relations
+71,Construction & Engineering,Architecture and engineering
+712,Professional Services,Technical testing
+72,Professional Services,Research and development
+73,"Marketing, Media & Creative",Advertising and market research
+74,Professional Services,Other professional services
+741,"Marketing, Media & Creative",Design
+742,"Marketing, Media & Creative",Photography
+74990,,Non-trading company
+75,Healthcare & Wellness,Veterinary
+77,Business & Consumer Services,Rental and leasing
+78,Business & Consumer Services,Recruitment and staffing
+79,"Hospitality, Travel & Leisure",Travel agencies and tour operators
+80,Business & Consumer Services,Security
+81,Business & Consumer Services,"Cleaning, facilities, landscaping"
+82,Business & Consumer Services,"Office support, call centres, BPO"
+84,Non-profit & Public Sector,Public administration
+85,Education & Training,Education
+86,Healthcare & Wellness,Health care
+87,Healthcare & Wellness,Residential care
+88,Healthcare & Wellness,"Social work, home care"
+90,"Hospitality, Travel & Leisure",Arts and entertainment
+91,"Hospitality, Travel & Leisure","Libraries, museums"
+92,"Hospitality, Travel & Leisure",Gambling
+93,"Hospitality, Travel & Leisure","Sport, recreation"
+94,Non-profit & Public Sector,Membership organisations
+95,Business & Consumer Services,Repair of goods
+96,Business & Consumer Services,Personal services
+9604,Healthcare & Wellness,Physical well-being
+97,,Households as employers
+98,,Households: own use
+99,,Extraterritorial organisations
+99999,,Dormant company

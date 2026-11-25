@@ -141,7 +141,6 @@ details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
 .g-t2{background:var(--color-brand-primary-soft);color:var(--color-brand-primary-strong)}
 .g-t3{background:var(--color-surface-secondary);color:var(--color-text-base-secondary)}
 .g-x{background:var(--color-feature-03-soft);color:var(--color-text-base-primary)}
-.g-cf{background:var(--color-feature-02-soft);color:var(--color-text-base-primary)}
 /* parent-company news: same chip, marked with a small group icon and a dashed outline */
 .ev-src{margin-top:4px}.ev-src summary{cursor:pointer;color:var(--color-brand-primary);font-size:12px}.ev-src div{margin:3px 0 0 12px;font-size:12px}
 .b-parent{background:var(--color-surface-primary);color:var(--color-text-base-secondary);border:1px dashed var(--border-color-default)}
@@ -187,6 +186,7 @@ details.ev-box .ev-body{padding:4px 12px 12px}
       <a data-page="overview"><i class="fa-solid fa-chart-column"></i>Grades overview</a>
       <a data-page="gathered"><i class="fa-solid fa-database"></i>Data gathered</a>
       <a data-page="fit"><i class="fa-solid fa-people-arrows"></i>Fit and market</a>
+      <a data-page="trends"><i class="fa-solid fa-arrow-trend-up"></i>Industry trends</a>
     </nav>
     <div class="nav-label">Method</div>
     <nav class="nav">
@@ -220,7 +220,7 @@ details.ev-box .ev-body{padding:4px 12px 12px}
         <label title="CQC service types when the lead is in the CQC register, else the activity codes (Apollo US SIC / NAICS, Companies House UK SIC)">Sub-sector <span class="src">(CQC, else codes)</span><select id="fSub"></select></label>
         <label title="Who controls the company: Companies House register of people with significant control, followed up the chain of owning companies; Apollo's parent and PE buyout news as cross-checks. A flag, no points. Owner-managed = the BDM target (fewer layers of sign-off)">Ownership <span class="src">(Companies House)</span><select id="fOwn"></select></label>
         <label title="Apollo's 'Latest Funding' label (undated), compared with the news">Apollo funding <span class="src">(Apollo)</span><select id="fApollo"><option value="All">All</option><option value="any">Has an Apollo label</option><option value="matches the news">Matches the news</option><option value="news shows a different event">News shows a different event</option><option value="not in the news">Not in the news</option><option value="news only">Deal in the news, no Apollo label</option></select></label>
-        <label title="Activity codes first (Apollo US SIC / NAICS, Companies House UK SIC), then website service lines, then Apollo's industry label">Target industry <span class="src">(codes, then Apollo)</span><select id="fTarget"><option value="All">All</option><option value="on">In the list's target industry</option><option value="off">Check fit (other industry)</option></select></label>
+        <label title="Activity codes first (Apollo US SIC / NAICS, Companies House UK SIC), then website service lines, then Apollo's industry label">Target industry <span class="src">(codes, then Apollo)</span><select id="fTarget"><option value="All">All</option><option value="on">In the list's target industry</option><option value="off">Outside target industry (check it matches)</option></select></label>
         <button class="btn btn-blue reset" id="btnReset"><i class="fa-solid fa-rotate-left"></i>Reset</button>
       </div>
       <div class="frow"><span class="frow-label">Has these signals</span>
@@ -238,8 +238,8 @@ details.ev-box .ev-body{padding:4px 12px 12px}
           <span class="badge b-news">other news event</span> a different kind of event, no points (only the strongest counts); hover a <i class="fa-regular fa-newspaper"></i> chip for its headlines ·
           <span class="badge b-blue">hiring / filing</span> no points (older or on-site hiring, Companies House changes) ·
           <span class="badge b-parent"><i class="fa-solid fa-sitemap"></i>parent</span> parent company's event ·
-          <span class="badge b-purple">fit</span> clearly above the usual rate · <span class="badge b-pink">check</span> needs a look (including events that need review).
-          The <span class="badge b-warn"><i class="fa-solid fa-database"></i>Apollo</span> column holds what comes from the Apollo export: its funding label (undated, no points), parent company, and an owner who is an Apollo contact.
+          <span class="badge b-purple">fit</span> clearly above the usual rate · Checks (data that needs a look, events that need review) are shown in the company panel, not in this table.
+          The <span class="badge b-warn"><i class="fa-solid fa-database"></i>Apollo</span> column holds what comes from the Apollo export: its funding label (undated, no points), parent company. In Best contact, a green <span class="badge b-ok">owner</span> badge = owns or controls it, an outlined <span class="badge b-service">director</span> badge = runs it (Companies House officers list).
           What the company does (service lines, software, group) is in its profile: click a row.</div>
         <div class="tools"><input id="listSearch" placeholder="Search company, city, contact, reason"><span class="note" style="margin:0">Click a row for the evidence, the score and the contacts. Click a column header to sort.</span></div>
         <div class="tbl-wrap" id="tLeads"></div></div></div>
@@ -251,7 +251,7 @@ details.ev-box .ev-body{padding:4px 12px 12px}
       <div class="kpis" id="kpisOver"></div>
       <div class="grid g2">
         <div class="card"><div class="card-head"><h3>Grade by Apollo list</h3><span>leads</span></div>
-          <div class="card-body"><div class="chart"><canvas id="cGrade"></canvas></div><div class="note">Tiers are ranks within each Apollo list (separate campaigns): the top 10% of a list are Tier 1, the next 30% Tier 2. Tier 3 = no scored signal (a scored event (news, CQC, contract or parent), roles we fill posted in the last 30 days, or a confirmed competitor client; fit alone doesn't count), whatever the score. Equal scores share the higher tier, so a tier can be larger than its share. Check fit = outside the list's target industry, scored but not tiered. Excluded = in administration, liquidation or strike-off.</div></div></div>
+          <div class="card-body"><div class="chart"><canvas id="cGrade"></canvas></div><div class="note">Tiers are ranks within each Apollo list (separate campaigns): the top 10% of a list are Tier 1, the next 30% Tier 2. Tier 3 = no scored signal (a scored event (news, CQC, contract or parent), roles we fill posted in the last 30 days, or a confirmed competitor client; fit alone doesn't count), whatever the score. Equal scores share the higher tier, so a tier can be larger than its share. Leads outside the list's target industry are tiered too; the company panel says to check that the industry matches. Excluded = in administration, liquidation or strike-off.</div></div></div>
         <div class="card"><div class="card-head"><h3>Where the points come from</h3><span>average points per lead, by list</span></div>
           <div class="card-body"><div class="chart"><canvas id="cPts"></canvas></div><div class="note" id="ptsNote"></div></div></div>
       </div>
@@ -307,7 +307,47 @@ details.ev-box .ev-body{padding:4px 12px 12px}
         <div class="card-body"><div class="tbl-wrap" id="tFit"></div><div class="note">The chance that a new client like this reaches 5+ seats in a year, 10+ in two years, or adds a second department in a year, from past Cloudstaff clients in the same industry (all countries). Bands are relative: High = top third of past new clients.</div></div></div>
       <div class="card"><div class="card-head"><h3>Market trend (context only)</h3><span>News Scraper segment mode · not in the score</span></div>
         <div class="card-body"><div class="tbl-wrap" id="tTrend"></div><div class="note">How UK news for each sector leans, from News Scraper segment mode: 0.5 is neutral, above means more growth, labour-shortage and offshoring stories. Context only, not in the score: tiers rank within each list, where every lead shares the same trend, so it could not change anyone\'s rank.</div></div></div>
-      <div class="card"><div class="card-head"><h3>Leads by industry</h3><span>Apollo industry → Cloudstaff industry group</span></div><div class="card-body"><div class="tbl-wrap" id="tInd"></div><div class="note">Target industry is decided by activity codes (Apollo US SIC / NAICS and the Companies House UK SIC), with Apollo's one-word industry only as a fallback: e.g. Coxbench Hall Residential Care Home is "individual &amp; family services" in Apollo but SIC 8052 (nursing care). Companies whose codes show another trade (furniture, building, staffing, design) are "Check fit".</div></div></div>
+      <div class="card"><div class="card-head"><h3>Leads by industry</h3><span>Apollo industry → Cloudstaff industry group</span></div><div class="card-body"><div class="tbl-wrap" id="tInd"></div><div class="note">Target industry is decided by activity codes (Apollo US SIC / NAICS and the Companies House UK SIC), with Apollo's one-word industry only as a fallback: e.g. Coxbench Hall Residential Care Home is "individual &amp; family services" in Apollo but SIC 8052 (nursing care). Companies whose codes show another trade (furniture, building, staffing, design) are outside the target: they are tiered, and the company panel says to check that the industry matches.</div></div></div>
+    </section>
+
+    <!-- ================= Industry trends (every UK company; separate from the leads) ================= -->
+    <section class="page" id="p-trends">
+      <div class="info" id="trInfo"></div>
+      <div class="warn" id="trMissing" style="display:none"></div>
+      <div id="trBody">
+        <div class="filters"><div class="frow"><span class="frow-label">Which industry</span>
+          <label>Industry group<select id="trGroup"></select></label>
+          <span class="frow-note">Compared with all UK companies. The lead filters don't apply on this page. Clicking a row in the table below also picks the industry.</span></div></div>
+        <div class="kpis" id="kpisTr"></div>
+        <div class="card"><div class="card-head"><h3>Which industries are growing</h3><span id="trGrowSub"></span></div>
+          <div class="card-body">
+            <div class="info" id="trGrowHow" style="font-size:var(--font-size-xs);line-height:1.6"></div>
+            <div class="tools"><label class="note" style="margin:0">Period <select id="trGrowPer"></select></label></div>
+            <div class="chart" style="height:520px"><canvas id="cTrGrow"></canvas></div>
+            <div class="note" id="trGrowNote"></div></div></div>
+        <div class="card"><div class="card-head"><h3>Opened and closed, from our monthly Companies House copies</h3><span id="trFlowSub"></span></div>
+          <div class="card-body"><div id="trFlowBody"></div></div></div>
+        <div class="card"><div class="card-head"><h3>All industries side by side</h3><span>last 4 complete quarters vs the 4 before · click a row to pick it</span></div>
+          <div class="card-body"><div class="tbl-wrap" id="tTrInd"></div><div class="note">Controlled by a company = a company (not a person) holds most of the shares or votes, or can appoint most of the board. Takeovers = a company over a year old gains such an owner. Changes are left blank when the earlier figure is under 20.</div></div></div>
+        <div class="grid g2">
+          <div class="card"><div class="card-head"><h3>Share controlled by another company</h3><span id="trCtrlSub">at each quarter end</span></div>
+            <div class="card-body"><div class="chart"><canvas id="cTrCtrl"></canvas></div><div class="note">Rebuilt from each owner's start and end dates in today's register, so past quarters only count companies still on the register now. A steady rise means the industry is consolidating: groups and investors are buying independent firms.</div></div></div>
+          <div class="card"><div class="card-head"><h3>Takeovers per quarter</h3><span>companies over a year old gaining a company owner</span></div>
+            <div class="card-body"><div class="chart"><canvas id="cTrTk"></canvas></div><div class="note" id="trTkNote"></div></div></div>
+        </div>
+        <div class="grid g2">
+          <div class="card"><div class="card-head"><h3>New companies per quarter</h3><span>operating companies still on the register</span></div>
+            <div class="card-body"><div class="chart"><canvas id="cTrNew"></canvas></div><div class="note">Dissolved companies drop out of the Companies House file, so older quarters undercount and the line looks steeper than it was. Compare industries with each other, not with their own past.</div></div></div>
+          <div class="card"><div class="card-head"><h3>Companies in difficulty now</h3><span>share of operating companies</span></div>
+            <div class="card-body"><div class="chart"><canvas id="cTrStatus"></canvas></div><div class="note">From each company's status in the Companies House file. Insolvency = liquidation, administration, a company voluntary arrangement (CVA) or a receiver. Strike-off proposed is often a small company closing down, not a failure.</div></div></div>
+        </div>
+        <div class="card"><div class="card-head"><h3>Most active buyers</h3><span id="trBuySub"></span></div>
+          <div class="card-body"><div class="tbl-wrap" id="tTrBuy"></div><div class="note">Companies that became the controlling owner of a company in this industry in the last 8 complete quarters, most takeovers first. "Controls now" counts the companies they control today, in this industry and in all. A buyer can be an investor's acquisition vehicle (Bidco, Topco) or a trading group. These are the consolidators, and prospects in their own right.</div></div></div>
+        <div class="card"><div class="card-head"><h3>How these numbers are made</h3><span>sources, industry codes, checks</span></div>
+          <div class="card-body"><div id="trMethod"></div>
+            <details class="ev-box"><summary>Industry codes used for each group (UK SIC 2007)</summary><div class="ev-body"><div class="tbl-wrap" id="tTrXw"></div></div></details>
+            <details class="ev-box"><summary>Reconciliation</summary><div class="ev-body"><div class="tbl-wrap" id="tTrQa"></div></div></details></div></div>
+      </div>
     </section>
 
     <!-- ================= Method ================= -->
@@ -418,8 +458,8 @@ $('dateChip').textContent = 'Graded ' + new Date(M.as_of).toLocaleDateString('en
 const R = D.rows;
 const LISTS = uniq(R.map(r => r.lead_list));
 const LIST_COLOUR = Object.fromEntries(LISTS.map((l, i) => [l, PALETTE[i % PALETTE.length]]));
-const GRADES = ['Tier 1', 'Tier 2', 'Tier 3', 'Check fit', 'Existing client', 'Duplicate', 'Excluded: distressed'];
-const GRADE_COLOUR = {'Tier 1': '#007AFF', 'Tier 2': '#00AB9C', 'Tier 3': GREY, 'Check fit': '#FFC426', 'Existing client': '#AA67FD', 'Duplicate': '#8A94A6', 'Excluded: distressed': '#E34678'};
+const GRADES = ['Tier 1', 'Tier 2', 'Tier 3', 'Existing client', 'Duplicate', 'Excluded: distressed'];
+const GRADE_COLOUR = {'Tier 1': '#007AFF', 'Tier 2': '#00AB9C', 'Tier 3': GREY, 'Existing client': '#AA67FD', 'Duplicate': '#8A94A6', 'Excluded: distressed': '#E34678'};
 const EVENTS = ['Funding round', 'PE buyout', 'M&A', 'Expansion / new office', 'Restructuring', 'Leadership change', 'Contract / partnership win', 'Product launch'];
 const isTier = r => String(r.grade).startsWith('Tier');
 const CHIP_CLASS = {service: 'b-service', signal: 'b-ok', news: 'b-news', jobs: 'b-blue', filing: 'b-blue', apollo: 'b-warn', fit: 'b-purple', info: 'b-no', warn: 'b-pink', pitch: 'b-no', parent: 'b-parent'};
@@ -431,6 +471,8 @@ const APOLLO_ICON = '<i class="fa-solid fa-database" title="From the Apollo expo
 // a chip's third element (news chips): the articles behind it, shown in a popover on hover or keyboard focus, never inline
 const popHtml = items => items.map(x => `<div class="pop-item"><span class="pop-date">${esc(dmy(x.date))}</span>${esc(x.title)}`
   + `<span class="pop-src">${esc(x.publisher || '')}${x.confidence && x.confidence !== 'high' ? ` · ${esc(x.confidence)} confidence` : ''}</span></div>`).join('');
+// the leads table leaves out the checks (warn chips): they show in the company panel
+const listChips = cs => (cs || []).filter(c => c[1] !== 'warn');
 const chipHtml = cs => `<div class="chips">${(cs || []).map(([t, k, items]) => {
   const pop = items && items.length ? ` tabindex="0" data-pop="${esc(popHtml(items))}"` : '';
   return `<span class="badge ${CHIP_CLASS[k] || 'b-no'}${pop ? ' has-pop' : ''}"${pop}>${k === 'parent' ? PARENT_ICON : k === 'apollo' ? APOLLO_ICON : ''}${esc(t)}${pop ? ' <i class="fa-regular fa-newspaper"></i>' : ''}</span>`;
@@ -452,7 +494,7 @@ document.addEventListener('mouseover', e => { const el = e.target.closest('[data
 document.addEventListener('focusin', e => { const el = e.target.closest('[data-pop]'); if (el) showPop(el); });
 document.addEventListener('focusout', hidePop);
 window.addEventListener('scroll', hidePop, true);
-const gradeHtml = g => `<span class="grade ${g === 'Tier 1' ? 'g-t1' : g === 'Tier 2' ? 'g-t2' : g === 'Tier 3' ? 'g-t3' : g === 'Check fit' ? 'g-cf' : 'g-x'}">${esc(g)}</span>`;
+const gradeHtml = g => `<span class="grade ${g === 'Tier 1' ? 'g-t1' : g === 'Tier 2' ? 'g-t2' : g === 'Tier 3' ? 'g-t3' : 'g-x'}">${esc(g)}</span>`;
 const dmy = s => s ? new Date(s).toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric'}) : '–';
 const count = (rows, fn, keys) => keys.map(k => rows.filter(r => fn(r) === k).length);
 
@@ -465,7 +507,7 @@ fillSelect('fService', ['All', ...SERVICES], ['All service lines', ...SERVICES])
 const SUBS = uniq(R.flatMap(r => (r.sub_sectors || '').split('; ').filter(Boolean)));
 fillSelect('fSub', ['All', ...SUBS], ['All sub-sectors', ...SUBS]);
 const OWN_ORDER = ['Owner-managed', 'Owner-managed group', 'Part of a corporate group', 'Investor-backed', 'Charity / not-for-profit', 'Public body', 'Unknown', 'Not checked'];
-const OWN_BADGE = {'Owner-managed': 'b-ok', 'Owner-managed group': 'b-blue', 'Part of a corporate group': 'b-no', 'Investor-backed': 'b-warn', 'Charity / not-for-profit': 'b-purple', 'Public body': 'b-pink', 'Unknown': 'b-no', 'Not checked': 'b-no'};
+const OWN_BADGE = {'Owner-managed': 'b-ok', 'Owner-managed group': 'b-blue', 'Part of a corporate group': 'b-no', 'Investor-backed': 'b-warn', 'Charity / not-for-profit': 'b-purple', 'Public body': 'b-no', 'Unknown': 'b-no', 'Not checked': 'b-no'};
 const OWN_PRIVATE = ['Owner-managed', 'Owner-managed group'];
 const OWNS = OWN_ORDER.filter(o => R.some(r => r.ownership === o));
 const ownCount = fn => fmt(R.filter(fn).length);
@@ -481,10 +523,12 @@ const ownOk = (r, o) => o === 'All' || (o === 'target' ? r.ownership === 'Owner-
 // owner = controls the company; co-owner = nobody controls it alone; minority owner = someone else controls it
 const roleBadge = role => { const r = String(role || ''); const cls = r.startsWith('owner') ? 'b-ok' : r.startsWith('co-owner') ? 'b-blue' : 'b-no';
   return `<span class="badge ${cls}" title="Companies House register: owner = controls the company (majority of shares or votes, or the right to appoint or remove most of the board); co-owner = nobody controls it alone; minority owner = someone else controls it">${esc(r)}</span>`; };
+// officer = on the Companies House officers list now (director, secretary, LLP member): runs the company, signs for it
+const officerBadge = role => role ? `<span class="badge b-service" title="Companies House officers list: a current ${esc(role)} of the company (directors run it and sign for it; an owner owns or controls it)">${esc(role)}</span>` : '';
 const ROUTE = {direct: 'owned directly by individuals', 'via holding company': 'via a holding company'};
-const ownHtml = r => `<span class="badge ${OWN_BADGE[r.ownership] || 'b-no'}" title="${esc(r.ownership_evidence || '')}">${esc(r.ownership || 'Not checked')}${r.ownership_route === 'direct' ? ' · direct' : ''}</span>`
+const ownHtml = (r, check = true) => `<span class="badge ${OWN_BADGE[r.ownership] || 'b-no'}" title="${esc(r.ownership_evidence || '')}">${esc(r.ownership || 'Not checked')}${r.ownership_route === 'direct' ? ' · direct' : ''}</span>`
   + (r.ownership_route ? ` <span class="note">${esc(ROUTE[r.ownership_route])}</span>` : '')
-  + (r.ownership_check ? ' <span class="badge b-pink" title="' + esc(r.ownership_check) + '">check</span>' : '');
+  + (check && r.ownership_check ? ' <span class="badge b-pink" title="' + esc(r.ownership_check) + '">check</span>' : '');
 // "Has these signals": present on the lead (scored or not). Only the strongest event scores; hiring and fit score too.
 const SIGNALS = [
   ['multi', '2+ separate events', 'two or more distinct events in 6 months: they add up in the score'],
@@ -497,6 +541,7 @@ const SIGNALS = [
   ['fit', 'Fit above usual', 'Client Propensity, 1.5x the usual rate'],
   ['filing', 'Companies House change', 'new registration, name change; no points'],
   ['owner', 'Owner is an Apollo contact', 'a person named as owner in the Companies House register is one of its Apollo contacts (matched on first + last name)'],
+  ['director', 'Director is an Apollo contact', 'a current officer (director, secretary or LLP member) on the Companies House officers list is one of its Apollo contacts (matched on first + last name)'],
   ['needs_review', 'Event needs review', 'an event in the company panel is marked Needs review: the news classifier was unsure (medium or low confidence), a CQC or contract match was made on the name only, or Claude labelled it and no person has checked it'],
   ['review', 'Match needs review', 'CQC or a contract matched on a name only: confirm or reject in register_match_reviews.csv'],
 ];
@@ -517,7 +562,7 @@ const filtText = f => [f.list === 'All' ? 'all lists' : f.list, f.grade === 'All
   f.hire === 'All' ? '' : $('fHire').selectedOptions[0].text.toLowerCase(), f.service === 'All' ? '' : f.service, f.sub === 'All' ? '' : f.sub, f.sigs.length ? `has ${f.sigs.length > 1 ? (f.sigMode === 'all' ? 'all of: ' : 'any of: ') : ''}${f.sigs.map(k => SIGNALS.find(s => s[0] === k)[1].toLowerCase()).join(', ')}` : '', f.apollo === 'All' ? '' : 'Apollo: ' + $('fApollo').selectedOptions[0].text.toLowerCase(), f.own === 'All' ? '' : 'ownership: ' + $('fOwn').selectedOptions[0].text.replace(/ \(\d+\)$/, '').trim().toLowerCase()].filter(Boolean).join(' · ');
 
 // ---- pages
-const TITLES = {leads: 'Graded leads', overview: 'Grades overview', gathered: 'Data gathered', fit: 'Fit and market', method: 'How grading works', qa: 'QA and data checks'};
+const TITLES = {leads: 'Graded leads', overview: 'Grades overview', gathered: 'Data gathered', fit: 'Fit and market', trends: 'Industry trends', method: 'How grading works', qa: 'QA and data checks'};
 const FILTERED = {leads: 1, overview: 1, gathered: 1, fit: 1};
 let page = 'leads', current = [];
 document.querySelectorAll('.nav a').forEach(a => a.onclick = () => go(a.dataset.page));
@@ -533,7 +578,7 @@ function render() {
   $('filters').style.display = FILTERED[page] ? '' : 'none';
   current = applyFilt(f);
   $('pageSub').textContent = `${fmt(current.length)} of ${fmt(R.length)} companies · ${filtText(f)}`;
-  ({leads: rLeads, overview: rOverview, gathered: rGathered, fit: rFit, method: rMethod, qa: rQa})[page](f, current);
+  ({leads: rLeads, overview: rOverview, gathered: rGathered, fit: rFit, trends: rTrends, method: rMethod, qa: rQa})[page](f, current);
 }
 
 // ---------------- Graded leads
@@ -541,10 +586,10 @@ const LEAD_COLS = [
   {k: 'grade', label: 'Grade', f: v => gradeHtml(v)},
   {k: 'priority_score', label: 'Score', n: 1, f: v => v === null ? '–' : fmt(v)},
   {k: 'company_name', label: 'Company', f: (v, r) => `<b>${esc(v)}</b><br><span class="note">${esc([r.city, r.employee_count ? r.employee_count + ' staff' : '', r.lead_list].filter(Boolean).join(' · '))}</span>`},
-  {k: 'ownership', label: '<span title="Who controls the company (Companies House). Owner-managed = the BDM target. Hover a badge for the evidence">Ownership <i class="fa-regular fa-circle-question"></i></span>', f: (v, r) => ownHtml(r) + (r.top_owner && r.ownership !== 'Owner-managed' ? `<br><span class="note">${esc(r.top_owner)}</span>` : '')},
-  {k: 'chips', label: '<span title="Events (news, CQC, public contracts, parent company) and other signals: hiring, fit, competitor client, Companies House changes, checks. The company panel lists every relevant event">Events &amp; signals <i class="fa-regular fa-circle-question"></i></span>', f: (v, r) => chipHtml(v) + (r.events_to_review ? `<span class="badge b-pink" title="Open the company panel: the Relevant events table marks which ones">${fmt(r.events_to_review)} event${r.events_to_review > 1 ? 's' : ''} need${r.events_to_review > 1 ? '' : 's'} review</span>` : '')},
-  {k: 'apollo_chips', label: '<span title="From the Apollo export: its Latest Funding label (undated, compared with the news), its parent company, and whether a Companies House owner is one of its Apollo contacts">Apollo <i class="fa-regular fa-circle-question"></i></span>', f: v => (v || []).length ? chipHtml(v) : '–'},
-  {k: 'best_contact', label: 'Best contact', f: (v, r) => v ? `${esc(v)}${r.owner_contacts && r.owner_contacts.split('; ').includes(v) && r.best_owner_role ? ' ' + roleBadge(r.best_owner_role) : ''}<br><span class="note">${esc(r.best_title || '')}${r.n_contacts > 1 ? ` · +${r.n_contacts - 1} more` : ''}</span>` : '–'},
+  {k: 'ownership', label: '<span title="Who controls the company (Companies House). Owner-managed = the BDM target. Hover a badge for the evidence">Ownership <i class="fa-regular fa-circle-question"></i></span>', f: (v, r) => ownHtml(r, false) + (r.top_owner && r.ownership !== 'Owner-managed' ? `<br><span class="note">${esc(r.top_owner)}</span>` : '')},
+  {k: 'chips', label: '<span title="Events (news, CQC, public contracts, parent company) and other signals: hiring, fit, competitor client, Companies House changes. Checks and events that need review are in the company panel, which lists every relevant event">Events &amp; signals <i class="fa-regular fa-circle-question"></i></span>', f: v => chipHtml(listChips(v))},
+  {k: 'apollo_chips', label: '<span title="From the Apollo export: its Latest Funding label (undated, compared with the news), and its parent company. An owner or director who is an Apollo contact shows as a badge in Best contact">Apollo <i class="fa-regular fa-circle-question"></i></span>', f: v => (v || []).length ? chipHtml(v) : '–'},
+  {k: 'best_contact', label: 'Best contact', f: (v, r) => v ? `${esc(v)}${r.owner_contacts && r.owner_contacts.split('; ').includes(v) && r.best_owner_role ? ' ' + roleBadge(r.best_owner_role) : ''}${r.officer_contacts && r.officer_contacts.split('; ').includes(v) && r.best_officer_role ? ' ' + officerBadge(r.best_officer_role) : ''}<br><span class="note">${esc(r.best_title || '')}${r.n_contacts > 1 ? ` · +${r.n_contacts - 1} more` : ''}</span>` : '–'},
 ];
 let sortKey = null, sortDir = -1, selected = null;
 const GRADE_ORDER = Object.fromEntries(GRADES.map((g, i) => [g, i]));
@@ -553,7 +598,7 @@ function leadRows(rows) {
   const hay = r => [r.company_name, r.city, r.industry_raw, r.website_domain, (r.chips || []).map(c => c[0]).join(' '), (r.apollo_chips || []).map(c => c[0]).join(' '), (r.contacts || []).map(c => c.name + ' ' + c.title).join(' ')].join(' ').toLowerCase();
   const out = rows.filter(r => !q || hay(r).includes(q));
   if (!sortKey) return out;   // default: the order the grading wrote (grade, score)
-  const val = r => sortKey === 'grade' ? GRADE_ORDER[r.grade] : ['chips', 'apollo_chips'].includes(sortKey) ? (r[sortKey] || []).length : r[sortKey];
+  const val = r => sortKey === 'grade' ? GRADE_ORDER[r.grade] : sortKey === 'chips' ? listChips(r.chips).length : sortKey === 'apollo_chips' ? (r.apollo_chips || []).length : r[sortKey];
   return out.sort((a, b) => { const x = val(a), y = val(b); return x === y ? 0 : (x === null ? 1 : y === null ? -1 : (x > y ? 1 : -1) * sortDir); });
 }
 function rLeads(f, rows) {
@@ -563,7 +608,7 @@ function rLeads(f, rows) {
     ['k-blue', 'fa-ranking-star', 'Tier 1 leads', fmt(t.filter(r => r.grade === 'Tier 1').length), `of ${fmt(t.length)} graded in this view`],
     ['k-teal', 'fa-bolt', 'Act now', fmt(act), 'funding / PE in 30 days, hiring spike, restructuring or leadership news'],
     ['k-yellow', 'fa-newspaper', 'With a news event', fmt(ev), `funding, PE, M&A, expansion, restructuring, leadership`],
-    ['k-pink', 'fa-ban', 'Not tiered', fmt(rows.filter(r => !isTier(r)).length), `${fmt(rows.filter(r => r.grade === 'Check fit').length)} other industry (check fit), ${fmt(rows.filter(r => r.grade.startsWith('Excluded') || r.grade === 'Existing client' || r.grade === 'Duplicate').length)} distressed, existing client or duplicate`],
+    ['k-pink', 'fa-ban', 'Not tiered', fmt(rows.filter(r => !isTier(r)).length), 'distressed, existing client or duplicate'],
   ]);
   const out = leadRows(rows);
   $('leadsSub').textContent = `${fmt(out.length)} companies · list owner ${M.team}`;
@@ -594,7 +639,7 @@ function showDetail(r, scroll = true) {
   const splitRole = s => { const m = /^(.*?) \((.*)\)$/.exec(s || ''); return m ? [m[1], m[2]] : [s || '', '']; };
   const chUrl = n => 'https://find-and-update.company-information.service.gov.uk/company/' + n;
   const pscUrl = n => chUrl(n) + '/persons-with-significant-control';
-  const contacts = r.contacts || [], toFind = pj(r.owners_to_find);
+  const contacts = r.contacts || [], toFind = pj(r.owners_to_find), offFind = pj(r.officers_to_find);
   const okJobs = r.jobs_status === 'ok';
   const jobsLine = () => {
     if (!okJobs) return `careers page ${esc(r.jobs_status || 'not checked')}`;
@@ -612,8 +657,7 @@ function showDetail(r, scroll = true) {
   const MP = M.max_points;
   const scored = r.priority_score !== null && r.priority_score !== undefined;
   let why;
-  if (!isTier(r)) why = {'Check fit': 'Scored, but outside the list\'s target industry: check the fit before calling.',
-    'Existing client': esc(r.internal_match || 'Already a client') + ': sent to the account manager, not graded.',
+  if (!isTier(r)) why = {'Existing client': esc(r.internal_match || 'Already a client') + ': sent to the account manager, not graded.',
     'Duplicate': 'Same business as another lead in the list: not graded.'}[r.grade]
     || (String(r.grade).startsWith('Excluded') ? 'Administration, liquidation or strike-off at Companies House: not graded.' : '');
   else if (!r.scored_signal) why = 'No live signal: no scored event, no roles we fill posted in 30 days, no competitor-client link. The score is industry fit only.';
@@ -627,10 +671,10 @@ function showDetail(r, scroll = true) {
     esc(r.city || ''), r.employee_count ? fmt(r.employee_count) + ' staff' : '',
     r.annual_revenue ? `${rev(r.annual_revenue)} revenue <span class="note">(Apollo estimate)</span>` : ''].filter(Boolean).join(' · ');
   const sector = [esc(r.industry || 'Industry not mapped'), esc(r.sub_sectors || ''),
-    r.on_target === false ? '<span class="badge b-pink">other industry: check fit</span>' : ''].filter(Boolean).join(' · ');
+    r.on_target === false ? '<span class="badge b-pink">check that the industry matches the list</span>' : ''].filter(Boolean).join(' · ');
   const c0 = contacts[0];
   const mail = c => c.email ? `<a class="ext" href="mailto:${esc(c.email)}">${esc(c.email)}</a>${c.email_status && c.email_status !== 'Verified' ? ` <span class="badge b-warn">${esc(c.email_status)}</span>` : ''}` : '';
-  const main = c0 ? [`<b>${esc(c0.name)}</b>${c0.owner_role ? ' ' + roleBadge(splitRole(c0.owner_role)[0]) : ''}`, esc(c0.title || ''), mail(c0), c0.linkedin ? link(c0.linkedin, 'LinkedIn') : '']
+  const main = c0 ? [`<b>${esc(c0.name)}</b>${c0.owner_role ? ' ' + roleBadge(splitRole(c0.owner_role)[0]) : ''}${c0.officer_role ? ' ' + officerBadge(c0.officer_role) : ''}`, esc(c0.title || ''), mail(c0), c0.linkedin ? link(c0.linkedin, 'LinkedIn') : '']
       .filter(Boolean).join(' · ') + (contacts.length > 1 ? ` <span class="note">+${contacts.length - 1} more below</span>` : '')
     : 'No contact in Apollo' + (toFind.length ? ` <span class="note">· owner to find: ${esc(toFind[0].name)}</span>` : '');
   const checks = (r.chips || []).filter(c => c[1] === 'warn');
@@ -656,7 +700,7 @@ function showDetail(r, scroll = true) {
     ['News search', esc(r.news_status || 'not checked') + (nNews ? ` · ${fmt(nNews)} article${nNews > 1 ? 's' : ''} under Evidence` : '')],
     ['Hiring', jobsLine()],
     ['Companies House', r.filing_signal && r.filing_signal !== 'None' ? esc(r.filing_signal) + ' · ' + day(r.filing_signal_date) : 'no filing event in the last year'],
-    r.cqc_needs_improvement_180d > 0 ? ['CQC ratings', `<span class="badge b-pink">${fmt(r.cqc_needs_improvement_180d)} location${r.cqc_needs_improvement_180d > 1 ? 's' : ''} below Good in 6 months</span>`] : null,
+    r.cqc_needs_improvement_180d > 0 ? ['CQC ratings', `<span class="badge b-warn">${fmt(r.cqc_needs_improvement_180d)} location${r.cqc_needs_improvement_180d > 1 ? 's' : ''} below Good in 6 months</span>`] : null,
     r.apollo_latest_funding ? ['Apollo funding label', `${APOLLO_ICON} ${esc(r.apollo_latest_funding)}${r.apollo_vs_news ? ' · ' + esc(r.apollo_vs_news) : ''} <span class="note">(undated, no points)</span>`] : null,
   ].filter(Boolean);
   h += `<ul class="lines">${also.map(([k, v]) => `<li><b>${k}:</b> ${v}</li>`).join('')}</ul>`;
@@ -707,14 +751,15 @@ function showDetail(r, scroll = true) {
   if (r.top_owner && r.ownership !== 'Owner-managed') ownBits.push('ultimate owner ' + esc(r.top_owner) + (r.group_companies > 1 ? ` (controls ${r.group_companies >= 2000 ? '2,000+' : fmt(r.group_companies)} companies)` : ''));
   if (r.parent_company) ownBits.push(`${APOLLO_ICON} Apollo parent: ${esc(r.parent_company)}`);
   if (r.charity_number) ownBits.push(link('https://register-of-charities.charitycommission.gov.uk/charity-search/-/charity-details/' + r.charity_number, 'registered charity ' + r.charity_number));
-  if (r.ownership_number) ownBits.push(link(pscUrl(r.ownership_number), 'owners on Companies House'));
+  if (r.ownership_number) ownBits.push(link(pscUrl(r.ownership_number), 'owners on Companies House'), link(chUrl(r.ownership_number) + '/officers', 'directors'));
   const toFindNote = OWN_PRIVATE.includes(r.ownership) ? 'not in Apollo: on the owners-to-find list' : 'not in Apollo';
-  h += `<h4>Who to talk to (${fmt(contacts.length)} in Apollo${toFind.length ? `, ${fmt(toFind.length)} owner${toFind.length > 1 ? 's' : ''} not in Apollo` : ''})</h4>`
+  h += `<h4>Who to talk to (${fmt(contacts.length)} in Apollo${toFind.length ? `, ${fmt(toFind.length)} owner${toFind.length > 1 ? 's' : ''} not in Apollo` : ''}${offFind.length ? `, ${fmt(offFind.length)} director${offFind.length > 1 ? 's' : ''} not in Apollo` : ''})</h4>`
     + `<div style="margin-bottom:8px">${ownBits.join(' · ')}</div>`;
-  if (contacts.length || toFind.length) h += '<div class="tbl-wrap"><table><thead><tr><th>Person</th><th>Role</th><th>Stake</th><th>Email</th><th>LinkedIn</th></tr></thead><tbody>'
+  if (contacts.length || toFind.length || offFind.length) h += '<div class="tbl-wrap"><table><thead><tr><th>Person</th><th>Role</th><th>Stake</th><th>Email</th><th>LinkedIn</th></tr></thead><tbody>'
     + contacts.map(c => { const [role, band] = splitRole(c.owner_role);
-      return `<tr><td>${c.owner_role ? '<b>' + esc(c.name) + '</b>' : esc(c.name)}</td><td>${esc(c.title || c.seniority || '–')}${c.owner_role ? ' ' + roleBadge(role) : ''}</td><td>${c.owner_role ? stakeHtml(band) : '–'}</td><td>${mail(c) || '–'}</td><td>${link(c.linkedin, 'profile')}</td></tr>`; }).join('')
-    + toFind.map(x => `<tr><td>${esc(x.name)}${x.via && x.via !== 'direct' ? `<br><span class="note">through ${esc(x.via)}</span>` : ''}</td><td>${roleBadge(x.role)}</td><td>${stakeHtml(x.band)}</td><td colspan="2" class="note">${toFindNote}</td></tr>`).join('')
+      return `<tr><td>${c.owner_role ? '<b>' + esc(c.name) + '</b>' : esc(c.name)}</td><td>${esc(c.title || c.seniority || '–')}${c.owner_role ? ' ' + roleBadge(role) : ''}${c.officer_role ? ' ' + officerBadge(c.officer_role) : ''}</td><td>${c.owner_role ? stakeHtml(band) : '–'}</td><td>${mail(c) || '–'}</td><td>${link(c.linkedin, 'profile')}</td></tr>`; }).join('')
+    + toFind.map(x => `<tr><td>${esc(x.name)}${x.via && x.via !== 'direct' ? `<br><span class="note">through ${esc(x.via)}</span>` : ''}</td><td>${roleBadge(x.role)}${x.officer ? ' ' + officerBadge(x.officer) : ''}</td><td>${stakeHtml(x.band)}</td><td colspan="2" class="note">${toFindNote}</td></tr>`).join('')
+    + offFind.map(x => `<tr><td>${esc(x.name)}${x.appointed ? `<br><span class="note">since ${dmy(x.appointed)}</span>` : ''}</td><td>${officerBadge(x.role)}</td><td>–</td><td colspan="2" class="note">not in Apollo · owns no 25%+ stake</td></tr>`).join('')
     + '</tbody></table></div>';
 
   // ---- 6. evidence: the source records, closed until opened
@@ -745,7 +790,7 @@ function showDetail(r, scroll = true) {
       ['Locations', `${fmt(r.cqc_locations)}${r.cqc_care_homes ? ` · ${fmt(r.cqc_care_homes)} care homes, ${fmt(r.cqc_beds)} beds` : ''}${r.cqc_homecare_locations ? ` · ${fmt(r.cqc_homecare_locations)} home-care offices` : ''}`],
       ['Added / closed in the last year', `${fmt(r.cqc_new_locations)} / ${fmt(r.cqc_closed_locations)}`],
       ['Service types', esc(r.cqc_service_types || '')], ['People supported', esc(r.cqc_user_groups || '')],
-      ['Ratings', esc(r.cqc_ratings || '') + (r.cqc_needs_improvement_180d > 0 ? ` <span class="badge b-pink">${fmt(r.cqc_needs_improvement_180d)} below Good in 6 months</span>` : '')],
+      ['Ratings', esc(r.cqc_ratings || '') + (r.cqc_needs_improvement_180d > 0 ? ` <span class="badge b-warn">${fmt(r.cqc_needs_improvement_180d)} below Good in 6 months</span>` : '')],
       ['Councils', esc(r.cqc_local_authorities || '')], ['Provider page', r.cqc_url ? link(r.cqc_url, 'CQC') : '']])
       + ((r.cqc_list || []).length ? '<div class="tbl-wrap" style="margin-top:8px"><table><thead><tr><th>Location</th><th>Registered</th><th class="n">Beds</th><th>Rating</th><th>Services</th></tr></thead><tbody>'
         + r.cqc_list.slice(0, 25).map(l => `<tr><td>${link('https://www.cqc.org.uk/location/' + l.location_id, l.location_name)}<br><span class="note">${esc(l.city || '')}</span></td><td class="n">${day(l.registered_on)}</td><td class="n">${esc(l.beds && l.beds !== '0' ? l.beds : '–')}</td><td>${esc(l.rating || 'not rated yet')}${l.rating_published ? `<br><span class="note">${day(l.rating_published)}</span>` : ''}</td><td class="note">${esc(l.service_types || '')}</td></tr>`).join('')
@@ -891,8 +936,173 @@ function rFit(f, rows) {
     codes: a.filter(r => (r.fit_basis || '').startsWith('activity codes') && !(r.industry && r.list_target.includes(r.industry))).length}))
     .sort((a, b) => a.list.localeCompare(b.list) || b.n - a.n);
   table($('tInd'), [{k: 'list', label: 'Apollo list'}, {k: 'raw', label: 'Apollo industry'}, {k: 'grp', label: 'Industry group'}, {k: 'n', label: 'Leads', n: 1, f: v => fmt(v)},
-    {k: 'on', label: 'In target', n: 1, f: v => fmt(v)}, {k: 'off', label: 'Check fit', n: 1, f: v => v ? `<span class="badge b-pink">${fmt(v)}</span>` : '0'},
+    {k: 'on', label: 'In target', n: 1, f: v => fmt(v)}, {k: 'off', label: 'Outside target (check it matches)', n: 1, f: v => v ? `<span class="badge b-pink">${fmt(v)}</span>` : '0'},
     {k: 'codes', label: 'Rescued by activity codes', n: 1, f: v => v ? `<span class="badge b-ok">${fmt(v)}</span>` : '–'}], ind);
+}
+
+// ---------------- Industry trends: every UK company by industry group (industry_trends.py). Uses none of the lead rows.
+const T = D.trends;
+const TR_SLATE = '#50505C';
+const qLbl = q => q.slice(4) + ' ' + q.slice(0, 4);                         // '2026Q3' -> 'Q3 2026'
+const sumLast = (a, k, skip = 0) => sum(a.slice(a.length - k - skip, a.length - skip));
+const tkAll = s => s.tk_first_gb.map((v, i) => v + s.tk_first_other[i] + s.tk_changed[i]);
+const chg = (a, b) => b >= 20 ? (a >= b ? '+' : '') + pct((a - b) / b, 0) : '–';
+// net growth estimate (industry_trends.py estimate_growth): windows of the last 1 / 3 / 6 / 12 months of the official statistics
+const monYr = ym => MONTHS_ABBR[+ym.slice(5, 7) - 1] + ' ' + ym.slice(0, 4);
+const winLabel = w => w.months === 1 ? `Last month (${monYr(w.from)})` : `Last ${w.months} months (${monYr(w.from)} to ${monYr(w.to)})`;
+const trGrowWin = () => T && T.growth ? T.growth[$('trGrowPer').value] || Object.values(T.growth).pop() : null;
+const sgn = v => v === null || v === undefined || Number.isNaN(v) ? '–' : (v >= 0 ? '+' : '') + pct(v, 2);
+const ctrlShare = (s, back = 0) => { const i = s.alive.length - 1 - back; return s.alive[i] ? s.controlled[i] / s.alive[i] : NaN; };
+function trStats(g) {
+  const s = T.by_group[g], tk = tkAll(s);
+  const firsts = sumLast(s.tk_first_gb, 4) + sumLast(s.tk_first_other, 4);
+  const w = trGrowWin(), e = w && w.by_group[g];
+  return {g, s, grow: e && e.rate !== null ? e.rate : NaN,
+    companies: s.companies, new4: sumLast(s.new, 4), newPrev: sumLast(s.new, 4, 4), insol: s.companies ? s.insolvent / s.companies : NaN,
+    strike: s.companies ? s.strike_off / s.companies : NaN, ctrl: ctrlShare(s), ctrl2y: ctrlShare(s) - ctrlShare(s, 8),
+    tk4: sumLast(tk, 4), tkPrev: sumLast(tk, 4, 4), gbShare: firsts ? sumLast(s.tk_first_gb, 4) / firsts : NaN};
+}
+let trGroup = null, trSort = 'ctrl2y', trDir = -1;
+if (T) {
+  trGroup = T.groups.includes('Accounting') ? 'Accounting' : T.groups[0];
+  fillSelect('trGroup', T.groups);
+  $('trGroup').value = trGroup;
+  $('trGroup').onchange = () => { trGroup = $('trGroup').value; render(); };
+  const W = Object.values(T.growth || {});
+  fillSelect('trGrowPer', W.map(w => String(w.months)), W.map(winLabel));
+  if (W.length) $('trGrowPer').value = String(W[W.length - 1].months);   // longest window by default
+  $('trGrowPer').onchange = () => render();
+}
+function rGrowth() {
+  const TM = T.meta, w = trGrowWin();
+  if (!w) { $('trGrowNote').textContent = 'No Companies House statistics in this build: run industry_trends.py --download.'; $('trGrowHow').style.display = 'none'; return; }
+  const B = w.by_group, uk = B[TM.uk], o = w.uk_official;
+  const rows = T.groups.map(g => ({g, ...B[g]})).sort((a, b) => b.rate - a.rate);
+  const all = [{g: 'UK, operating companies', ...uk, uk: true}, ...rows];
+  const col = r => r.uk ? TR_SLATE : r.rate >= uk.rate ? PALETTE[1] : PALETTE[3];
+  const period = w.months === 1 ? monYr(w.from) : `${monYr(w.from)} to ${monYr(w.to)}`;
+  $('trGrowSub').textContent = `net change in companies · ${period} · teal = faster than the UK`;
+  draw('cTrGrow', {type: 'bar', data: {labels: all.map(r => r.g), datasets: [
+      {label: 'Net growth', data: all.map(r => r.rate), backgroundColor: all.map(col),
+       borderColor: all.map(r => r.g === trGroup ? PALETTE[4] : col(r)), borderWidth: all.map(r => r.g === trGroup ? 3 : 0)},
+      {label: 'Opened', data: all.map(r => r.open_rate), hidden: true},     // hidden: shown only in the numbers table
+      {label: 'Closed', data: all.map(r => r.close_rate), hidden: true}]},
+    options: {indexAxis: 'y', plugins: {legend: {display: false}, tooltip: {callbacks: {label: c => {
+        const r = all[c.dataIndex]; return [`Net ${sgn(r.rate)} (${r.net >= 0 ? '+' : ''}${fmt(r.net)} companies)`, `Opened ${fmt(r.opened)} · closed ${fmt(r.closed)}`, `Companies at the start ${fmt(r.start)}`]; }}}},
+      scales: {x: {ticks: {callback: v => pct(v, 1)}, title: {display: true, text: `Net change in the number of companies, ${period}`}}}}});
+  $('trGrowHow').style.display = '';
+  const ac = w.all_companies, dr = w.dormant_rate || {}, drG = dr[trGroup];
+  $('trGrowHow').innerHTML = `<b>How it's calculated.</b> <b>Net growth = (operating companies opened − operating companies closed) ÷ operating companies at the start</b>, over ${period}. `
+    + `<b>Operating company</b> = where the work happens: a company with a trading industry that doesn't file dormant accounts and isn't a holding company (a holding SIC code, or a parent named Holdings, Group, Topco, Midco, Bidco or Investments). Subsidiaries and trading parents both count; position in a group doesn't decide. `
+    + `<b>UK totals are official</b>: Companies House's monthly statistics give ${fmt(o.inc)} incorporations, ${fmt(o.restored + o.other_add)} restorations and ${fmt(o.struck)} companies struck off, on a register of ${fmt(o.start)} (all companies: net ${sgn(ac.rate)}). `
+    + `<b>Each industry gets its share</b> of those totals from our Companies House file, counting its operating companies only: <b>opened</b> = its share of the companies incorporated in those months, less the share expected to file dormant accounts (${drG !== undefined ? pct(drG, 0) + ' in ' + esc(trGroup) + ', ' : ''}measured on companies ${(w.dormant_cohort || [24, 36]).join('–')} months old, since new companies haven't filed accounts yet); <b>closed</b> = its share of companies <i>awaiting strike-off</i> (voluntary and compulsory strike-offs) and <i>in liquidation</i> (strike-offs after liquidation); <b>start</b> = its share of all companies. `
+    + `<b>It is an estimate, best read as a ranking</b>: closure shares come from companies on their way out now, not those that actually closed in the period, and the dormant adjustment moves the overall level by about a point. Our monthly copies will measure actual closures and test it. <b>Colour</b>: teal = faster than UK operating companies (${sgn(uk.rate)}), pink = slower or shrinking.`;
+  $('trGrowNote').innerHTML = `Sources: Companies House official statistics (${esc((T.stats_files || []).join(', '))}; released quarterly, about a month after the quarter ends) and the Companies House file of ${new Date(TM.ch_date).toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric'})}. Companies only, as in the statistics (no partnerships or overseas entities). Single months swing with Companies House's strike-off batches (e.g. July 2026: ${fmt((T.stats_months['2026-07'] || {}).struck)} struck off), so prefer 3 or 6 months. The numbers table also has opened and closed as a share of the starting companies. The selected industry has a purple outline.`;
+}
+function rFlows() {
+  const F = T.flows || [], S = T.snapshots || [], TM = T.meta;
+  const d = s => new Date(s).toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric'});
+  $('trFlowSub').textContent = `${trGroup} and all UK companies · ${S.length} monthly cop${S.length === 1 ? 'y' : 'ies'} kept`;
+  if (!F.length) {
+    $('trFlowBody').innerHTML = `<div class="warn" style="margin:0"><i class="fa-solid fa-hourglass-half"></i> Collecting. Copies kept so far: ${S.map(d).join(', ') || 'none'}. A single Companies House file can't show closures (closed companies have already left it), so each month's file is kept in a small copy and compared with the next. The first month's openings and closures appear once next month's file is out and <span class="mono">industry_trends.py --download</span> has run; a full 12-month net growth figure needs a year of copies.</div>`;
+    return;
+  }
+  const rows = F.flatMap(f => [TM.uk, trGroup].map(g => { const [start, op, cl] = f.groups[g]; return {period: `${d(f.from)} → ${d(f.to)}`, g, start, op, cl, net: op - cl, rate: start ? (op - cl) / start : NaN}; }));
+  $('trFlowBody').innerHTML = '<div class="tbl-wrap" id="tTrFlow"></div><div class="note">Opened = on the later copy but not the earlier one (new, or restored to the register). Closed = on the earlier copy but gone from the later one (dissolved). Net growth = opened minus closed, as a share of the companies at the start. Companies only, including dormant ones. These are actual closures per industry, so they test the estimate above.</div>';
+  table($('tTrFlow'), [{k: 'period', label: 'Between copies'}, {k: 'g', label: 'Industry'}, {k: 'start', label: 'Companies at start', n: 1, f: v => fmt(v)}, {k: 'op', label: 'Opened', n: 1, f: v => fmt(v)},
+    {k: 'cl', label: 'Closed', n: 1, f: v => fmt(v)}, {k: 'net', label: 'Net', n: 1, f: v => (v > 0 ? '+' : '') + fmt(v)}, {k: 'rate', label: 'Net growth', n: 1, f: v => (v > 0 ? '+' : '') + pct(v, 2)}], rows);
+}
+function rTrends() {
+  if (!T) {
+    $('trBody').style.display = 'none'; $('trInfo').style.display = 'none'; $('trMissing').style.display = '';
+    $('trMissing').innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> No industry trend data in this build. Run <span class="mono">industry_trends.py</span>, then rebuild the page.';
+    $('pageSub').textContent = 'not built yet';
+    return;
+  }
+  const TM = T.meta, UKS = trStats(TM.uk), G = trStats(trGroup), q = T.quarters;
+  const d = s => new Date(s).toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric'});
+  $('pageSub').textContent = `Every live UK company, ${qLbl(TM.first_q)} to ${qLbl(TM.last_q)} · showing ${trGroup}`;
+  $('trInfo').innerHTML = `<i class="fa-solid fa-circle-info"></i> Market context for the whole UK, not the Apollo leads: every company on the Companies House register (file of ${d(TM.ch_date)}), with its owners from the register of people with significant control (snapshot of ${d(TM.psc_date)}). Industry group = the company's first SIC code. Counts and growth are for <b>operating companies</b> (no dormant or holding companies); the ownership charts include holding companies. Details at the bottom of the page.`;
+  const ctrlUk = UKS.ctrl;
+  $('kpisTr').innerHTML = kpiTiles([
+    ['k-blue', 'fa-building', 'Operating companies', fmt(G.companies), `${pct(G.companies / UKS.companies)} of UK operating companies · ${fmt(G.s.companies_all)} companies in all, incl. dormant and holding`],
+    ['k-yellow', 'fa-arrow-trend-up', 'Net growth (estimate)', sgn(G.grow), trGrowWin() ? `${winLabel(trGrowWin()).replace(/^Last/, 'last')} · UK ${sgn(UKS.grow)} · change the period on the chart below` : 'no statistics loaded'],
+    ['k-teal', 'fa-seedling', 'New companies, last 4 quarters', fmt(G.new4), `${chg(G.new4, G.newPrev)} vs the 4 quarters before (UK ${chg(UKS.new4, UKS.newPrev)})`],
+    ['k-purple', 'fa-sitemap', 'Controlled by another company', pct(G.ctrl), `${G.ctrl2y >= 0 ? '+' : ''}${fmt(100 * G.ctrl2y, 1)} pts in 2 years · UK ${pct(ctrlUk)} (${UKS.ctrl2y >= 0 ? '+' : ''}${fmt(100 * UKS.ctrl2y, 1)} pts)`],
+    ['k-indigo', 'fa-handshake', 'Takeovers, last 4 quarters', fmt(G.tk4), `${chg(G.tk4, G.tkPrev)} vs the 4 quarters before · ${pct(G.gbShare, 0)} of first owners are group buyers`],
+    ['k-pink', 'fa-triangle-exclamation', 'In insolvency', pct(G.insol), `UK ${pct(UKS.insol)} · ${pct(G.strike)} proposed for strike-off (UK ${pct(UKS.strike)})`],
+  ]);
+
+  rGrowth();
+  rFlows();
+
+  // all industries
+  const rows = T.groups.map(trStats);
+  const val = r => { const v = r[trSort]; return typeof v === 'string' ? v : Number.isNaN(v) ? -Infinity : v; };
+  rows.sort((a, b) => { const x = val(a), y = val(b); return x === y ? 0 : (x > y ? 1 : -1) * trDir; });
+  const all = [UKS, ...rows];
+  const pts = v => Number.isNaN(v) ? '–' : (v >= 0 ? '+' : '') + fmt(100 * v, 1);
+  const cols = [
+    {k: 'g', label: 'Industry group', f: (v, r) => r.g === TM.uk ? `<b>${esc(v)}</b>` : r.g === trGroup ? `<b>${esc(v)}</b> <span class="badge b-blue">shown</span>` : esc(v)},
+    {k: 'companies', label: 'Operating companies', n: 1, f: v => fmt(v)},
+    {k: 'grow', label: 'Net growth (est.)', n: 1, f: v => sgn(v)},
+    {k: 'new4', label: 'New companies', n: 1, f: v => fmt(v)},
+    {k: 'newChg', label: 'change', n: 1, f: (v, r) => chg(r.new4, r.newPrev)},
+    {k: 'ctrl', label: 'Controlled by a company', n: 1, f: v => pct(v)},
+    {k: 'ctrl2y', label: 'pts in 2 years', n: 1, f: v => pts(v)},
+    {k: 'tk4', label: 'Takeovers', n: 1, f: v => fmt(v)},
+    {k: 'tkChg', label: 'change', n: 1, f: (v, r) => chg(r.tk4, r.tkPrev)},
+    {k: 'gbShare', label: 'by group buyers', n: 1, f: v => pct(v, 0)},
+    {k: 'insol', label: 'In insolvency', n: 1, f: v => pct(v, 2)},
+  ];
+  all.forEach(r => { r.newChg = r.newPrev >= 20 ? (r.new4 - r.newPrev) / r.newPrev : NaN; r.tkChg = r.tkPrev >= 20 ? (r.tk4 - r.tkPrev) / r.tkPrev : NaN; });
+  table($('tTrInd'), cols, all, {sortable: true, onSort: k => { trDir = trSort === k ? -trDir : -1; trSort = k; rTrends(); }});
+  $('tTrInd').querySelectorAll('tbody tr').forEach((tr, i) => { if (all[i].g !== TM.uk) { tr.style.cursor = 'pointer'; tr.onclick = () => { trGroup = all[i].g; $('trGroup').value = trGroup; render(); }; } });
+
+  // charts
+  const ql = q.map(qLbl), s = G.s, u = UKS.s;
+  $('trCtrlSub').textContent = `${trGroup} vs all UK companies, at each quarter end`;
+  draw('cTrCtrl', {type: 'line', data: {labels: ql, datasets: [
+    {label: trGroup, data: s.controlled.map((c, i) => s.alive[i] ? c / s.alive[i] : null), borderColor: PALETTE[0], backgroundColor: PALETTE[0], pointRadius: 0, borderWidth: 2},
+    {label: TM.uk, data: u.controlled.map((c, i) => u.alive[i] ? c / u.alive[i] : null), borderColor: TR_SLATE, backgroundColor: TR_SLATE, borderDash: [5, 4], pointRadius: 0, borderWidth: 2}]},
+    options: {scales: {y: pctAxis}, plugins: {tooltip: {mode: 'index', intersect: false}}}});
+  draw('cTrTk', {type: 'bar', data: {labels: ql, datasets: [
+    {label: 'First company owner: group buyer', data: s.tk_first_gb, backgroundColor: PALETTE[0]},
+    {label: 'First company owner: other', data: s.tk_first_other, backgroundColor: PALETTE[1]},
+    {label: 'Changed company owner', data: s.tk_changed, backgroundColor: GREY}]},
+    options: {scales: {x: {stacked: true}, y: {stacked: true, title: {display: true, text: 'Companies'}}}}});
+  $('trTkNote').textContent = `First company owner = the company had no company owner just before: an independent firm bought (blue: by a group buyer, one that controls ${TM.group_buyer_min}+ companies in this industry), or an owner moving it under a new holding company of their own (most of teal). Changed company owner = it passed from one company to another: sales between groups and group restructures. Owner records can be filed weeks after the change, so the latest quarter may still rise.`;
+  draw('cTrNew', {type: 'line', data: {labels: ql, datasets: [{label: trGroup, data: s.new, borderColor: PALETTE[0], backgroundColor: PALETTE[0], pointRadius: 2, borderWidth: 2}]},
+    options: {scales: {y: {beginAtZero: true, title: {display: true, text: 'Companies'}}}}});
+  draw('cTrStatus', {type: 'bar', data: {labels: ['In insolvency', 'Strike-off proposed'], datasets: [
+    {label: trGroup, data: [G.insol, G.strike], backgroundColor: PALETTE[0]}, {label: TM.uk, data: [UKS.insol, UKS.strike], backgroundColor: TR_SLATE}]},
+    options: {indexAxis: 'y', scales: {x: pctAxis}}});
+
+  // buyers
+  const B = T.buyers[trGroup] || [];
+  $('trBuySub').textContent = `${trGroup} · ${qLbl(q[q.length - 8])} to ${qLbl(q[q.length - 1])}`;
+  table($('tTrBuy'), [
+    {k: 'owner', label: 'Buyer', f: (v, r) => r.number ? `<a href="https://find-and-update.company-information.service.gov.uk/company/${esc(r.number)}" target="_blank" rel="noopener">${esc(v)}</a>` : esc(v)},
+    {k: 'takeovers', label: 'Takeovers', n: 1, f: v => fmt(v)},
+    {k: 'first_owner', label: 'of which first company owner', n: 1, f: v => fmt(v)},
+    {k: 'latest', label: 'Latest', f: v => dmy(v)},
+    {k: 'controls_in_group', label: 'Controls now: this industry', n: 1, f: v => fmt(v)},
+    {k: 'controls_all', label: 'Controls now: all', n: 1, f: v => fmt(v)}], B);
+  if (!B.length) $('tTrBuy').innerHTML = '<p class="note">No takeovers in this industry in the period.</p>';
+
+  // method and checks
+  $('trMethod').innerHTML = `<ul class="rules">
+    <li><b>Companies House</b> (file of ${d(TM.ch_date)}): every live company with its status, incorporation date and SIC codes. It holds live companies only, so dissolved companies are missing from past quarters.</li>
+    <li><b>Owners</b> (register of people with significant control, snapshot of ${d(TM.psc_date)}): the snapshot keeps owners who have left, with start and end dates, so any past quarter can be rebuilt. Only <b>company</b> owners holding most of the shares or votes, or the right to appoint most of the board, count. The register started in April 2016 and existing owners were filed into 2017, so the series starts in ${qLbl(TM.first_q)}.</li>
+    <li><b>Industry group</b>: the company's first SIC code, through the crosswalk below (longest code wins). SIC codes are chosen by the company itself and can be vague. Holding companies (SIC 642xx and 70100), dormant and non-trading companies have no group: they are the buyers, or not trading.</li>
+    <li><b>Operating companies</b> (company counts, new companies, insolvency and growth): companies (not partnerships or overseas entities) with a trading industry that don't file dormant accounts and aren't holding companies in practice (a parent, i.e. controlling another live company, named Holdings, Group, Topco, Midco, Bidco or Investments). Subsidiaries and trading parents both count. The <b>ownership charts</b> (controlled by another company, takeovers, buyers) keep every company with an industry, holding companies included, because a takeover is often recorded on a holding company's entry, not on the trading company below it.</li>
+    <li><b>Net growth (estimate)</b>: UK monthly totals from Companies House's official statistics (${esc((T.stats_files || []).join(', ') || 'not loaded')}: incorporations, restorations, strike-offs by route, register size; monthly figures since April 2026). Each industry's part comes from its share of new companies, of companies awaiting strike-off or in liquidation, and of all companies in our file. The UK row equals the official change in the register exactly.</li>
+    <li><b>Opened and closed</b> (our own): each run keeps a small copy of the monthly Companies House file and compares it with the previous copy. It fills in month by month from ${T.snapshots && T.snapshots.length ? d(T.snapshots[0]) : 'the first run'}.</li>
+    <li><b>Changes</b> compare the last 4 complete quarters with the 4 before, and are left blank when the earlier figure is under 20.</li>
+    <li>Built by <span class="mono">industry_trends.py</span> on ${esc(TM.generated.slice(0, 10))}. Nothing on this page feeds the lead grades.</li></ul>`;
+  table($('tTrXw'), [{k: 'group', label: 'Industry group'}, {k: 'sic', label: 'SIC code starts'}, {k: 'what', label: 'Activity'}, {k: 'companies', label: 'Companies', n: 1, f: v => fmt(v)}],
+    [...T.crosswalk].sort((a, b) => a.group.localeCompare(b.group) || a.sic.localeCompare(b.sic)));
+  table($('tTrQa'), [{k: 'step', label: 'Step'}, {k: 'rows', label: 'Rows', n: 1, f: v => fmt(v)}], T.qa);
 }
 
 // ---------------- Method and QA
@@ -908,8 +1118,8 @@ function rMethod() {
     <li><b>Grades:</b> ranked <b>within each Apollo list</b>, since each list is its own campaign: Tier 1 = top 10% of the list, Tier 2 = next 30% (D3). <b>Tier 3 = no scored signal</b>: no scored event (news, CQC, contract or parent), no roles we fill posted in the last 30 days, no confirmed competitor client. Fit alone doesn't count, since every lead gets fit points from its industry. Equal scores share the higher tier.</li>
     <li><b>Registers:</b> the CQC register (England's care regulator, monthly) gives each care lead's locations, beds, services and ratings. A home that re-registers under the lead after leaving another provider is a takeover (M&amp;A); a home with no predecessor is an expansion. Public contract awards from Find a Tender count as a Contract / partnership win. Both count at full strength, like hand-labelled events. A new registered manager at one home is shown but not scored.</li>
     <li><b>Sub-sector:</b> what kind of business it is (nursing, residential, home care, learning disability; cyber services, software product…), from CQC's service types when the lead is registered, else from its activity codes. Descriptive only, with pitch hints.</li>
-    <li><b>Ownership</b> (a flag, no points): BDMs prefer companies that are not owned by a parent, an umbrella group or an investor, and not run on public money: fewer layers of sign-off and a faster decision. From the Companies House register of people with significant control, followed up the chain of owning companies: <span class="badge b-ok">Owner-managed</span> individuals at the top, directly or through a small holding company (the target) · <span class="badge b-blue">Owner-managed group</span> individuals at the top of a group of more than 5 companies · <span class="badge b-no">Part of a corporate group</span> the top owner is a company with no individual named (overseas, listed, or not identified) · <span class="badge b-warn">Investor-backed</span> a limited partnership or investment vehicle (Bidco, Topco, Capital, Equity, Fund…) in the chain, or a PE buyout in the news in the last 2 years · <span class="badge b-purple">Charity / not-for-profit</span> a CQC charity number, a guarantee or community-interest company, or a charity in the chain · <span class="badge b-pink">Public body</span> a council, NHS body or government in the chain, or CQC provider type. A <span class="badge b-pink">check</span> marks a conflict: Apollo names a parent, recent M&amp;A news, or a company number read from the website.</li>
-    <li><b>Check fit:</b> the company is outside the list's target industry (e.g. builders or furniture suppliers in the care-home list). It is scored, but not tiered against the campaign's own targets.</li>
+    <li><b>Ownership</b> (a flag, no points): BDMs prefer companies that are not owned by a parent, an umbrella group or an investor, and not run on public money: fewer layers of sign-off and a faster decision. From the Companies House register of people with significant control, followed up the chain of owning companies: <span class="badge b-ok">Owner-managed</span> individuals at the top, directly or through a small holding company (the target) · <span class="badge b-blue">Owner-managed group</span> individuals at the top of a group of more than 5 companies · <span class="badge b-no">Part of a corporate group</span> the top owner is a company with no individual named (overseas, listed, or not identified) · <span class="badge b-warn">Investor-backed</span> a limited partnership or investment vehicle (Bidco, Topco, Capital, Equity, Fund…) in the chain, or a PE buyout in the news in the last 2 years · <span class="badge b-purple">Charity / not-for-profit</span> a CQC charity number, a guarantee or community-interest company, or a charity in the chain · <span class="badge b-no">Public body</span> a council, NHS body or government in the chain, or CQC provider type. A <span class="badge b-pink">check</span> marks a conflict: Apollo names a parent, recent M&amp;A news, or a company number read from the website.</li>
+    <li><b>Outside the target industry:</b> the company's industry is not one the list is aimed at (e.g. builders or furniture suppliers in the care-home list). It is scored and tiered like the rest; the company panel says to check that the industry matches the list. Use the Target industry filter to see them.</li>
     <li><b>Act now</b> (adds a bonus): funding or PE buyout news in the last 30 days, a hiring spike or 18+ open roles, restructuring or leadership news in the last 30 days.</li>
     <li><b>Excluded:</b> in administration, liquidation, receivership, strike-off or dissolved, or a Gazette insolvency notice. <b>Existing client:</b> website matches an active MyStaff client.</li>
     <li><b>Duplicate:</b> Apollo's name says the company was renamed ("Monarch Healthcare Now RDCP Care") and the new name is already another lead in the list. That lead is graded; this one is kept for its contacts. A name with "Now" is only split when its website, email domain or LinkedIn page (or another lead) matches one of the two names.</li>
