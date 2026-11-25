@@ -4,6 +4,8 @@ A read-only dashboard that ranks Amazon FBA SKUs (UK, US, AU) for restocking. It
 
 **Handing off or rebuilding?** Start with [HANDOFF.md](HANDOFF.md): the full spec (sources, pipeline, rules, flags, checks, acceptance numbers, open items). The code here is the reference implementation.
 
+**Next change (warehouse stock and other-channel demand):** [CHANGE_warehouse_stock.md](CHANGE_warehouse_stock.md). Its mock data is made by `mock_warehouse.py` and written to the Desktop folder `Warehouse change (mock)/data/`, never to the repo.
+
 ## Where things live
 
 | What | Where |
@@ -13,6 +15,7 @@ A read-only dashboard that ranks Amazon FBA SKUs (UK, US, AU) for restocking. It
 | Rules and their settings | `rules.py`: change values here only |
 | Data engineering (load, harmonise, SKU map, join, flags, QA counts) | `prep.py` |
 | Independent check against the raw Excel | `verify.py` |
+| Mock warehouse stock and other demand for the next change (with expected results and test cases) | `mock_warehouse.py` |
 | Processed data as CSVs for a handoff (written to `Dashboards/handoff_data/`) | `export_handoff.py` |
 | Page template (Cloudstaff house format) | `work/dashboard_template.html` |
 

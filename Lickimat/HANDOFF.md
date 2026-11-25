@@ -14,7 +14,7 @@ Lickimat sells on Amazon FBA in the UK, US and AU. Ramin (client owner) decides 
 
 The tool answers, per SKU: **how many units to send to Amazon now, and which SKUs to deal with first.** It shows our recommendation beside Amazon's and Mich's so they can be compared.
 
-Out of scope for now: warehouse (Trilanco / 3PL) stock, carton or pack sizes, purchase orders, forecasting, DE inventory (DE has economics only).
+Out of scope for now: warehouse (Trilanco / 3PL) stock (the next change, specified in [CHANGE_warehouse_stock.md](CHANGE_warehouse_stock.md)), carton or pack sizes, purchase orders, forecasting, DE inventory (DE has economics only).
 
 ## 2. Requirements and decisions
 
