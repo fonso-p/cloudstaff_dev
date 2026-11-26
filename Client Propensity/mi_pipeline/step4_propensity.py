@@ -573,6 +573,49 @@ def prospect_profiles(scorer, countries):
               .round(3))
 
 
+def size_profiles(nc, base, log=print):
+    """Seat-growth profiles by company size, for the Apollo EMEA lead grades only (decision 2026-11-26).
+    Separate models (PROFILE + emp_band) on the same training clients as the 5-seat and seat-milestone models; the
+    standard models, prospect_profiles and everything the Account Priority Dashboard reads are NOT changed.
+    One row per industry x country x size band (config.SIZE_BAND_LABELS), profile_key = industry|country|band.
+    fit_branch_1y_* and likely_first_new_dept are copied from the industry|country profile (size didn't help them).
+    Returns (table, stats); an empty table when no client has a size."""
+    cols = PROFILE + ["emp_band"]
+    gro = nc["growth_train"]
+    if "emp_band" not in gro or gro["emp_band"].eq("Unknown").all():
+        log("[4 propensity] size profiles: no client sizes, not built")
+        return pd.DataFrame(), {}
+    trains = {"growth": gro, **{(n, d): t for (n, d), t in nc["milestone_train"].items()}}
+    grid = base[["industry", "industry_sector", "country", "industry_fit"]].merge(
+        pd.DataFrame({"emp_band": config.SIZE_BAND_LABELS}), how="cross")
+    X = grid.assign(start_dept_grp="Unknown", launch_bucket="1-2")[cols]
+    label = lambda f, v: f"{v} employees" if f == "emp_band" else _profile_label(f, v)   # noqa: E731
+    stats = {}
+    for k, t in trains.items():
+        name = "growth" if k == "growth" else f"reach_{k[0]}"
+        title = (f"Growth to {config.PS_GROWTH_SEATS} seats in {config.PS_GROWTH_DAYS}d" if k == "growth"
+                 else f"Reach {k[0]} seats in {k[1]}d") + " (new clients, with company size)"
+        m, cuts, chk, auc = fit(t, [], cols, "y", title, log=log)
+        Xp = t[cols].copy()
+        Xp["start_dept_grp"], Xp["launch_bucket"] = "Unknown", "1-2"
+        stats[name] = dict(auc=auc, auc_prospects=roc_auc_score(t["y"], m.predict_proba(Xp)[:, 1]), cuts=cuts,
+                           base_rate=float(t["y"].mean()), check=chk)
+        p = m.predict_proba(X)[:, 1]
+        grid[f"fit_{name}_p"] = p
+        grid[f"fit_{name}_band"] = band(p, cuts)
+        grid[f"fit_{name}_why"] = reasons(m, X, {f: t[f].mode().iat[0] for f in cols}, label).to_numpy()
+    b = base.set_index("profile_key")
+    key = grid["industry"] + "|" + grid["country"]
+    for c in ("fit_branch_1y_p", "fit_branch_1y_band", "fit_branch_1y_why", "likely_first_new_dept"):
+        grid[c] = key.map(b[c]).to_numpy()
+    grid["outlook"] = [outlook(g, br) for g, br in zip(grid["fit_growth_band"].astype(str), grid["fit_branch_1y_band"].astype(str))]
+    grid["profile_key"] = key + "|" + grid["emp_band"]
+    front = ["profile_key", "industry", "industry_sector", "country", "emp_band", "industry_fit"]
+    log(f"[4 propensity] size profiles (Apollo EMEA only): {len(grid)} rows | prospect-style AUC "
+        + ", ".join(f"{k} {v['auc_prospects']:.2f}" for k, v in stats.items()))
+    return grid[front + [c for c in grid.columns if c not in front]].round(3), stats
+
+
 def run(feat, today, log=print, current_seats=None):
     out = new_client_models(feat["accounts"], feat["branch"], feat["top_starts"], feat["industry_fit_map"], today, log)
     om = organic_model(feat["accounts"], feat["timeline"], feat["src"], feat["dept_entered"], today, log)
@@ -581,6 +624,7 @@ def run(feat, today, log=print, current_seats=None):
                                                                      current_seats)
     out["prospect_profiles"] = prospect_profiles(out["scorer"], ["Australia", "United States", "United Kingdom", "New Zealand",
                                                                  "Canada", "Other", "Unknown"])
+    out["prospect_profiles_by_size"], out["size_model_stats"] = size_profiles(out, out["prospect_profiles"], log)
     lst = out["organic_client_list"]
     log(f"[4 propensity] active clients scored: {len(lst)} | new-dept bands: {lst['band'].value_counts().reindex(config.PS_BANDS).to_dict()}"
         f" | seat-growth bands: {lst['seat_growth_band'].value_counts().reindex(config.PS_BANDS).to_dict()}")

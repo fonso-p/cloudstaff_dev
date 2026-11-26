@@ -36,7 +36,10 @@ from priority_scoring import FIT, SCORING_DASHBOARD_V3, NEWS_STRENGTH, RECENCY, 
 from mystaff_industry import INDUSTRY_GROUPS, INDUSTRY_SECTOR                              # noqa: E402
 
 # ---------------------------------------------------------------- settings (rules as data; README.md §4 explains each)
-DATA_DIR = Path.home() / "Desktop" / "Projects" / "Marketing Intelligence Priority" / "Data"
+# The Desktop may be redirected to OneDrive: use whichever Projects folder exists
+_PROJECTS = [Path.home() / "OneDrive - Cloudstaff Pty Ltd" / "Desktop" / "Projects", Path.home() / "Desktop" / "Projects"]
+PROJECTS = next((p for p in _PROJECTS if p.exists()), _PROJECTS[-1])
+DATA_DIR = PROJECTS / "Marketing Intelligence Priority" / "Data"
 APOLLO_DIR = DATA_DIR / "EMEA"
 SCRAPER_OUT = REPO / "News Scraper" / "apollo_emea" / "out"
 TREND_FILE = REPO / "News Scraper" / "out" / "industry_trend.csv"
@@ -186,10 +189,12 @@ OTHER_TRADE_UK_WEAK = {"68", "70", "71", "74", "78"}
 LIST_TARGET_GROUPS = {name: groups for name, groups in LIST_TARGET.values()}
 # Competitor client (17 points): candidates' CVs name the lead as a competitor's client. Map from
 # "Client Extraction (CS Jobs)/export_client_map.py"; company names only
-COMPETITOR_MAP = Path.home() / "Desktop" / "Projects" / "Competitor Analysis (client scrape)" / "data" / "competitor_clients.csv"
+COMPETITOR_MAP = PROJECTS / "Competitor Analysis (client scrape)" / "data" / "competitor_clients.csv"
 COMPETITOR_FUZZY = 0.95                           # close-name matches: shown for a person to check, no points
 COUNTRY_WORDS = {"UK": "kingdom", "AU": "austral", "US": "united states", "NZ": "zealand", "CA": "canada", "IE": "ireland"}
 BAND_EDGES = [(10, "1-10"), (50, "11-50"), (200, "51-200"), (500, "201-500"), (math.inf, "500+")]
+FIT_SIZE_EDGES = [0, 10, 50, 200, math.inf]                 # = Client Propensity config.SIZE_BAND_EDGES / LABELS
+FIT_SIZE_LABELS = ["1-10", "11-50", "51-200", "201+"]
 COUNTRY_CODE = {"united kingdom": "UK", "ireland": "IE", "australia": "AU", "new zealand": "NZ", "united states": "US", "canada": "CA"}
 SENIORITY_ORDER = ["owner", "founder", "c suite", "partner", "vp", "head", "director", "manager", "senior", "entry"]
 DECISION_MAKER = {"owner", "founder", "c suite", "partner", "vp", "director"}
@@ -326,8 +331,22 @@ def add_fit(leads, path):
         for k in cols:
             leads[k] = None
         return leads, "no prospect profiles found"
-    pp = pd.read_csv(path).set_index("profile_key")
-    leads["fit_profile"] = leads["industry"].fillna("Unknown") + "|" + FIT_COUNTRY
+    pp = pd.read_csv(path)
+    # Company size (decision 2026-11-26): the seat-growth scores come from past clients of the same industry AND
+    # employee band (Apollo "# Employees" here; Client Propensity's band edges), from the extract's separate
+    # prospect_profiles_by_size file (built for these lead grades only; the Account Priority Dashboard keeps using the
+    # industry-only prospect_profiles). The 2nd-department score is the same in every band. A lead without a headcount,
+    # or an extract without the size file, uses the industry-only profile.
+    by_size = Path(str(path).replace("_prospect_profiles.csv", "_prospect_profiles_by_size.csv"))
+    if by_size.exists():
+        pp = pd.concat([pp, pd.read_csv(by_size)], ignore_index=True)
+    pp = pp.set_index("profile_key")
+    emp = pd.to_numeric(leads["employee_count"], errors="coerce")
+    leads["fit_size_band"] = pd.cut(emp, bins=FIT_SIZE_EDGES, labels=FIT_SIZE_LABELS).astype("string")
+    base_key = leads["industry"].fillna("Unknown") + "|" + FIT_COUNTRY
+    sized = base_key + "|" + leads["fit_size_band"].fillna("")
+    leads["fit_profile"] = sized.where(sized.isin(pp.index), base_key)
+    leads["fit_size_band"] = leads["fit_size_band"].where(leads["fit_profile"].ne(base_key))
     for k in cols:
         leads[k] = leads["fit_profile"].map(pp[k])
     leads["fit_outlook"] = leads["fit_profile"].map(pp["outlook"]) if "outlook" in pp else None
@@ -1162,7 +1181,8 @@ def chips(r, as_of):
     for s, lbl in (("fit_growth", "5+ seats in a year"), ("fit_reach_10", "10+ seats in 2 years"), ("fit_branch_1y", "a 2nd department in a year")):
         p, usual = r.get(f"{s}_p"), r.get(f"{s}_usual")
         if r.get(f"{s}_band") == FIT["chip_band"] and not blank(p) and not blank(usual) and p >= FIT["chip_min_lift"] * usual:
-            out.append([f"Fit: likely {lbl} ({p:.0%} vs usual {usual:.0%})", "fit"])
+            size = f", {r['fit_size_band']} staff" if s != "fit_branch_1y" and not blank(r.get("fit_size_band")) else ""
+            out.append([f"Fit: likely {lbl} ({p:.0%} vs usual {usual:.0%}{size})", "fit"])
     if not blank(r.get("parent_company")):          # Apollo's parent company field: Apollo column
         out.append([f"Part of {r['parent_company']}", "apollo"])
     # an owner or director who is an Apollo contact is not a chip (24 Nov 2026, user): the owner / director badges on

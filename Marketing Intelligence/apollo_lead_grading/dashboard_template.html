@@ -303,8 +303,8 @@ details.ev-box .ev-body{padding:4px 12px 12px}
       <div class="warn" id="fitWarn"></div>
       <div class="card"><div class="card-head"><h3>Service lines found on their websites</h3><span>companies, by list · no points</span></div>
         <div class="card-body"><div class="tbl-wrap" id="tService"></div><div class="note" id="serviceNote"></div></div></div>
-      <div class="card"><div class="card-head"><h3>Fit profile used, by industry</h3><span>Client Propensity, industry only</span></div>
-        <div class="card-body"><div class="tbl-wrap" id="tFit"></div><div class="note">The chance that a new client like this reaches 5+ seats in a year, 10+ in two years, or adds a second department in a year, from past Cloudstaff clients in the same industry (all countries). Bands are relative: High = top third of past new clients.</div></div></div>
+      <div class="card"><div class="card-head"><h3>Fit profile used, by industry and size</h3><span>Client Propensity · industry × company size</span></div>
+        <div class="card-body"><div class="tbl-wrap" id="tFit"></div><div class="note">The chance that a new client like this reaches 5+ seats in a year, 10+ in two years, or adds a second department in a year, from past Cloudstaff clients in the same industry (all countries). The seat scores also use company size: past clients of the same employee band (their researched headcount today, minus their Cloudstaff seats) against the lead\'s Apollo headcount. Size made no difference to the second-department score, so that one is by industry only. Bands are relative: High = top third of past new clients.</div></div></div>
       <div class="card"><div class="card-head"><h3>Market trend (context only)</h3><span>News Scraper segment mode · not in the score</span></div>
         <div class="card-body"><div class="tbl-wrap" id="tTrend"></div><div class="note">How UK news for each sector leans, from News Scraper segment mode: 0.5 is neutral, above means more growth, labour-shortage and offshoring stories. Context only, not in the score: tiers rank within each list, where every lead shares the same trend, so it could not change anyone\'s rank.</div></div></div>
       <div class="card"><div class="card-head"><h3>Leads by industry</h3><span>Apollo industry → Cloudstaff industry group</span></div><div class="card-body"><div class="tbl-wrap" id="tInd"></div><div class="note">Target industry is decided by activity codes (Apollo US SIC / NAICS and the Companies House UK SIC), with Apollo's one-word industry only as a fallback: e.g. Coxbench Hall Residential Care Home is "individual &amp; family services" in Apollo but SIC 8052 (nursing care). Companies whose codes show another trade (furniture, building, staffing, design) are outside the target: they are tiered, and the company panel says to check that the industry matches.</div></div></div>
@@ -714,13 +714,13 @@ function showDetail(r, scroll = true) {
       ['News and hiring', r.news_jobs_pts, MP.news, (r.scoring_events > 1 ? `${r.scoring_events} events added up (combined ${fmt(r.news_compound, 2)}); strongest: ` : '') + (r.news_signal === 'None' ? 'no scored event' : r.news_signal ? `${r.news_from === 'parent' ? 'Parent ' + r.parent_name + ': ' : ''}${r.news_signal}${r.event_detail && r.news_from !== 'parent' ? ' (' + r.event_detail + ')' : ''}${r.news_signal_date ? ' · ' + r.news_signal_date : ''}${r.news_strength_factor < 1 ? ' · half weight' : ''}` : 'not checked')
         + (okJobs ? ` · ${fmt(r.job_postings_30d)} roles we fill posted in 30 days` : ' · jobs unknown')],
       ['Competitor client', r.bpo_pts, MP.bpo, comp],
-      ['Fit', r.fit_pts, MP.fit, `${r.industry || 'Unknown'}: 5+ seats ${r.fit_growth_band || '–'}, 2nd department ${r.fit_branch_1y_band || '–'}`]];
+      ['Fit', r.fit_pts, MP.fit, `${r.industry || 'Unknown'}${r.fit_size_band ? ', ' + r.fit_size_band + ' staff' : ''}: 5+ seats ${r.fit_growth_band || '–'}, 2nd department ${r.fit_branch_1y_band || '–'}`]];
     h += '<h4>Why this score</h4><table class="pts"><thead><tr><th>Part</th><th class="n">Points</th><th class="n">Max</th><th>Based on</th></tr></thead><tbody>'
       + rows.map(([a, p, m, b]) => `<tr><td>${a}</td><td class="n">${fmt(p, 1)}</td><td class="n">${m}</td><td>${dates(b)}</td></tr>`).join('')
       + (r.act_now_bonus > 0 ? `<tr><td>+ Act now bonus</td><td class="n">${fmt(r.act_now_bonus, 1)}</td><td></td><td>${esc(r.act_now_triggers || '')}</td></tr>` : '')
       + `<tr><td><b>Priority score</b></td><td class="n"><b>${fmt(r.priority_score)}</b></td><td class="n">100</td><td>${esc(r.estimated_fields ? 'estimated: ' + r.estimated_fields : '')}</td></tr></tbody></table>`;
   } else h += '<h4>Why this score</h4><div class="note">Not scored.</div>';
-  h += `<div class="note" style="margin:10px 0 4px">Fit: how past ${esc(r.industry || '')} clients grew (Client Propensity)</div>` + kv([
+  h += `<div class="note" style="margin:10px 0 4px">Fit: how past ${esc(r.industry || '')} clients${r.fit_size_band ? ' with ' + esc(r.fit_size_band) + ' staff' : ''} grew (Client Propensity; 2nd department by industry only)</div>` + kv([
     ['5+ seats in a year', r.fit_growth_p === null || r.fit_growth_p === undefined ? '' : `${pc(r.fit_growth_p, r.fit_growth_usual)} · ${esc(r.fit_growth_band || '–')}`],
     ['10+ seats in 2 years', r.fit_reach_10_p === null || r.fit_reach_10_p === undefined ? '' : `${pc(r.fit_reach_10_p, r.fit_reach_10_usual)} · ${esc(r.fit_reach_10_band || '–')}`],
     ['A 2nd department in a year', r.fit_branch_1y_p === null || r.fit_branch_1y_p === undefined ? '' : `${pc(r.fit_branch_1y_p, r.fit_branch_1y_usual)} · ${esc(r.fit_branch_1y_band || '–')}`],
@@ -915,9 +915,10 @@ function rGathered(f, rows) {
 }
 
 // ---------------- Fit and market
+const SIZE_ORDER = ['1-10', '11-50', '51-200', '201+', 'unknown'];
 function rFit(f, rows) {
-  $('fitWarn').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> UK fit is not used: MyStaff has only 26 UK clients (2 in Healthcare, 2 in Technology), too few for a country-level estimate. The fit comes from past clients in the same <b>industry, all countries</b> (decision 18 Nov 2026).`;
-  const g = [...groupBy(rows, r => r.industry || 'Unmapped')].map(([k, a]) => ({k, n: a.length, gp: a[0].fit_growth_p, gb: a[0].fit_growth_band, rp: a[0].fit_reach_10_p, rb: a[0].fit_reach_10_band, bp: a[0].fit_branch_1y_p, bb: a[0].fit_branch_1y_band})).sort((a, b) => b.n - a.n);
+  $('fitWarn').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> UK fit is not used: MyStaff has only 26 UK clients (2 in Healthcare, 2 in Technology), too few for a country-level estimate. The fit comes from past clients in the same <b>industry, all countries</b> (decision 18 Nov 2026), and for the seat scores the same <b>company size</b> band (26 Nov 2026).`;
+  const g = [...groupBy(rows, r => (r.industry || 'Unmapped') + '|' + (r.fit_size_band || ''))].map(([key, a]) => ({k: a[0].industry || 'Unmapped', sz: a[0].fit_size_band || 'unknown', n: a.length, gp: a[0].fit_growth_p, gb: a[0].fit_growth_band, rp: a[0].fit_reach_10_p, rb: a[0].fit_reach_10_band, bp: a[0].fit_branch_1y_p, bb: a[0].fit_branch_1y_band})).sort((a, b) => a.k.localeCompare(b.k) || SIZE_ORDER.indexOf(a.sz) - SIZE_ORDER.indexOf(b.sz));
   const lists = uniq(rows.map(r => r.lead_list));
   const sv = uniq(rows.flatMap(r => (r.service_lines || '').split('; ').filter(Boolean)));
   table($('tService'), [{k: 's', label: 'Service line'}, ...lists.map(l => ({k: l, label: esc(l), n: 1, f: v => fmt(v)}))],
@@ -927,7 +928,7 @@ function rFit(f, rows) {
     const a = rows.filter(r => r.lead_list === l); return `${l}: ${fmt(a.filter(r => r.service_lines).length)} of ${fmt(a.length)} have at least one`; }).join(' · ')
     + '. Blank usually means the website could not be read, not that the company offers none. Use the Service line filter to target a list.';
   const pb = (p, b) => p === null || p === undefined ? '–' : `${pct(p)} <span class="badge ${b === 'High' ? 'b-ok' : b === 'Medium' ? 'b-blue' : 'b-no'}">${esc(b)}</span>`;
-  table($('tFit'), [{k: 'k', label: 'Industry group'}, {k: 'n', label: 'Leads', n: 1, f: v => fmt(v)}, {k: 'gp', label: '5+ seats in 1 year', n: 1, f: (v, r) => pb(v, r.gb)},
+  table($('tFit'), [{k: 'k', label: 'Industry group'}, {k: 'sz', label: 'Staff (Apollo)'}, {k: 'n', label: 'Leads', n: 1, f: v => fmt(v)}, {k: 'gp', label: '5+ seats in 1 year', n: 1, f: (v, r) => pb(v, r.gb)},
     {k: 'rp', label: '10+ seats in 2 years', n: 1, f: (v, r) => pb(v, r.rb)}, {k: 'bp', label: '2nd department in 1 year', n: 1, f: (v, r) => pb(v, r.bb)}], g);
   const tr = [...groupBy(rows, r => (r.industry || 'Unmapped') + '|' + (r.trend_basis || ''))].map(([k, a]) => ({ind: a[0].industry || 'Unmapped', basis: a[0].trend_basis, trend: a[0].market_trend, n: a.length})).sort((a, b) => b.n - a.n);
   table($('tTrend'), [{k: 'ind', label: 'Industry group'}, {k: 'n', label: 'Leads', n: 1, f: v => fmt(v)}, {k: 'trend', label: 'Trend (0–1)', n: 1, f: v => v === null || v === undefined ? '–' : fmt(v, 3)}, {k: 'basis', label: 'Based on'}], tr);

@@ -114,4 +114,5 @@ def run(formatted, log=print):
     staff, dept_maps = staff_role_groups(formatted["staff"], log)
     engagement = join_departments(formatted["engagement"], staff, log)
     mystaff = add_region(add_industry_groups(formatted["mystaff"], log), log)
-    return {"engagement": engagement, "mystaff": mystaff, "staff": staff, "dept_maps": dept_maps}
+    return {"engagement": engagement, "mystaff": mystaff, "staff": staff, "dept_maps": dept_maps,
+            "client_size": formatted.get("client_size")}

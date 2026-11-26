@@ -99,6 +99,20 @@ def load_dashboard_seats(log=print):
     seats = pd.to_numeric(df["cs_staff_current"], errors="coerce").set_axis(df["shortcode"].astype(str)).dropna()
     return seats, files[-1].name
 
+def load_client_size(log=print):
+    """Researched company size per client (config.CLIENT_SIZE_GLOB): shortcode, employees, employees_raw.
+    None when switched off or no file is found (the models then treat every client's size as Unknown)."""
+    if not config.CLIENT_SIZE_GLOB:
+        return None, None
+    files = sorted(Path(config.CLIENT_SIZE_DIR).glob(config.CLIENT_SIZE_GLOB))
+    if not files:
+        log(f"[1 format] no {config.CLIENT_SIZE_GLOB} in {config.CLIENT_SIZE_DIR}: client size Unknown for everyone")
+        return None, None
+    df = pd.read_csv(files[-1], usecols=["shortcode", "employees", "employees_raw"])
+    df["shortcode"] = clean_id(df["shortcode"]).str.upper()
+    return df.dropna(subset=["shortcode"]).drop_duplicates("shortcode"), files[-1].name
+
+
 def run(today, log=print):
     raw = {name: load_raw(name) for name in config.RAW_FILES}
     staff, n_dupe = format_staffcentral(raw["staffcentral"])
@@ -108,6 +122,7 @@ def run(today, log=print):
         "staff":      staff,
     }
     out["current_seats"], out["current_seats_file"] = load_dashboard_seats(log)
+    out["client_size"], out["client_size_file"] = load_client_size(log)
     log(f"[1 format] engagement rows {len(out['engagement'])} | "
         f"MyStaff accounts {len(out['mystaff'])} | StaffCentral staffers {len(staff)} ({n_dupe} duplicate CSID rows dropped) | "
         + (f"current seats: {len(out['current_seats'])} clients from {out['current_seats_file']}" if out["current_seats"] is not None

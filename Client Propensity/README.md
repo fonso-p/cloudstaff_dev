@@ -43,7 +43,7 @@ refreshes itself when a raw file changes.
 | 2 Merge | `mi_pipeline/step2_merge.py` | Adds StaffCentral departments (JP Category) to each engagement, and industry groups to MyStaff |
 | 3 Data engineering | `mi_pipeline/step3_features.py` | Builds the headcount timeline, the account summary (still a client or not, held seat milestones, launch size), the client list, each client's department history and the snapshots |
 | 4a Analysis: branching | `mi_pipeline/step4_branching.py` | Start → next department, time to branch, related departments, branching vs growth, and a check on the department join |
-| 4b Analysis: propensity | `mi_pipeline/step4_propensity.py` | New-client models (5 seats in 1 year, 10 seats in 2 years, a department in year 1), scorecard and prospect profiles; existing-client models (seat growth, new department) and client list |
+| 4b Analysis: propensity | `mi_pipeline/step4_propensity.py` | New-client models (5 seats in 1 year, 10 seats in 2 years, a department in year 1), scorecard and prospect profiles; plus, for the Apollo EMEA lead grades only, separate seat-growth models with company size (`size_profiles`, `emp_band`, see `config.CLIENT_SIZE_DIR`) -> `prospect_profiles_by_size` (the standard models and the Account Priority Dashboard's files are unchanged); existing-client models (seat growth, new department) and client list |
 | 5 Output | `mi_pipeline/step5_output.py` | Excel workbook and notebook charts |
 | 5b Dashboard extract | `mi_pipeline/step5_extract.py` | The extract keyed like the Account Priority Dashboard |
 

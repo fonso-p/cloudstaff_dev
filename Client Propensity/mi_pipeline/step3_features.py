@@ -220,6 +220,29 @@ def propensity_accounts(branch, summary, mystaff, log=print):
         f"modelled at sector level (< {config.INDUSTRY_SECTOR_FALLBACK_N} accounts): {', '.join(pooled) or 'none'}")
     return acct, top_starts, fit_map
 
+def add_size_band(acct, client_size, timeline, log=print):
+    """acct['emp_band']: the client's company size band (config.SIZE_BAND_LABELS) or 'Unknown', with our own seats
+    taken out of the headcount (see config.CLIENT_SIZE_DIR). Size is today's, not at signing."""
+    acct = acct.copy()
+    acct["emp_band"] = "Unknown"
+    if client_size is None:
+        return acct
+    cs = client_size.set_index("shortcode")
+    raw = cs["employees_raw"].astype("string").fillna("")
+    ours = raw.str.contains(r"cloudstaff|offshore", case=False)               # count includes our staff: not used
+    onshore = raw.str.contains(r"onshore", case=False)                         # already excludes them
+    peak = timeline.groupby(timeline["Shortcode"].astype(str).str.upper())["active_staff"].max()
+    own = (cs["employees"] - peak.reindex(cs.index).fillna(0)).clip(lower=1)
+    emp = cs["employees"].where(onshore, own).where(~ours)
+    bands = pd.cut(emp, bins=config.SIZE_BAND_EDGES, labels=config.SIZE_BAND_LABELS).astype("string")
+    key = acct.index.astype(str).str.upper()
+    acct["emp_band"] = bands.reindex(key).fillna("Unknown").to_numpy()
+    known = acct["emp_band"].ne("Unknown")
+    log(f"[3 features] client size: {int(known.sum())} of {len(acct)} accounts banded "
+        f"({acct.loc[known, 'emp_band'].value_counts().to_dict()}); {int(ours.sum())} texts counting our staff not used")
+    return acct
+
+
 def seat_measures(shortcodes, timeline, src, today):
     """Seats today, gross seats added and net seat change over the last 180 days, from the engagement list.
     seats_added_6m_gross lines up with the dashboard's seats_added_6m (gross adds); the net change is the alternative."""
@@ -272,6 +295,7 @@ def run(merged, today, log=print):
     clients, excluded_accounts = client_accounts(summary, src, today, log)
     branch, dept_entered = build_branching(src, clients)
     accounts, top_starts, fit_map = propensity_accounts(branch, summary, mystaff, log)
+    accounts = add_size_band(accounts, merged.get("client_size"), timeline, log)
     return dict(src=src, timeline=timeline, summary=summary, spells=spells, clients=clients,
                 excluded_accounts=excluded_accounts, branch=branch, dept_entered=dept_entered,
                 accounts=accounts, top_starts=top_starts, industry_fit_map=fit_map, mystaff=mystaff)

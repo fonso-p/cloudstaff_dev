@@ -153,3 +153,16 @@ DASHBOARD_DATA_GLOB  = "priority_company_info_combined*.xlsx"
 DASHBOARD_FEED_DIR = Path(os.environ.get(
     "MIA_DASHBOARD_DIR",
     r"C:\Users\Alfonso(FonsoP)Panli\Desktop\Projects\Marketing Intelligence Priority\Data"))
+
+# Company size of past clients (employees), for the new-client seat-growth models (decision 2026-11-26).
+# Source: the newest client_size_<date>.csv written by Marketing Intelligence/apollo_lead_grading/client_size.py from
+# the researched AMER / APAC growth-opportunity files. Size is TODAY's headcount, not at signing (accepted). Our own
+# seats are taken out: texts that say they include Cloudstaff / offshore staff are not used, onshore-only counts are
+# used as they are, and every other count has the client's peak Cloudstaff seats subtracted.
+# Test (2026-11-26, prospect-style, same clients): 5+ seats in 1y AUC 0.57 -> 0.68, 10+ in 2y 0.61 -> 0.79, second
+# department no gain (so the branch model doesn't use size). Revenue adds nothing beyond employees (corr 0.87): not used.
+# None = off (models as before, every client "Unknown").
+CLIENT_SIZE_DIR = Path(os.environ.get("MIA_CLIENT_SIZE_DIR", DASHBOARD_FEED_DIR / "Yoga Data"))
+CLIENT_SIZE_GLOB = "client_size_*.csv"
+SIZE_BAND_EDGES = [0, 10, 50, 200, float("inf")]           # employees; same cut points as the lead grades' bands
+SIZE_BAND_LABELS = ["1-10", "11-50", "51-200", "201+"]     # 201-500 and 500+ merged: too few clients to split

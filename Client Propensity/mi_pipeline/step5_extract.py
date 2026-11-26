@@ -4,6 +4,9 @@ propensity_accounts is deliberately narrow: the client keys plus seat and depart
 keeps its own descriptive columns (industry, region, ...); both sides use the same taxonomy (mappings.py).
     keys        account_id = "MS-" + shortcode (Organic Growth), shortcode, crm_company_id (MyStaff 'CRM Company ID'
                 = HubSpot company Record ID, as text); New Logo prospects use profile_key = industry|country
+    by size     prospect_profiles_by_size: Apollo EMEA lead grades only. Seat-growth scores by industry x country x
+                company size band (profile_key = industry|country|band), from separate models; the Account Priority
+                Dashboard doesn't read it, and nothing else in the extract depends on it
     seats       current seats, gross seats added and net change over 6 months; fit_seat_milestone* (the client's next
                 seat milestone, 5 / 10 / 20, and its chance within 12 months; 20+ seats out of scope)
     departments depts_so_far(_names); fit_dept_* (enters a new department in 12 months); fit_second_dept_* (the same
@@ -265,7 +268,16 @@ def build_extract(res):
         ("dept_window_days", config.PS_BRANCH_DAYS),
     ], columns=["item", "value"])
     dictionary = pd.DataFrame(DICTIONARY, columns=["column", "meaning", "dashboard_counterpart"])
+    # Apollo EMEA lead grades only: seat-growth profiles by company size (separate models; nothing above changes)
+    size_stats = p.get("size_model_stats", {})
+    run_info = pd.concat([run_info, pd.DataFrame(
+        [("size_profiles_source", res["formatted"].get("client_size_file") or "none"),
+         ("size_profiles_clients_banded", int(feat["accounts"]["emp_band"].ne("Unknown").sum()) if "emp_band" in feat["accounts"] else 0),
+         *[(f"size_profiles auc_prospect_style {k}", round(v["auc_prospects"], 3)) for k, v in size_stats.items()],
+         *[(f"size_profiles band_cutoffs {k}", " / ".join(f"{c:.3f}" for c in v["cuts"])) for k, v in size_stats.items()]],
+        columns=["item", "value"])], ignore_index=True)
     return {"propensity_accounts": accounts, "prospect_profiles": p["prospect_profiles"],
+            "prospect_profiles_by_size": p.get("prospect_profiles_by_size", pd.DataFrame()),
             "score_definitions": score_definitions(res), "industry_levels": levels,
             "region_to_country": regions, "column_dictionary": dictionary, "run_info": run_info}
 
@@ -281,7 +293,7 @@ def write_extract(res, folder=None):
             df.to_excel(xw, sheet_name=name, index=False)
             _style(xw.sheets[name], df)
     files = [xlsx]
-    for name in ("propensity_accounts", "prospect_profiles", "score_definitions"):
+    for name in ("propensity_accounts", "prospect_profiles", "score_definitions", "prospect_profiles_by_size"):
         files.append(folder / f"{stem}_{name}.csv")
         sheets[name].to_csv(files[-1], index=False, encoding="utf-8-sig")
     copy_to_dashboard(files)
