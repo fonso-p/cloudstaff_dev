@@ -147,6 +147,8 @@ details.chart-data .tbl-wrap{max-height:280px;margin-top:8px}
 .b-parent i{font-size:9px;margin-right:3px;color:var(--color-brand-primary)}
 .b-warn i{font-size:9px;margin-right:3px;opacity:.7}
 .b-service{background:var(--color-surface-primary);color:var(--color-brand-secondary-strong);border:1px solid var(--color-feature-01-soft)}
+/* officer appointed in the last 3 months: tiny marker next to the name */
+.b-new{font-size:10px;padding:0 5px;line-height:15px;background:var(--color-feature-03-soft);color:var(--color-text-base-primary)}
 #tLeads tbody tr{cursor:pointer}
 /* other news events: same family as a scored event, outlined (no points) */
 .b-news{background:var(--color-surface-primary);color:var(--color-brand-secondary-strong);border:1px solid var(--color-feature-01-soft)}
@@ -239,7 +241,7 @@ details.ev-box .ev-body{padding:4px 12px 12px}
           <span class="badge b-blue">hiring / filing</span> no points (older or on-site hiring, Companies House changes) ·
           <span class="badge b-parent"><i class="fa-solid fa-sitemap"></i>parent</span> parent company's event ·
           <span class="badge b-purple">fit</span> clearly above the usual rate · Checks (data that needs a look, events that need review) are shown in the company panel, not in this table.
-          The <span class="badge b-warn"><i class="fa-solid fa-database"></i>Apollo</span> column holds what comes from the Apollo export: its funding label (undated, no points), parent company. In Best contact, a green <span class="badge b-ok">owner</span> badge = owns or controls it, an outlined <span class="badge b-service">director</span> badge = runs it (Companies House officers list).
+          The <span class="badge b-warn"><i class="fa-solid fa-database"></i>Apollo</span> column holds what comes from the Apollo export: its funding label (undated, no points), parent company. In Best contact, a green <span class="badge b-ok">owner</span> badge = owns or controls it, an outlined <span class="badge b-service">director</span> badge = runs it (Companies House officers list); a small <span class="badge b-new">new</span> next to a name = appointed as an officer in the last 3 months.
           What the company does (service lines, software, group) is in its profile: click a row.</div>
         <div class="tools"><input id="listSearch" placeholder="Search company, city, contact, reason"><span class="note" style="margin:0">Click a row for the evidence, the score and the contacts. Click a column header to sort.</span></div>
         <div class="tbl-wrap" id="tLeads"></div></div></div>
@@ -525,6 +527,9 @@ const roleBadge = role => { const r = String(role || ''); const cls = r.startsWi
   return `<span class="badge ${cls}" title="Companies House register: owner = controls the company (majority of shares or votes, or the right to appoint or remove most of the board); co-owner = nobody controls it alone; minority owner = someone else controls it">${esc(r)}</span>`; };
 // officer = on the Companies House officers list now (director, secretary, LLP member): runs the company, signs for it
 const officerBadge = role => role ? `<span class="badge b-service" title="Companies House officers list: a current ${esc(role)} of the company (directors run it and sign for it; an owner owns or controls it)">${esc(role)}</span>` : '';
+// "new" = appointed as a Companies House officer in the 3 months before the grading date
+const newBadge = d => { const days = d ? (new Date(M.as_of) - new Date(d)) / 864e5 : NaN;
+  return days >= 0 && days <= 92 ? ` <span class="badge b-new" title="Joined as a Companies House officer on ${dmy(d)} (last 3 months)">new</span>` : ''; };
 const ROUTE = {direct: 'owned directly by individuals', 'via holding company': 'via a holding company'};
 const ownHtml = (r, check = true) => `<span class="badge ${OWN_BADGE[r.ownership] || 'b-no'}" title="${esc(r.ownership_evidence || '')}">${esc(r.ownership || 'Not checked')}${r.ownership_route === 'direct' ? ' · direct' : ''}</span>`
   + (r.ownership_route ? ` <span class="note">${esc(ROUTE[r.ownership_route])}</span>` : '')
@@ -589,7 +594,7 @@ const LEAD_COLS = [
   {k: 'ownership', label: '<span title="Who controls the company (Companies House). Owner-managed = the BDM target. Hover a badge for the evidence">Ownership <i class="fa-regular fa-circle-question"></i></span>', f: (v, r) => ownHtml(r, false) + (r.top_owner && r.ownership !== 'Owner-managed' ? `<br><span class="note">${esc(r.top_owner)}</span>` : '')},
   {k: 'chips', label: '<span title="Events (news, CQC, public contracts, parent company) and other signals: hiring, fit, competitor client, Companies House changes. Checks and events that need review are in the company panel, which lists every relevant event">Events &amp; signals <i class="fa-regular fa-circle-question"></i></span>', f: v => chipHtml(listChips(v))},
   {k: 'apollo_chips', label: '<span title="From the Apollo export: its Latest Funding label (undated, compared with the news), and its parent company. An owner or director who is an Apollo contact shows as a badge in Best contact">Apollo <i class="fa-regular fa-circle-question"></i></span>', f: v => (v || []).length ? chipHtml(v) : '–'},
-  {k: 'best_contact', label: 'Best contact', f: (v, r) => v ? `${esc(v)}${r.owner_contacts && r.owner_contacts.split('; ').includes(v) && r.best_owner_role ? ' ' + roleBadge(r.best_owner_role) : ''}${r.officer_contacts && r.officer_contacts.split('; ').includes(v) && r.best_officer_role ? ' ' + officerBadge(r.best_officer_role) : ''}<br><span class="note">${esc(r.best_title || '')}${r.n_contacts > 1 ? ` · +${r.n_contacts - 1} more` : ''}</span>` : '–'},
+  {k: 'best_contact', label: 'Best contact', f: (v, r) => v ? `${esc(v)}${r.owner_contacts && r.owner_contacts.split('; ').includes(v) && r.best_owner_role ? ' ' + roleBadge(r.best_owner_role) : ''}${r.officer_contacts && r.officer_contacts.split('; ').includes(v) && r.best_officer_role ? newBadge(r.best_officer_appointed) + ' ' + officerBadge(r.best_officer_role) : ''}<br><span class="note">${esc(r.best_title || '')}${r.n_contacts > 1 ? ` · +${r.n_contacts - 1} more` : ''}</span>` : '–'},
 ];
 let sortKey = null, sortDir = -1, selected = null;
 const GRADE_ORDER = Object.fromEntries(GRADES.map((g, i) => [g, i]));
@@ -674,7 +679,7 @@ function showDetail(r, scroll = true) {
     r.on_target === false ? '<span class="badge b-pink">check that the industry matches the list</span>' : ''].filter(Boolean).join(' · ');
   const c0 = contacts[0];
   const mail = c => c.email ? `<a class="ext" href="mailto:${esc(c.email)}">${esc(c.email)}</a>${c.email_status && c.email_status !== 'Verified' ? ` <span class="badge b-warn">${esc(c.email_status)}</span>` : ''}` : '';
-  const main = c0 ? [`<b>${esc(c0.name)}</b>${c0.owner_role ? ' ' + roleBadge(splitRole(c0.owner_role)[0]) : ''}${c0.officer_role ? ' ' + officerBadge(c0.officer_role) : ''}`, esc(c0.title || ''), mail(c0), c0.linkedin ? link(c0.linkedin, 'LinkedIn') : '']
+  const main = c0 ? [`<b>${esc(c0.name)}</b>${newBadge(c0.officer_appointed)}${c0.owner_role ? ' ' + roleBadge(splitRole(c0.owner_role)[0]) : ''}${c0.officer_role ? ' ' + officerBadge(c0.officer_role) : ''}`, esc(c0.title || ''), mail(c0), c0.linkedin ? link(c0.linkedin, 'LinkedIn') : '']
       .filter(Boolean).join(' · ') + (contacts.length > 1 ? ` <span class="note">+${contacts.length - 1} more below</span>` : '')
     : 'No contact in Apollo' + (toFind.length ? ` <span class="note">· owner to find: ${esc(toFind[0].name)}</span>` : '');
   const checks = (r.chips || []).filter(c => c[1] === 'warn');
@@ -757,9 +762,9 @@ function showDetail(r, scroll = true) {
     + `<div style="margin-bottom:8px">${ownBits.join(' · ')}</div>`;
   if (contacts.length || toFind.length || offFind.length) h += '<div class="tbl-wrap"><table><thead><tr><th>Person</th><th>Role</th><th>Stake</th><th>Email</th><th>LinkedIn</th></tr></thead><tbody>'
     + contacts.map(c => { const [role, band] = splitRole(c.owner_role);
-      return `<tr><td>${c.owner_role ? '<b>' + esc(c.name) + '</b>' : esc(c.name)}</td><td>${esc(c.title || c.seniority || '–')}${c.owner_role ? ' ' + roleBadge(role) : ''}${c.officer_role ? ' ' + officerBadge(c.officer_role) : ''}</td><td>${c.owner_role ? stakeHtml(band) : '–'}</td><td>${mail(c) || '–'}</td><td>${link(c.linkedin, 'profile')}</td></tr>`; }).join('')
-    + toFind.map(x => `<tr><td>${esc(x.name)}${x.via && x.via !== 'direct' ? `<br><span class="note">through ${esc(x.via)}</span>` : ''}</td><td>${roleBadge(x.role)}${x.officer ? ' ' + officerBadge(x.officer) : ''}</td><td>${stakeHtml(x.band)}</td><td colspan="2" class="note">${toFindNote}</td></tr>`).join('')
-    + offFind.map(x => `<tr><td>${esc(x.name)}${x.appointed ? `<br><span class="note">since ${dmy(x.appointed)}</span>` : ''}</td><td>${officerBadge(x.role)}</td><td>–</td><td colspan="2" class="note">not in Apollo · owns no 25%+ stake</td></tr>`).join('')
+      return `<tr><td>${c.owner_role ? '<b>' + esc(c.name) + '</b>' : esc(c.name)}${newBadge(c.officer_appointed)}</td><td>${esc(c.title || c.seniority || '–')}${c.owner_role ? ' ' + roleBadge(role) : ''}${c.officer_role ? ' ' + officerBadge(c.officer_role) : ''}</td><td>${c.owner_role ? stakeHtml(band) : '–'}</td><td>${mail(c) || '–'}</td><td>${link(c.linkedin, 'profile')}</td></tr>`; }).join('')
+    + toFind.map(x => `<tr><td>${esc(x.name)}${newBadge(x.appointed)}${x.via && x.via !== 'direct' ? `<br><span class="note">through ${esc(x.via)}</span>` : ''}</td><td>${roleBadge(x.role)}${x.officer ? ' ' + officerBadge(x.officer) : ''}</td><td>${stakeHtml(x.band)}</td><td colspan="2" class="note">${toFindNote}</td></tr>`).join('')
+    + offFind.map(x => `<tr><td>${esc(x.name)}${newBadge(x.appointed)}${x.appointed ? `<br><span class="note">since ${dmy(x.appointed)}</span>` : ''}</td><td>${officerBadge(x.role)}</td><td>–</td><td colspan="2" class="note">not in Apollo · owns no 25%+ stake</td></tr>`).join('')
     + '</tbody></table></div>';
 
   // ---- 6. evidence: the source records, closed until opened

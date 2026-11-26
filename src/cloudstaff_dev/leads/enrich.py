@@ -254,6 +254,7 @@ def match_owner_contacts(leads, contacts):
     contacts["is_owner"] = [h is not None for h in hit]
     contacts["owner_role"] = [None if h is None else h["role"] + (f" ({h['band']})" if h.get("band") else "") for h in hit]
     contacts["officer_role"] = [None if h is None else h["role"] for h in ohit]
+    contacts["officer_appointed"] = [None if h is None else (h["appointed"] or None) for h in ohit]   # page marks it "new" if < 3 months
     # best contact: owners first (owner, co-owner, minority owner), each with officers (directors) before the rest;
     # then officers who own nothing; then the others in Apollo's seniority order
     contacts["_role_rank"] = [ROLE_ORDER.index(h["role"]) if h else 9 for h in hit]
@@ -267,11 +268,12 @@ def match_owner_contacts(leads, contacts):
     leads["officer_contacts"] = leads["account_id"].map(off.groupby("account_id")["name"].agg("; ".join))
     first = contacts.groupby("account_id").first()
     leads["best_officer_role"] = leads["account_id"].map(first["officer_role"])
+    leads["best_officer_appointed"] = leads["account_id"].map(first["officer_appointed"])
     have = {a: {person_key(n) for n in g["name"]} for a, g in contacts.groupby("account_id")}
     # named owners with no Apollo contact; each says whether they are also an officer
     to_find = []
     for a in leads["account_id"]:
-        miss = [{**v, **({"officer": officers[a][k]["role"]} if k in officers.get(a, {}) else {})}
+        miss = [{**v, **({"officer": officers[a][k]["role"], "appointed": officers[a][k]["appointed"]} if k in officers.get(a, {}) else {})}
                 for k, v in owners.get(a, {}).items() if k not in have.get(a, set())]
         to_find.append(json.dumps(miss, ensure_ascii=False) if miss else None)
     leads["owners_to_find"] = to_find
