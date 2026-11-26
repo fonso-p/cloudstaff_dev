@@ -1,6 +1,6 @@
 """Score the event classification against the labelled headlines in gold_events.csv. No database needed.
 
-    ../.venv/Scripts/python.exe eval/eval_events.py            (from the News Scraper folder)
+    .venv/Scripts/python.exe "News Scraper/eval/eval_events.py"            (from the repo root, or any folder)
 
 gold_events.csv: one row per distinct story. set = build (10 sample companies + the 100-company test, the data the rules
 and example headlines were developed on) or holdout (12 companies scraped afterwards and never used for development).
@@ -11,14 +11,13 @@ Add your own rows (or correct labels) and re-run after any change to classify.py
 """
 import csv
 import os
-import sys
 from collections import Counter
 
+from cloudstaff_dev.common.company_keys import core_name, name_pattern
+from cloudstaff_dev.signals.news import nlp
+from cloudstaff_dev.signals.news.classify import OTHER, classify
+
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(HERE))
-from news_scraper import nlp                       # noqa: E402
-from news_scraper.classify import OTHER, classify  # noqa: E402
-from news_scraper.names import core_name, name_pattern     # noqa: E402
 
 
 def main():

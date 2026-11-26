@@ -1,6 +1,17 @@
-# Built Account Priority Dashboard pages embed every account row (client names, scores, owners): never commit them.
-# Built by Marketing Intelligence/build_dashboard/build_dashboard.py
-Marketing Intelligence/outputs/html/*.html
+# Marketing Intelligence + signals: code and docs only. All data lives outside the repo (src/cloudstaff_dev/common/paths.py):
+# inputs, outputs and built pages in OneDrive Projects/Marketing Intelligence Priority, databases and register downloads in
+# ~/cloudstaff_data. These guard against old paths and stray copies (built pages embed client names and scores).
+Marketing Intelligence/outputs/
+Marketing Intelligence/**/*_Dashboard*.html
+Marketing Intelligence/**/*_Lead_Grades*.html
+News Scraper/data/
+News Scraper/out/
+News Scraper/checkpoints/
+News Scraper/apollo_emea/
+checkpoints/
+*.db
+*.db-shm
+*.db-wal
 
 # Client Propensity: the propensity workbook lists client names and scores: never commit it.
 # Built by Client Propensity/run_pipeline.py

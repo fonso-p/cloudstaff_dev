@@ -16,8 +16,8 @@ Model version and as-of date are in run_info.
 
 Files (config.OUTPUT_DIR, the local data folder outside the repo): <date>_Propensity_Extract.xlsx with every sheet,
 plus CSVs of the two feed tables and of score_definitions (what each score means, its window and how good it is).
-All four are also copied to config.DASHBOARD_FEED_DIR (the dashboard's local data
-folder), so the dashboard reads them from its own folder."""
+All four are also copied to config.EXTRACT_COPY_DIR (Marketing Intelligence's inputs/propensity), so the Priority
+notebook and lead grading read them from their own inputs folder."""
 import shutil
 from pathlib import Path
 
@@ -301,8 +301,8 @@ def write_extract(res, folder=None):
 
 
 def copy_to_dashboard(files, feed=None):
-    """Copies the extract files into the dashboard's local data folder (config.DASHBOARD_FEED_DIR), if set."""
-    feed = feed or config.DASHBOARD_FEED_DIR
+    """Copies the extract files into Marketing Intelligence's inputs (config.EXTRACT_COPY_DIR), if set."""
+    feed = feed or config.EXTRACT_COPY_DIR
     if feed is None or not Path(feed).is_dir():
         return []
     feed = Path(feed)

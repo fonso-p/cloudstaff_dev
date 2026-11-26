@@ -29,10 +29,10 @@ export_client_map.py                 # after the notebook: writes DATA_DIR/compe
 ```
 
 **`export_client_map.py` (added 18 Nov 2026)** turns the notebook's output into a reusable map for other projects:
-one row per competitor × client (`client_name`, `name_key` from `shared/company_keys.py`, `competitor`, row counts,
+one row per competitor × client (`client_name`, `name_key` from `cloudstaff_dev.common.company_keys`, `competitor`, row counts,
 `client_locations`, `source` = extracted / campaign field, `status` = confirmed / pending, `extracted_on`). Competitors'
 own names and brands are dropped (`COMPETITOR_BRANDS`: "The Outsourced Accountant", "Outsource Accountant",
-"MAG Solutions"…). No candidate data leaves the notebook. Read by `Marketing Intelligence/apollo_lead_grading`
+"MAG Solutions"…). No candidate data leaves the notebook. Read by lead grading (`cloudstaff_dev.leads`, docs in `Marketing Intelligence/lead_grading/`)
 (Competitor client points). First full run (18 Nov): 18,302 rows → 2,060 extracted pairs; map 3,359 rows, 2,931 clients
 (1,433 confirmed); 569 Company texts waiting in Needs Review, 1,862 client names undecided in the terms file.
 Matched to the Priority Score's accounts: 12 confirmed (all existing Cloudstaff clients, e.g. Alexilum / TOA Global,

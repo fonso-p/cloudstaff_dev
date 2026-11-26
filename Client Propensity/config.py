@@ -11,10 +11,11 @@ import pandas as pd
 PROJECT_DIR = Path(__file__).resolve().parent
 
 # The raw files are confidential and stay OUTSIDE the repo. To use another folder, set the
-# MIA_DATA_DIR environment variable instead of editing this line.
-DATA_DIR = Path(os.environ.get(
-    "MIA_DATA_DIR",
-    r"C:\Users\Alfonso(FonsoP)Panli\Desktop\Projects\Client Propensity\Data"))
+# MIA_DATA_DIR environment variable instead of editing this line. Default: Projects/Client Propensity/Data, found by
+# cloudstaff_dev.common.paths (OneDrive Desktop or plain Desktop, whichever exists).
+from cloudstaff_dev.common import paths as _paths   # noqa: E402
+
+DATA_DIR = Path(os.environ.get("MIA_DATA_DIR", _paths.CLIENT_PROPENSITY_DATA))
 
 # file name, sheet, columns to read (None = all). Reading only the needed columns keeps personal
 # data (addresses, birthdays, etc.) out of memory and makes loading much faster.
@@ -140,8 +141,7 @@ TEST_ACCOUNT_PATTERN = r"^test|\bqa\b"     # MyStaff client names treated as tes
 EXTRACT_SOURCE_DATES = {                   # extract date of each raw file (step 1: recorded, not yet aligned)
     "engagement": "2026-10-07", "mystaff": "2026-10-05", "staffcentral": "2026-09-14"}
 
-# The extract (xlsx + 2 CSVs) is also copied here, so the Account Priority Dashboard reads every input from its own
-# local data folder (outside the repo). None = don't copy. Override with the MIA_DASHBOARD_DIR environment variable.
+# The extract (xlsx + CSVs) is also copied to EXTRACT_COPY_DIR (below), Marketing Intelligence's inputs folder.
 # Current seats when scoring clients TODAY (which seat milestone applies, and the "seats now" model input).
 # "dashboard":  the Account Priority Dashboard's cs_staff_current (MyStaff Total Staff), read from the newest
 #               DASHBOARD_DATA_GLOB file in DASHBOARD_FEED_DIR; clients it doesn't list fall back to the engagement list.
@@ -150,19 +150,20 @@ EXTRACT_SOURCE_DATES = {                   # extract date of each raw file (step
 CURRENT_SEATS_SOURCE = "dashboard"
 DASHBOARD_DATA_GLOB  = "priority_company_info_combined*.xlsx"
 
-DASHBOARD_FEED_DIR = Path(os.environ.get(
-    "MIA_DASHBOARD_DIR",
-    r"C:\Users\Alfonso(FonsoP)Panli\Desktop\Projects\Marketing Intelligence Priority\Data"))
+# Where the Priority notebook saves priority_company_info_combined*.xlsx (Marketing Intelligence outputs).
+DASHBOARD_FEED_DIR = Path(os.environ.get("MIA_DASHBOARD_DIR", _paths.ACCOUNT_PRIORITY_OUT))
+# Where step 5 copies the extract for Marketing Intelligence to read (its inputs/propensity). None = don't copy.
+EXTRACT_COPY_DIR = Path(os.environ.get("MIA_EXTRACT_COPY_DIR", _paths.PROPENSITY_INPUTS))
 
 # Company size of past clients (employees), for the new-client seat-growth models (decision 2026-11-26).
-# Source: the newest client_size_<date>.csv written by Marketing Intelligence/apollo_lead_grading/client_size.py from
+# Source: the newest client_size_<date>.csv written by client_size.py (this folder) from
 # the researched AMER / APAC growth-opportunity files. Size is TODAY's headcount, not at signing (accepted). Our own
 # seats are taken out: texts that say they include Cloudstaff / offshore staff are not used, onshore-only counts are
 # used as they are, and every other count has the client's peak Cloudstaff seats subtracted.
 # Test (2026-11-26, prospect-style, same clients): 5+ seats in 1y AUC 0.57 -> 0.68, 10+ in 2y 0.61 -> 0.79, second
 # department no gain (so the branch model doesn't use size). Revenue adds nothing beyond employees (corr 0.87): not used.
 # None = off (models as before, every client "Unknown").
-CLIENT_SIZE_DIR = Path(os.environ.get("MIA_CLIENT_SIZE_DIR", DASHBOARD_FEED_DIR / "Yoga Data"))
+CLIENT_SIZE_DIR = Path(os.environ.get("MIA_CLIENT_SIZE_DIR", _paths.CLIENT_SIZE_OUT))
 CLIENT_SIZE_GLOB = "client_size_*.csv"
 SIZE_BAND_EDGES = [0, 10, 50, 200, float("inf")]           # employees; same cut points as the lead grades' bands
 SIZE_BAND_LABELS = ["1-10", "11-50", "51-200", "201+"]     # 201-500 and 500+ merged: too few clients to split

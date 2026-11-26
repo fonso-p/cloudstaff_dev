@@ -61,7 +61,7 @@ The raw files are confidential and stay outside the repo (`config.DATA_DIR`, or 
 
 ## 1.4 Industry and region (Account Priority Dashboard rules)
 
-These copy `Marketing Intelligence/format data/format_priority_data.ipynb` §0b, so both projects describe a client the same way. The shared copy of the industry rules, with the reasoning behind each bucket, is `references/mystaff_industry/` at the repo root.
+These copy `Marketing Intelligence/account_priority/format_priority_data.ipynb` §0b, so both projects describe a client the same way. The shared copy of the industry rules, with the reasoning behind each bucket, is `references/mystaff_industry/` at the repo root.
 
 | Field | Rule |
 |---|---|
@@ -183,7 +183,7 @@ uv sync                                                       # once, from the r
 uv run python "Client Propensity/run_pipeline.py"
 ```
 
-This writes `<date>_Client_Propensity_Scorecards.xlsx` and `<date>_Propensity_Extract.xlsx` (+ two CSVs) to `config.OUTPUT_DIR`, which defaults to the local data folder (`config.DATA_DIR`, outside the repo; override with `MIA_OUTPUT_DIR`). The extract (xlsx + CSVs) is also copied to the dashboard's local data folder, `config.DASHBOARD_FEED_DIR` (§3.1). The first run reads the Excel sources (about 45 s). Later runs use pickles in `DATA_DIR/_pipeline_cache`, which refresh automatically when a source file changes. **Close the output files in Excel before rerunning**, because Excel locks them.
+This writes `<date>_Client_Propensity_Scorecards.xlsx` and `<date>_Propensity_Extract.xlsx` (+ two CSVs) to `config.OUTPUT_DIR`, which defaults to the local data folder (`config.DATA_DIR`, outside the repo; override with `MIA_OUTPUT_DIR`). The extract (xlsx + CSVs) is also copied to Marketing Intelligence's inputs folder, `config.EXTRACT_COPY_DIR` (`<MI>/inputs/propensity/`, §3.1). The first run reads the Excel sources (about 45 s). Later runs use pickles in `DATA_DIR/_pipeline_cache`, which refresh automatically when a source file changes. **Close the output files in Excel before rerunning**, because Excel locks them.
 
 From Python or the notebook:
 
@@ -232,8 +232,8 @@ Every step is a set of functions that take DataFrames and return DataFrames, so 
 | Model inputs | `PROFILE` / `ORG_NUM` / `ORG_CAT` in `step4_propensity.py`. Then check the AUCs and band tables in the workbook's "Model checks" sheet |
 | New raw extracts | Drop them in `DATA_DIR`, update the file names in `config.RAW_FILES` and the dates in `EXTRACT_SOURCE_DATES` |
 | Pin a run date | `config.AS_OF_DATE = "2026-11-12"` |
-| Where current seats come from | `CURRENT_SEATS_SOURCE` (`"dashboard"` or `"engagement"`), `DASHBOARD_DATA_GLOB` |
-| Where the dashboard extract is copied | `config.DASHBOARD_FEED_DIR` (or the `MIA_DASHBOARD_DIR` environment variable); `None` = no copy |
+| Where current seats come from | `CURRENT_SEATS_SOURCE` (`"dashboard"` or `"engagement"`), `DASHBOARD_DATA_GLOB`, read from `config.DASHBOARD_FEED_DIR` (default `<MI>/outputs/account_priority/`, or the `MIA_DASHBOARD_DIR` environment variable) |
+| Where the dashboard extract is copied | `config.EXTRACT_COPY_DIR` (default `<MI>/inputs/propensity/`, or the `MIA_EXTRACT_COPY_DIR` environment variable); `None` = no copy |
 
 ## 2.6 Checks built in
 
@@ -249,11 +249,11 @@ The repo's shared `.venv` (Python 3.12, pandas 3, scikit-learn, lifelines, openp
 
 # Part 3: Handoff: adding the scores to the Account Priority Dashboard
 
-**Status: proof of concept, connected.** The dashboard notebook (`Marketing Intelligence/format data/format_priority_data.ipynb`, stage 7b) now reads this extract: `PROPENSITY_MODE = "real"` uses it, `"mock"` generates synthetic values, `"off"` skips it. The two pipelines read MyStaff extracts from different dates (§3.8). That's accepted for now.
+**Status: proof of concept, connected.** The dashboard notebook (`Marketing Intelligence/account_priority/format_priority_data.ipynb`, stage 7b) now reads this extract: `PROPENSITY_MODE = "real"` uses it, `"mock"` generates synthetic values, `"off"` skips it. The two pipelines read MyStaff extracts from different dates (§3.8). That's accepted for now.
 
 ## 3.1 What is ready
 
-Step 5b writes `<date>_Propensity_Extract.xlsx` and two CSVs to `config.OUTPUT_DIR`, then copies all three to the dashboard's local data folder (`config.DASHBOARD_FEED_DIR`, default `Desktop\Projects\Marketing Intelligence Priority\Data`; override with `MIA_DASHBOARD_DIR`, or set it to `None` to skip the copy). The dashboard reads them from its own folder. The dashboard notebook reads them from there (stage 7b; rules in its `BUSINESS_RULES.md` §11.1b).
+Step 5b writes `<date>_Propensity_Extract.xlsx` and two CSVs to `config.OUTPUT_DIR`, then copies all three to Marketing Intelligence's inputs folder (`config.EXTRACT_COPY_DIR`, default `<MI>/inputs/propensity/` with `<MI>` = OneDrive `Desktop\Projects\Marketing Intelligence Priority`, from `cloudstaff_dev.common.paths.PROPENSITY_INPUTS`; override with `MIA_EXTRACT_COPY_DIR`, or set it to `None` to skip the copy). The dashboard reads them from that folder. The dashboard notebook reads them from there (stage 7b; rules in its `BUSINESS_RULES.md` §11.1b).
 
 `propensity_accounts` is deliberately narrow: the client keys (`account_id`, `shortcode`, `crm_company_id`) and the seat and department metrics. It carries no descriptive columns (no industry or region): the dashboard keeps its own. The model version and as-of date are in `run_info`.
 
@@ -419,7 +419,7 @@ Combinations with `priority_score` can't be judged until the dashboard's signals
 | Same extracts | When going live, use the same MyStaff (and ideally engagement) extract on both sides. This project needs inactive clients too (training history), so it needs the full MyStaff export, not an active-only copy |
 | Versioning | The model version (`run_info`) changes whenever inputs, windows or taxonomy change. Keep the previous extract until the new one is checked |
 | Retraining check | After each refresh compare AUCs and band rates in `run_info` and "Model checks" with the last run. A drop of more than 0.05 AUC needs a look |
-| Confidentiality | The extract lists clients and scores: it lives only in the two local data folders (`config.OUTPUT_DIR`, `config.DASHBOARD_FEED_DIR`), never in git |
+| Confidentiality | The extract lists clients and scores: it lives only in the two local data folders (`config.OUTPUT_DIR`, `config.EXTRACT_COPY_DIR`), never in git |
 
 ## 3.9 Open decisions
 

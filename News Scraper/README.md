@@ -12,9 +12,27 @@ It is a zero-budget POC:
 - Runs locally.
 - Uses only free sources.
 - Needs no new packages: it uses `requests` and `beautifulsoup4`, which are already in the repo's `.venv`.
-- Stores everything in one SQLite file (`data/news.db`, shared by both modes).
+- Stores everything in one SQLite file (`~/cloudstaff_data/work/signals/news.db` by default, shared by both modes; a lead list has its own, see below).
 
-This folder used to be `Marketing Intelligence/news_scraper/`. It reads the scoring settings from `../Marketing Intelligence/reference materials/data/` and the industry groups from `../references/mystaff_industry/`.
+**Where it lives (since 26 Nov 2026).** The code is the `cloudstaff_dev.signals` package (`src/cloudstaff_dev/signals/`), installed in the repo's `.venv`; this folder keeps the docs, `sample_companies.csv`, `sample_segments.csv` and `eval/`. It used to be `News Scraper/news_scraper/` (and before that `Marketing Intelligence/news_scraper/`). Layout:
+
+| Old | New |
+|---|---|
+| `news_scraper/__main__.py`, `http.py`, `store.py`, `identity.py`, `profile.py` | `src/cloudstaff_dev/signals/` |
+| `news_scraper/sources.py`, `pipeline.py`, `classify.py`, `nlp.py`, `event_examples.py`, `check_sheet.py`, `testset.py` | `src/cloudstaff_dev/signals/news/` |
+| `news_scraper/jobs.py`; `apollo_emea/adzuna_check.py` | `signals/jobs/careers.py`; `signals/jobs/adzuna.py` |
+| `news_scraper/registers.py`; `apollo_emea/cqc.py`, `contracts.py`, `ownership.py`, `officers.py` | `signals/registers/filings.py`; `signals/registers/` (same names) |
+| `news_scraper/segment.py`, `sectors.py`, `relevance.py`, `segment_sources.csv` | `signals/segments/` |
+| `article_reader/` | `signals/reader/` |
+| `news_scraper/names.py` | merged into `src/cloudstaff_dev/common/company_keys.py` |
+| `tests/` | `tests/signals/` at the repo root |
+| `.env` | the repo-root `.env` (read by `cloudstaff_dev.common.env`) |
+| `data/news.db` | `~/cloudstaff_data/work/signals/news.db` (not synced) |
+| `data/registers/`, `data/models/` | `~/cloudstaff_data/cache/registers/`, `~/cloudstaff_data/cache/models/` |
+| `out/` | segment outputs: `<MI>/outputs/segments/`; other sample-run output: `~/cloudstaff_data/work/signals/out/` |
+| `apollo_emea/` | `Marketing Intelligence/lead_lists/apollo_emea/` (see [COLLECTING.md](../Marketing%20Intelligence/lead_lists/apollo_emea/COLLECTING.md)) |
+
+`<MI>` = OneDrive `Desktop/Projects/Marketing Intelligence Priority`. All folders come from `cloudstaff_dev.common.paths`. It reads the scoring settings from `Marketing Intelligence/account_priority/fixtures/scoring_settings.json` and the industry groups from `references/mystaff_industry/`.
 
 ## How the data flows
 
@@ -24,13 +42,13 @@ Every command reads from and writes to the same SQLite file. `export` is the onl
 flowchart LR
     subgraph IN["Inputs"]
         CSV["companies CSV<br/>name, website, location,<br/>country, employees, ticker"]
-        SEG["sample_segments.csv<br/>segment_sources.csv"]
+        SEG["sample_segments.csv<br/>segments/segment_sources.csv"]
     end
 
     subgraph COLLECT["Collect (company mode)"]
         RUN["run<br/>Google News RSS, Bing,<br/>company newsroom feed"]
         PROF["profile<br/>company card from<br/>its website"]
-        READ["read / --read-articles<br/>article text<br/>(article_reader)"]
+        READ["read / --read-articles<br/>article text<br/>(signals.reader)"]
         JOBS["jobs<br/>careers page,<br/>job-system feeds"]
         FIL["filings<br/>ASIC, Companies House,<br/>Gazette"]
         NLP["nlp run<br/>spaCy entities + events,<br/>embeddings, zero-shot"]
@@ -42,11 +60,11 @@ flowchart LR
         SEXP["segment export<br/>region + industry scoring,<br/>themes, trend"]
     end
 
-    DB[("data/news.db<br/>articles, texts, cards,<br/>job snapshots, registers,<br/>NLP cache")]
+    DB[("news.db<br/>articles, texts, cards,<br/>job snapshots, registers,<br/>NLP cache")]
 
     EXP["export<br/>judge + classify<br/>(next diagram)"]
 
-    subgraph OUT["out/"]
+    subgraph OUT["--out folder"]
         EV["signal_events.csv<br/>news + jobs + filings"]
         REV["review.csv<br/>rejected, with reason"]
         SUM["company_summary.csv<br/>one row per company"]
@@ -100,12 +118,16 @@ flowchart TD
     L --> M["company_summary.csv: news_signal =<br/>high-confidence event first,<br/>then strength x recency"]
 ```
 
-## Run it (from this folder)
+## Run it (from any folder)
+
+`python` = the repo's `.venv/Scripts/python.exe` (`cloudstaff_dev` is installed there, editable). CSV paths below are from the repo root.
 
 ```bash
-../.venv/Scripts/python.exe -m news_scraper run --companies sample_companies.csv     # scrape
-../.venv/Scripts/python.exe -m news_scraper export                                   # write out/*.csv
+python -m cloudstaff_dev.signals run --companies "News Scraper/sample_companies.csv"   # scrape
+python -m cloudstaff_dev.signals export                                                # write ~/cloudstaff_data/work/signals/out/*.csv
 ```
+
+A lead list (e.g. the Apollo EMEA leads) is collected by `python -m cloudstaff_dev.leads run <list>`, which runs these commands with the list's own `--companies`, `--db` and `--out`.
 
 | Option | What it does |
 |---|---|
@@ -115,20 +137,20 @@ flowchart TD
 | `--sources google,bing,newsroom` | Which sources to use (see below). Add `gdelt` to include it. |
 | `--workers 6` | Companies processed in parallel. Each source still has its own rate limit, so adding workers does not make any source go faster. |
 
-**Rate limits (`news_scraper/http.py`):** one request per host every 1–1.3 s, shared by all threads. A 429 or 5xx is retried with exponential backoff, or after the site's `Retry-After` if it sends one (over 120 s and we give up on that page). The backoff holds the whole host, not just the thread that hit it. Errors a retry can't fix (bad SSL certificate, unknown domain, redirect loop) fail at once. `robots.txt` is fetched once per site per run.
+**Rate limits (`signals/http.py`):** one request per host every 1–1.3 s, shared by all threads. A 429 or 5xx is retried with exponential backoff, or after the site's `Retry-After` if it sends one (over 120 s and we give up on that page). The backoff holds the whole host, not just the thread that hit it. Errors a retry can't fix (bad SSL certificate, unknown domain, redirect loop) fail at once. `robots.txt` is fetched once per site per run.
 | `--limit N` | Only the first N companies, for testing. |
 
 ## Reading the full article (optional)
 
-Reading full articles is handled by **`article_reader/`**, a separate package that turns a URL into clean article text. It does not import `news_scraper`, and `news_scraper` only loads it when reading is switched on.
+Reading full articles is handled by **`signals/reader/`** (was `article_reader/`), a separate subpackage that turns a URL into clean article text. It does not import the rest of the scraper, and the scraper only loads it when reading is switched on.
 
 ```bash
 # switched on during a scrape: reads the newest matched articles that have no text yet
-../.venv/Scripts/python.exe -m news_scraper run --companies sample_companies.csv --read-articles [--read-max-per-company 10] [--read-min-match 0.6]
+python -m cloudstaff_dev.signals run --companies "News Scraper/sample_companies.csv" --read-articles [--read-max-per-company 10] [--read-min-match 0.6]
 # or afterwards, for articles already scraped
-../.venv/Scripts/python.exe -m news_scraper read [--max-per-company 10]
+python -m cloudstaff_dev.signals read [--max-per-company 10]
 # or on its own, for any URL
-../.venv/Scripts/python.exe -m article_reader https://example.com/some-article [--json]
+python -m cloudstaff_dev.signals.reader https://example.com/some-article [--json]
 ```
 
 **How it reads (free: `requests` + BeautifulSoup only)**
@@ -186,26 +208,26 @@ Only `company_name` is required.
 | `newsroom` | Whatever the site publishes | The company's own RSS/Atom feed, found once from the website and re-checked every 30 days. Skipped when there is no website. On the test list, 2 of 7 websites had a feed. |
 | `gdelt` | Last ~90 days | **Opt-in.** GDELT allows only one request at a time, 5+ seconds apart. From this network it returned "rate limited" even 12 seconds apart, so it is off by default. |
 
-## Output (`out/`)
+## Output (`--out`; default `~/cloudstaff_data/work/signals/out/`)
 
 - **`company_summary.csv`**: one row per company, in the scoring's terms.
-  - `news_signal` and `news_signal_date` come from the strongest event: category strength × recency, read from `Marketing Intelligence/reference materials/data/scoring_settings.json`.
+  - `news_signal` and `news_signal_date` come from the strongest event: category strength × recency, read from `Marketing Intelligence/account_priority/fixtures/scoring_settings.json`.
   - `news_signal` blank = **not checked** (the score uses the baseline). `news_signal` "None" = **checked, found nothing** (a real zero). These are the two kinds of "empty" in the scoring model.
   - It also includes the headline and link, article counts, which sources worked, failed or were skipped, and a note when there is no website.
 - **`signal_events.csv`**: every matched article, with category, strength, recency, match score and link.
 - **`review.csv`**: possible matches (match score 0.4–0.6) to check by hand.
 
-Articles are classified again on every export, so changes to the rules in `classify.py` apply without scraping again.
+Articles are classified again on every export, so changes to the rules in `signals/news/classify.py` apply without scraping again.
 
-## NLP layer (`nlp.py`): is it this company, and what happened?
+## NLP layer (`signals/news/nlp.py`): is it this company, and what happened?
 
 Free, CPU-only models on top of the keyword rules (dependency group `nlp`: spaCy, sentence-transformers, a small zero-shot model, SetFit). Install with `uv sync --group nlp`.
 
 ```bash
-../.venv/Scripts/python.exe -m news_scraper nlp run   [--scope company|segment|all] [--stages entities,events,embed,zeroshot]
-../.venv/Scripts/python.exe -m news_scraper nlp label --out out/labels.csv --n 200     # a sheet to label by hand
-../.venv/Scripts/python.exe -m news_scraper nlp train --labels out/labels.csv          # after labelling
-../.venv/Scripts/python.exe -m news_scraper export                                     # picks the results up
+python -m cloudstaff_dev.signals nlp run   [--scope company|segment|all] [--stages entities,events,embed,zeroshot]
+python -m cloudstaff_dev.signals nlp label [--out <file>.csv] --n 200     # a sheet to label by hand (default ~/cloudstaff_data/work/signals/out/labels.csv)
+python -m cloudstaff_dev.signals nlp train --labels <file>.csv           # after labelling
+python -m cloudstaff_dev.signals export                                  # picks the results up
 ```
 
 | Technique | What it does | Speed (laptop CPU) |
@@ -231,15 +253,15 @@ Free, CPU-only models on top of the keyword rules (dependency group `nlp`: spaCy
 - fits a **logistic combiner** for "about this company" over the evidence (identity points, entity verdict, mention count, fit, ambiguity…), reports cross-validated precision and recall and the weights it learned. Once saved it overrides the rules when confident (p ≥ 0.7 to let an article in, ≤ 0.3 to keep it out).
 - trains a **SetFit** category classifier when every category has 8+ labelled examples, and applies it to articles still left as "Other".
 
-Models are saved to `data/models/`. Delete the files there to go back to rules only.
+Models are saved to `~/cloudstaff_data/cache/models/` (SetFit training checkpoints to `~/cloudstaff_data/cache/models/setfit_checkpoints/`, no longer `./checkpoints`). Delete the files there to go back to rules only.
 
-**Measured against 177 articles labelled by Claude** (`out/labels_sample_companies_claude.csv`, `out/labels_small_companies_claude.csv`; one labeller, from the headline and lead, no second opinion, and sampled where the signals disagree, so treat as a first read, not ground truth):
+**Measured against 177 articles labelled by Claude** (`labels_sample_companies_claude.csv`, `labels_small_companies_claude.csv`, were in `out/`, now `~/cloudstaff_data/work/signals/out/`; one labeller, from the headline and lead, no second opinion, and sampled where the signals disagree, so treat as a first read, not ground truth):
 - **Counted articles:** 127 of 137 were really about the company (93%). The 10 wrong ones were passing mentions of large brands ("Claude rolls out apps from Asana and Canva", "MC&V wins Canva work") and generic hiring blog posts from a company's site.
 - **Review pile:** 0 of 40 rejected articles were actually about the company, so no false rejections in the sample.
 - **Category:** the rules agreed with the labeller on 119 of 127 (most are "Other"). On the 17 articles with a real event the rules got 14; the NLP event got 7. NLP also found an "event" in 57 of the 110 articles the labeller called "Other". So `nlp_event` is useful for the details of an event the rules already found (job counts, amounts, roles), but not as a source of categories, which is why it is gated so tightly.
 - **Learned combiner:** cross-validated precision 0.93, recall 0.96, against the rules' 0.93 and 1.00 on the same rows. No gain at this size, so no model is saved; retrain when there are 200+ labels with more mistakes in them.
 
-### Event confidence (`event_examples.py`, `nlp.combine_event`)
+### Event confidence (`signals/news/event_examples.py`, `nlp.combine_event`)
 
 A second classifier checks the keyword rules. It is a logistic regression over sentence embeddings (mpnet, 12 ms per headline), trained only on the example headlines written in `event_examples.py`, with the company name replaced by "Acme" so it reads the event, not the brand. It needs no labelled articles, and it runs at export on counted news articles (cached per article in `nlp_event_probs`).
 
@@ -255,7 +277,7 @@ Each can overrule the other when sure, and every event gets an `event_confidence
 - `company_summary.csv` picks a **high-confidence event first** for `news_signal`, and shows `signal_confidence`. For scoring, treat `high` as reliable and `medium` / `low` as leads to check.
 - To teach it a missed phrasing, add an example line to `event_examples.py` (e.g. "{Co} wins banking licence in {City}" under Expansion). The model retrains itself on the next export.
 
-**Measured** (`eval/eval_events.py`, labels in `eval/gold_events.csv`, 865 distinct stories labelled by Claude from the headline):
+**Measured** (`News Scraper/eval/eval_events.py`, labels in `eval/gold_events.csv`, 865 distinct stories labelled by Claude from the headline):
 
 | | Rules alone | Rules + classifier |
 |---|---|---|
@@ -284,20 +306,20 @@ The holdout is the honest estimate: about two in three events are right and abou
 Two more commands add non-news signals for the same companies. `export` merges everything into `signal_events.csv`, with a `signal_type` column: `news`, `jobs` or `filing`. `news_signal` in `company_summary.csv` still comes from news only, so its meaning in the score doesn't change. Jobs and filings get their own columns.
 
 ```bash
-../.venv/Scripts/python.exe -m news_scraper jobs    --companies companies.csv            # AU, UK, US alike
-../.venv/Scripts/python.exe -m news_scraper filings --companies companies.csv [--registers au,uk]
-../.venv/Scripts/python.exe -m news_scraper export
+python -m cloudstaff_dev.signals jobs    --companies companies.csv            # AU, UK, US alike
+python -m cloudstaff_dev.signals filings --companies companies.csv [--registers au,uk]
+python -m cloudstaff_dev.signals export
 ```
 
 All sources are free and need no API key. The CSV can also have an `employees` (or `employee_count`) column; see the input table.
 
-### Jobs (`jobs.py`)
+### Jobs (`signals/jobs/careers.py`, was `jobs.py`)
 
 For each company with a website (robots.txt respected):
 1. **Find the careers page**: a link on the home page with short "Careers", "Jobs" or "Join us" text, or a URL with a careers path segment (`/careers`, `/join-our-team`…), else a common path. Whole segments only, so `/job-costing` or `/jobsite-delivery` don't count. A guessed path that redirects to the home page or to an unrelated page (WordPress sends an unknown `/careers` to the closest-sounding post) is rejected. Plus one "View open roles" link from there.
 2. **Read a job system's public feed** if the page uses one: Greenhouse, Lever, Ashby, Workable, SmartRecruiters, BambooHR, Recruitee, Personio, Rippling, Pinpoint, Breezy, Teamtailor, Workday, UltiPro (UKG Pro), Paylocity or JobAdder (client job board). This gives every open role with title, department, city and usually the date posted.
 3. **Otherwise read `JobPosting` data**, the structured data Google for Jobs uses, from the careers page and up to 25 job pages it links to.
-4. **Browser pass.** A careers page with nothing readable in its HTML (the list is built with JavaScript) is opened in headless Chromium (Playwright) and checked again. That includes feeds that only appear once the page runs, JobPosting data, and job links on the company's own job system (iSolvedHire, Jobvite, iCIMS, Dayforce, Employment Hero, PageUp…), whose link text is the job title (no date). It runs one page at a time after the main pass; `--no-browser` skips it. It needs the `browser` dependency group and `../.venv/Scripts/python -m playwright install chromium`. Pages showing a bot check (Cloudflare) are left alone and noted.
+4. **Browser pass.** A careers page with nothing readable in its HTML (the list is built with JavaScript) is opened in headless Chromium (Playwright) and checked again. That includes feeds that only appear once the page runs, JobPosting data, and job links on the company's own job system (iSolvedHire, Jobvite, iCIMS, Dayforce, Employment Hero, PageUp…), whose link text is the job title (no date). It runs one page at a time after the main pass; `--no-browser` skips it. It needs the `browser` dependency group and `python -m playwright install chromium`. Pages showing a bot check (Cloudflare) are left alone and noted.
 
 Job boards (SEEK, Indeed, LinkedIn) are recorded in `jobs_method` as `seen: …` but never read; their terms restrict automated access.
 
@@ -310,7 +332,7 @@ Job boards (SEEK, Indeed, LinkedIn) are recorded in `jobs_method` as `seen: …`
 
 Each run stores a snapshot (`job_snapshots`) and every role seen (`job_postings`). `signal_events.csv` gets one row per company: `Hiring`, `Hiring spike` or `No open roles`.
 
-### Filings (`registers.py`)
+### Filings (`signals/registers/filings.py`, was `registers.py`)
 
 | Country | Source | What it gives |
 |---|---|---|
@@ -320,7 +342,7 @@ Each run stores a snapshot (`job_snapshots`) and every role seen (`job_postings`
 | UK | The Gazette insolvency notices (searched per company) | Winding-up, administration and liquidator notices |
 | US | Not covered | SEC EDGAR needs a contact email in every request. It can be added later. |
 
-The downloads (about 150 MB for AU, 470 MB for UK) are cached in `data/registers/` and replaced when the next monthly file comes out.
+The downloads (about 150 MB for AU, 470 MB for UK) are cached in `~/cloudstaff_data/cache/registers/` and replaced when the next monthly file comes out.
 
 **Matching.** Company names are unique in both registers, so an exact legal-name match is the company. Names are compared after normalising ("Pty. Ltd." = "Proprietary Limited" = "PTY LTD", "&" = "and").
 - The ACN is read from names like "A.C.N. 633 889 433 Pty Ltd".
@@ -345,7 +367,7 @@ The country comes from the `country` column, else the website (.au / .uk).
 
 **Better news matching too.** The registered and trading names are added to the identity evidence used to confirm news matches, the same as names found on the company's website. "Caesars" in an article now confirms Barga Pty Ltd.
 
-## Company card (`profile.py`)
+## Company card (`signals/profile.py`)
 
 Each company with a website gets a card, built from its home page and About page and rebuilt every 30 days. It holds:
 - the site name, legal name and alternative names (e.g. SafetyCulture's site now says "Mitti")
@@ -355,12 +377,12 @@ Each company with a website gets a card, built from its home page and About page
 The card is built automatically during `run`. To see what was found:
 
 ```bash
-../.venv/Scripts/python.exe -m news_scraper profile --companies sample_companies.csv [--refresh]
+python -m cloudstaff_dev.signals profile --companies "News Scraper/sample_companies.csv" [--refresh]
 ```
 
-## Does an article count? (`identity.py`, applied at export)
+## Does an article count? (`signals/identity.py`, applied at export)
 
-Every rule that decides whether an article is about *this* company lives in `identity.py`, with its thresholds at the top of the file. `export` calls one function, `identity.judge()`, per article. The rules run in this order, and the first objection wins:
+Every rule that decides whether an article is about *this* company lives in `signals/identity.py`, with its thresholds at the top of the file. `export` calls one function, `identity.judge()`, per article. The rules run in this order, and the first objection wins:
 
 1. **The company's own website** (newsroom): always counts.
 2. **Name rules**: the evidence and name-type checks below.
@@ -373,8 +395,8 @@ The rule that decided is written to the `identity_rule` column of `signal_events
 
 **Measure any change** before trusting it:
 ```
-../.venv/Scripts/python.exe eval/eval_identity.py [--db data/news.db] [--show errors|all]   # precision / recall against hand labels, by rule
-../.venv/Scripts/python.exe -m unittest discover -s tests                                  # the example cases each rule was written for
+python "News Scraper/eval/eval_identity.py" [--db ~/cloudstaff_data/work/signals/news.db] [--show errors|all]   # precision / recall against hand labels, by rule
+.venv/Scripts/python.exe -m unittest discover -s tests -t .      # from the repo root: the example cases each rule was written for (tests/signals/)
 ```
 The eval scores labels from `eval/gold_identity.csv` and `eval/gold_events.csv` against the articles in the database you point it at. On the 10 sample companies (16 Nov 2026) it scores precision 95.4% and recall 100% on 702 news articles. These are mostly well-known names, and it is the data the rules were built on, so treat that as a ceiling.
 
@@ -420,7 +442,7 @@ Two more checks apply only to **small companies** (`employees` under 1,000, no t
 
 ## How it decides
 
-- **The quick match score at scrape time** (`Identity.score` in `identity.py`) decides what is stored. Each article gets a score from 0 to 1:
+- **The quick match score at scrape time** (`Identity.score` in `signals/identity.py`) decides what is stored. Each article gets a score from 0 to 1:
   - name in the headline: +0.6
   - name in the summary only: +0.4
   - website domain mentioned: +0.3
@@ -428,7 +450,7 @@ Two more checks apply only to **small companies** (`employees` under 1,000, no t
   - the company's own website: 1.0
 
   Ticker, legal name or a founder count like the domain (+0.3), and card keywords like location (+0.15). A score of 0.4 or more is stored; at export, an article also needs 0.6 or more, plus the identity checks above, to count.
-- **What kind of news?** (`classify.py`) Keyword rules sort each article into the scoring categories: Funding round, PE buyout, M&A, Expansion / new office, Restructuring, Leadership change, otherwise "Other / Unclassified".
+- **What kind of news?** (`signals/news/classify.py`) Keyword rules sort each article into the scoring categories: Funding round, PE buyout, M&A, Expansion / new office, Restructuring, Leadership change, otherwise "Other / Unclassified".
   - **Added 18 Nov 2026:** two more categories, **Contract / partnership win** ("wins contract", "names X as its provider", "partners with"; sponsorships excluded) and **Product launch** ("launches / unveils / introduces … platform, app, service"), plus phrasings missed on UK care news ("adds six homes to portfolio", "takes 3,442 sq ft office", "development pipeline", "80-bed scheme", "secures £13m backing", "names new commercial lead", "strengthens leadership team"). Example headlines were added to `event_examples.py` the same way. Their strengths default to 0.5 and 0.3 (`classify.DEFAULT_STRENGTH`) until `scoring_settings.json` has them.
   - **Measured** with `eval/eval_events.py`, treating the two new categories as Other so the numbers compare with the labels: build set precision 0.89 → 0.88, recall 0.80 → 0.79; holdout precision 0.66 → 0.66 (rules alone 0.60 → 0.64), recall 0.55 → 0.55. Unit tests: 33 pass. The labels have no examples of the new categories yet, so their own accuracy is unmeasured.
   - The rules exclude common false positives, such as "raises price target", "X-backed start-up raises", "stocks to buy" and "talent acquisition".
@@ -464,10 +486,10 @@ In order of value for effort. Each one has a way to measure it: re-run `eval/eva
 **1. Make it safe and checkable (days)**
 1. **Commit the work.** Nothing in this folder is committed yet, and `pipeline.py` was once truncated to zero bytes during editing and had to be rebuilt.
 2. **Have a person check the labels.** Go through `eval/gold_events.csv`, holdout rows first (193), and correct any `about_company` or `category` you disagree with. Then add 100–200 rows from your own companies. Every number here depends on these labels.
-3. **Turn the evaluation into a gate.** `eval/eval_identity.py` and `tests/test_identity.py` exist (16 Nov 2026). What's left: fail a run when precision on the labelled set drops below the target, and rebuild a database for the 18 small companies in `eval/gold_identity.csv`. The current database holds only the 10 sample companies, which are mostly well-known names.
+3. **Turn the evaluation into a gate.** `eval/eval_identity.py` and `tests/test_identity.py` (now `tests/signals/test_identity.py` at the repo root) exist (16 Nov 2026). What's left: fail a run when precision on the labelled set drops below the target, and rebuild a database for the 18 small companies in `eval/gold_identity.csv`. The current database holds only the 10 sample companies, which are mostly well-known names.
 
 **2. Feed the Priority Score (1–2 weeks)**
-1. **Replace the mock fields in `format_priority_data.ipynb`** with the real outputs:
+1. **Replace the mock fields in `Marketing Intelligence/account_priority/format_priority_data.ipynb`** with the real outputs:
    - `news_signal`, `news_signal_date` from `company_summary.csv`. Use full strength for `signal_confidence = high` and a reduced strength (or the baseline) for `medium` / `low`, until labels show the medium tier is better than a coin flip.
    - `job_postings_30d`, `hiring_spike` from the jobs columns. Blank stays blank (unknown), not zero.
    - `industry_trend` from `industry_trend.csv` (closes BUSINESS_RULES gap A8).
@@ -476,7 +498,7 @@ In order of value for effort. Each one has a way to measure it: re-run `eval/eva
 3. **Schedule it nightly** with Windows Task Scheduler. Run `jobs` again after 21+ days so `hiring_spike` can be computed.
 
 **3. Better matching and recall (2–3 weeks)**
-1. **Search on trading names.** Add the registered business names (ASIC) and the website's own name (`profile.py`) to the search terms, not only the evidence. This is the biggest recall gain for small AU companies.
+1. **Search on trading names.** Add the registered business names (ASIC) and the website's own name (`signals/profile.py`) to the search terms, not only the evidence. This is the biggest recall gain for small AU companies.
 2. **Retry failed website profiles** with a slower, browser-like fetch. 28 of 100 sites blocked the first attempt, and the card is what confirms a match.
 3. **Teach the classifier missed phrasings.** Add lines to `event_examples.py` for what the holdout missed: "wins banking licence in {City}" and "becomes {City}'s first digital bank" (Expansion), "in talks to lead a round for {Co}" (Funding). Check the holdout score doesn't drop.
 4. **Use the NLP and classifier in segment mode.** Write theme examples the same way (`event_examples.py` style) and replace the two-hit text rule. "Other sector news" is still 68%.
@@ -487,7 +509,7 @@ In order of value for effort. Each one has a way to measure it: re-run `eval/eva
 3. **Measure it on the labelled set before trusting it**, against the current 0.954 precision on "about the company" and the holdout event scores. Keep it only where it beats the rules.
 
 **5. More signal sources (as budget allows)**
-1. **Jobs:** Adzuna API as a top-up to careers pages, since most small companies advertise on SEEK. The key is free, but commercial use for "sales prospecting or lead generation" needs Adzuna's written agreement ([API terms](https://developer.adzuna.com/docs/terms_of_service), read 23 Nov 2026). A trial-only coverage check for the UK Apollo leads is in `apollo_emea/adzuna_check.py`.
+1. **Jobs:** Adzuna API as a top-up to careers pages, since most small companies advertise on SEEK. The key is free, but commercial use for "sales prospecting or lead generation" needs Adzuna's written agreement ([API terms](https://developer.adzuna.com/docs/terms_of_service), read 23 Nov 2026). A trial-only coverage check for the UK Apollo leads is `signals/jobs/adzuna.py` (was `apollo_emea/adzuna_check.py`; `python -m cloudstaff_dev.signals.jobs.adzuna`).
 2. **US filings:** SEC EDGAR (free; needs a contact email in each request), including Form D for private fundraising.
 3. **Paid trial:** Event Registry / NewsAPI.ai or PredictLeads on the same 100 companies, scored with the same labelled set. They do entity linking and event tagging out of the box and could replace much of the classification work, if they score better.
 4. **Monitoring:** re-run the evaluation monthly. Sources and phrasing drift, and the coverage table already shows which sources fail.
@@ -507,23 +529,23 @@ Company mode asks "what is happening at *this company*?". Segment mode asks "wha
 ### Run it
 
 ```bash
-../.venv/Scripts/python.exe -m news_scraper segment list                                          # groups, countries, themes
-../.venv/Scripts/python.exe -m news_scraper segment run --segments sample_segments.csv             # scrape
-../.venv/Scripts/python.exe -m news_scraper segment run --groups all --countries AU,NZ,UK          # or: every group x these countries
-../.venv/Scripts/python.exe -m news_scraper segment read --target uncertain --max-per-segment 0      # optional: article text, for better checks
-../.venv/Scripts/python.exe -m news_scraper segment export                                         # write out/segment_*.csv, out/industry_trend.csv
-../.venv/Scripts/python.exe -m news_scraper run --companies out/segment_companies.csv              # then: company-level news for the prospects found
+python -m cloudstaff_dev.signals segment list                                          # groups, countries, themes
+python -m cloudstaff_dev.signals segment run --segments "News Scraper/sample_segments.csv"   # scrape
+python -m cloudstaff_dev.signals segment run --groups all --countries AU,NZ,UK          # or: every group x these countries
+python -m cloudstaff_dev.signals segment read --target uncertain --max-per-segment 0    # optional: article text, for better checks
+python -m cloudstaff_dev.signals segment export                                         # write <MI>/outputs/segments/segment_*.csv, industry_trend.csv
+python -m cloudstaff_dev.signals run --companies "<MI>/outputs/segments/segment_companies.csv"   # then: company-level news for the prospects found
 ```
 
 | Option | What it does |
 |---|---|
-| `--segments FILE` | A CSV with `industry_group` and `country` (required), and optionally `extra_terms` and `exclude_terms` (`;`-separated) and `lookback_days`. `industry_group` can be `all`; `country` can list several (`AU;NZ`). See `sample_segments.csv`. |
+| `--segments FILE` | A CSV with `industry_group` and `country` (required), and optionally `extra_terms` and `exclude_terms` (`;`-separated) and `lookback_days`. `industry_group` can be `all`; `country` can list several (`AU;NZ`). See `News Scraper/sample_segments.csv`. |
 | `--groups` / `--countries` | Instead of a file: `all`, or groups separated by `;`, × country codes separated by `,`. |
 | `--themes all` | Or a `;`-separated subset (see below), to run faster. |
 | `--lookback-days 90` | Default 90 days. Momentum compares the last 30 days with the 60 before, so keep at least 90. |
 | `--mode auto` / `backfill` | As in company mode: the first run pulls the whole window, later runs only new articles. |
-| `--sources google,curated` | `curated` = the websites in `segment_sources.csv` (see below; `--sources-file` to use another list). `bing` and `gdelt` are opt-in. Bing returned 6 results from 492 queries: it ignores grouped `OR` queries. GDELT is filtered by the publisher's country, so its query has no region words. |
-| `--read-articles [--read-max-per-segment 5]` | Also read the text of the newest articles (`article_reader`). This rescues articles whose headline doesn't name the sector or country, and finds themes the headline doesn't show. |
+| `--sources google,curated` | `curated` = the websites in `src/cloudstaff_dev/signals/segments/segment_sources.csv` (see below; `--sources-file` to use another list). `bing` and `gdelt` are opt-in. Bing returned 6 results from 492 queries: it ignores grouped `OR` queries. GDELT is filtered by the publisher's country, so its query has no region words. |
+| `--read-articles [--read-max-per-segment 5]` | Also read the text of the newest articles (`signals/reader`). This rescues articles whose headline doesn't name the sector or country, and finds themes the headline doesn't show. |
 
 **Industry groups** are the repo's 18 groups from `references/mystaff_industry` (for example Accounting, Healthcare & Wellness, Transport & Logistics). The code refuses to start if the two lists drift apart. **Countries:** AU, NZ, UK, US, CA, PH, SG, IE.
 
@@ -535,11 +557,11 @@ For each segment × theme there is a Google News query on that country's edition
 after:2026-08-15 before:2026-11-14 (healthcare OR "health care" OR "aged care") ("skills shortage" OR "staff shortage" OR ...) (Australia OR Australian OR Sydney OR Melbourne)
 ```
 
-- **Sector words** (`SECTOR_TERMS` in `sectors.py`) describe how the press names each group, e.g. Accounting = accounting firms, accountants, accountancy, bookkeepers… Add segment-specific words with `extra_terms` (e.g. NHS for Healthcare × UK).
+- **Sector words** (`SECTOR_TERMS` in `signals/segments/sectors.py`) describe how the press names each group, e.g. Accounting = accounting firms, accountants, accountancy, bookkeepers… Add segment-specific words with `extra_terms` (e.g. NHS for Healthcare × UK).
 - **Google reads only about the first 32 words of a query** and silently drops the rest. Tested: with the dates at the end, a 33-word query returned only articles from before the window. So the dates come first, and the sector words are split across several queries of at most 28 words each (usually 3–4 per theme).
 - **Region words** must appear somewhere in the article.
 
-### Curated sources (`segment_sources.csv`)
+### Curated sources (`signals/segments/segment_sources.csv`)
 
 Besides searching the whole news for sector words, segment mode reads a list of **websites that report on one industry in one region**: trade press, industry bodies, regulators, statistics agencies and research groups. Because they are chosen for the segment, almost everything they publish is relevant.
 
@@ -568,7 +590,7 @@ So an article from a source specific on both counts as long as nothing points el
 **Gaps:**
 - **NZ accounting** has only Inland Revenue as a NZ-only source; CA ANZ and Acuity cover AU and NZ together.
 - **All-industry sources** (ABS, ONS, SmartCompany) rarely name the industry in the headline, so most of their articles go to review.
-- **Job adverts are dropped.** ACCA's site is mostly job ads (`JOB_AD` in `segment.py`).
+- **Job adverts are dropped.** ACCA's site is mostly job ads (`JOB_AD` in `signals/segments/segment.py`).
 
 ### Themes (what is happening, in Cloudstaff's terms)
 
@@ -585,9 +607,9 @@ So an article from a source specific on both counts as long as nothing points el
 | Downturn | −0.3 | Collapses, insolvencies, falling demand |
 | Other sector news | 0 | The theme isn't visible in the headline or text |
 
-The weights, search words and recognition rules are all in `sectors.py` and are meant to be tuned. Themes are recognised on export, so rule changes apply without scraping again. A theme counts only if it is visible in the headline, or in the article text when the text was read. If the search engine found the theme words somewhere on the page but we can't see them, the article is "Other sector news".
+The weights, search words and recognition rules are all in `signals/segments/sectors.py` and are meant to be tuned. Themes are recognised on export, so rule changes apply without scraping again. A theme counts only if it is visible in the headline, or in the article text when the text was read. If the search engine found the theme words somewhere on the page but we can't see them, the article is "Other sector news".
 
-### Does an article count? (`relevance.py`)
+### Does an article count? (`signals/segments/relevance.py`)
 
 Each article gets an **industry score** and a **region score**, built from evidence points like company mode's identity evidence. It counts when industry ≥ 3 and region ≥ 2. Otherwise it goes to `segment_review.csv`, with the scores in the `check` column (e.g. "industry 2/3"). The `industry_evidence` and `region_evidence` columns show every point.
 
@@ -631,7 +653,7 @@ Each article gets an **industry score** and a **region score**, built from evide
   - NZ accounting articles from Australian outlets that are about Australia.
 - **What the page data adds:** location metadata from article pages is rarely useful. Only 4 of 471 pages declared a `contentLocation`, and most declare the en-US or en-GB locale whatever their country.
 
-### Outputs (`out/`)
+### Outputs (`<MI>/outputs/segments/`)
 
 - **`segment_summary.csv`:** one row per segment. It holds:
   - `industry_trend` and `tailwind_index`
@@ -650,7 +672,7 @@ Each article gets an **industry score** and a **region score**, built from evide
 - **`publishers.csv`:** every publisher seen, with its home country and how it was decided, and the industry it writes for.
 - **`segment_companies.csv`:** companies named in counted headlines. They are found from the headline's shape ("Healius cuts 200 jobs", "Canva's layoffs", "acquisition of Tyro"), not with an NLP model. Each row has:
   - the number of mentions, themes, and latest headline
-  - `known_account` and `account_id`, checked against `../Marketing Intelligence/reference materials/data/accounts.csv` (`--accounts` to change it)
+  - `known_account` and `account_id`, checked against `Marketing Intelligence/account_priority/fixtures/accounts.csv` (`--accounts` to change it)
   - `in_company_mode` (already tracked)
 
   **These are candidates**: people and places sometimes slip through, so sort by mentions and check before use. The file has `company_name` and `country` columns, so it can be passed to `run --companies` as is.
@@ -695,9 +717,9 @@ Each article gets an **industry score** and a **region score**, built from evide
 A hand-labelled set of real headlines, used to measure how well the event categories are assigned. It's kept separate from company and segment mode, and only reads headlines, not whole articles.
 
 ```bash
-../.venv/Scripts/python.exe -m news_scraper testset gather   # about 75 min: 414 Google + Bing searches
-# label out/testset/testset_label.xlsx (column "Your category")
-../.venv/Scripts/python.exe -m news_scraper testset score    # your labels vs the system
+python -m cloudstaff_dev.signals testset gather   # about 75 min: 414 Google + Bing searches
+# label ~/cloudstaff_data/work/signals/out/testset/testset_label.xlsx (column "Your category")
+python -m cloudstaff_dev.signals testset score    # your labels vs the system
 ```
 
 - **Searches.** Each category has keyword queries ("lays off", "appoints CEO", "seed round"). There are also two extra groups: **near-miss** (event words used in a non-event sense, such as "raises prices" or "talent acquisition") and **other** (everyday business news, such as "wins award" or "partners with"). Each query runs in AU, UK and US, on both Google News and Bing. Half of the queries add small-business terms, so the results aren't all big companies.

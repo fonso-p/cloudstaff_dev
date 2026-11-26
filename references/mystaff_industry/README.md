@@ -6,7 +6,9 @@ The shared industry bucketing for every project in this repo. It turns the raw i
 | File | What it is |
 |---|---|
 | [`industry_mapping.csv`](industry_mapping.csv) | **The single source of truth.** One row per raw value: which group and sector it goes to, or why it stays blank. Edit this file to change the bucketing |
-| [`mystaff_industry.py`](mystaff_industry.py) | Loads the CSV, checks it, and applies the rules below (`classify`, `classify_frame`). Exposes the same constants the projects use today (`INDUSTRY_GROUPS`, `INDUSTRY_SECTOR`, `INDUSTRY_MAP`, `ROLLUP_MAP`, `UNCLASSIFIED_INDUSTRY`, `PLACEHOLDER_ROLLUP`) |
+| `src/cloudstaff_dev/common/industry.py` (`cloudstaff_dev.common.industry`; moved from `mystaff_industry.py` on 26 Nov 2026) | Loads the CSV, checks it, and applies the rules below (`classify`, `classify_frame`). Exposes the same constants the projects use today (`INDUSTRY_GROUPS`, `INDUSTRY_SECTOR`, `INDUSTRY_MAP`, `ROLLUP_MAP`, `UNCLASSIFIED_INDUSTRY`, `PLACEHOLDER_ROLLUP`) |
+| [`mystaff_industry.py`](mystaff_industry.py) | Re-exports `cloudstaff_dev.common.industry`, so old notebooks that import it by path keep working |
+| [`uk_sic_to_industry_group.csv`](uk_sic_to_industry_group.csv) | UK SIC 2007 → the 18 groups (used by lead grading's Industry trends) |
 | `README.md` (this file) | What the bucketing does, and why |
 
 It has no client data, so it's safe to keep in git.
@@ -15,22 +17,17 @@ It has no client data, so it's safe to keep in git.
 
 The same rules are currently written out by hand in two places. Both match this file exactly (checked 2026-11-12: every constant identical, and `classify()` gives the same group on all 2,874 MyStaff rows of the Analysis pipeline and on 1,326 of 1,327 Account Priority Dashboard rows; see *Known gaps*):
 
-* `Marketing Intelligence/format data/format_priority_data.ipynb` §0b (Account Priority Dashboard), rules in `BUSINESS_RULES.md` §6
+* `Marketing Intelligence/account_priority/format_priority_data.ipynb` §0b (Account Priority Dashboard), rules in `BUSINESS_RULES.md` §6
 * `Client Propensity/mi_pipeline/mappings.py`
 
 Neither imports this file yet. Until they do, a change here must be copied to both.
 
 ## How to use it
 
-Python, from any file in the repo. Add this folder to the import path, then import `mystaff_industry`:
+Python, from any file in the repo, with the repo's `.venv` (the `cloudstaff_dev` package is installed there, so no import-path setup):
 
 ```python
-import sys
-from pathlib import Path
-REPO = Path(__file__).resolve().parents[1]   # repo root; adjust the depth to where your file sits
-sys.path.insert(0, str(REPO / "references" / "mystaff_industry"))
-
-from mystaff_industry import classify, classify_frame, INDUSTRY_SECTOR
+from cloudstaff_dev.common.industry import classify, classify_frame, INDUSTRY_SECTOR
 
 classify("Computer Software")                    # ('Technology', 'Technology & Media', 'Industry Hubspot')
 classify("-", rollup="Accounting Services")      # ('Accounting', 'Financial & Professional Services', 'Industry Roll Up')
@@ -125,7 +122,7 @@ Each is a one-cell change in the CSV (`industry_group`, and `industry_sector` if
 | Treat a label as unknown | `status = unclassified` (HubSpot) or `placeholder` (roll-up), group and sector blank, with a `note` |
 | Add, rename or merge a group | Change every row of that group. Models and dashboards that list the groups (e.g. the dashboard's `INDUSTRY_TREND`) need the same change |
 
-`mystaff_industry.py` refuses to load the file (with a message) if a HubSpot label is in two groups, a group sits under two sectors, a roll-up points to a group that has no HubSpot labels, or a `mapped` row has no group. `unrecognised(values)` lists labels in your data that aren't in the file yet.
+`cloudstaff_dev.common.industry` refuses to load the file (with a message) if a HubSpot label is in two groups, a group sits under two sectors, a roll-up points to a group that has no HubSpot labels, or a `mapped` row has no group. `unrecognised(values)` lists labels in your data that aren't in the file yet.
 
 Record the change in the projects' rule docs, and rerun both pipelines so their outputs agree.
 

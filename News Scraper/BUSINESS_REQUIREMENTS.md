@@ -1,6 +1,6 @@
 # News Scraper: Business Requirements (POC)
 
-**Status:** proof of concept · runs locally · zero budget · November 2026
+**Status:** proof of concept · runs locally · zero budget · November 2026 · code: `src/cloudstaff_dev/signals/` (`python -m cloudstaff_dev.signals`, since 26 Nov 2026)
 
 ## 1. Purpose
 
@@ -16,7 +16,7 @@ The scraper finds recent news about a list of companies (company mode) and turns
 | 4 | **Builds a company card** | From the company's website (home and About pages, every 30 days): alternative and legal names, ticker, founders, city, and keywords that describe what it does. |
 | 5 | **Decides if an article is about the company** | Collects identity evidence (domain, ticker, legal name, founders, context words, card keywords, city); 2 points confirm the company. Common-word names (e.g. "Deputy") must be used as the company, not as a title ("Deputy Mayor"), and need confirming evidence. Distinctive names count unless they appear only in a list or comparison, or written differently ("ROKT"). Articles whose text could not be read are judged on the headline alone, more strictly. Doubtful articles go to a review file with the reason. |
 | 6 | **Classifies the news** | Keyword rules sort each article into one of the scoring model's categories: Funding round, PE buyout, M&A, Expansion / new office, Restructuring, Leadership change, or Other. Investor-profile and stock-chart pages are dropped. |
-| 7 | **Optionally reads the full article** | With `--read-articles`, a separate `article_reader` module fetches the text. This improves classification and flags doubtful matches: company not named, context words missing, or not in English. |
+| 7 | **Optionally reads the full article** | With `--read-articles`, a separate reader module (`cloudstaff_dev.signals.reader`, was `article_reader`) fetches the text. This improves classification and flags doubtful matches: company not named, context words missing, or not in English. |
 | 8 | **Scores and picks one signal per company** | Each article's value is category strength × recency, both from `scoring_settings.json`. The highest-value article sets `news_signal` and `news_signal_date`. |
 | 9 | **Separates "nothing found" from "not checked"** | `news_signal` "None" = sources were checked and nothing matched (a real zero). Blank = no source could be checked (unknown, so the score uses its baseline). |
 | 10 | **Writes CSV outputs** | `company_summary.csv` (one row per company), `signal_events.csv` (every matched article), `review.csv` (doubtful matches to check by hand). |
@@ -24,8 +24,8 @@ The scraper finds recent news about a list of companies (company mode) and turns
 
 ## 3. Boundaries
 
-- **Inputs:** a company CSV and the read-only `Marketing Intelligence/reference materials/data/scoring_settings.json`. It changes nothing else.
-- **Outputs:** CSV files in `out/` and a local SQLite database in `data/news.db`. No other system is updated.
+- **Inputs:** a company CSV and the read-only `Marketing Intelligence/account_priority/fixtures/scoring_settings.json`. It changes nothing else.
+- **Outputs:** CSV files in an output folder (default `~/cloudstaff_data/work/signals/out/`; a lead list's go to `<MI>/outputs/collected/<list>/`) and a local SQLite database (default `~/cloudstaff_data/work/signals/news.db`; a lead list has its own in `~/cloudstaff_data/work/lead_lists/<list>/`). No other system is updated.
 - **Runs:** on one machine, started manually or by Windows Task Scheduler.
 - **Network:** only public news pages and feeds, at about 1 request a second per source. It respects `robots.txt` when reading articles.
 - **Data kept:** headline, link, publisher, date, match score, and (if read) the article text. The article text stays in the local database only.
@@ -82,7 +82,7 @@ The scraper finds recent news about a list of companies (company mode) and turns
 | S7 | **Writes CSV outputs** | `segment_summary.csv`, `industry_trend.csv`, `segment_events.csv`, `segment_review.csv`, `segment_companies.csv`. |
 | S8 | **Records every check** | One coverage row per segment × source × theme × query, as in company mode. |
 
-**Boundaries:** the same as company mode (§3). It reads the accounts list (`Marketing Intelligence/reference materials/data/accounts.csv`) read-only and writes only to `out/` and `data/news.db`. Feeding `industry_trend` into the Priority Score notebook is a manual step.
+**Boundaries:** the same as company mode (§3). It reads the accounts list (`Marketing Intelligence/account_priority/fixtures/accounts.csv`) read-only and writes only to `<MI>/outputs/segments/` (`<MI>` = OneDrive `Desktop/Projects/Marketing Intelligence Priority`) and `~/cloudstaff_data/work/signals/news.db`. Feeding `industry_trend` into the Priority Score notebook is a manual step.
 
 **Known limitations:**
 - About half the counted articles have no visible theme (no summary from Google). `--read-articles` helps.

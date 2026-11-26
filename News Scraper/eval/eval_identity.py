@@ -1,7 +1,7 @@
 """Score "is this article about the company?" against hand labels. Needs the database the articles were scraped into.
 
-    ../.venv/Scripts/python.exe eval/eval_identity.py [--db data/news.db] [--show errors|all] [--company NAME]
-    (from the News Scraper folder)
+    .venv/Scripts/python.exe "News Scraper/eval/eval_identity.py" [--db <db>] [--show errors|all] [--company NAME]
+    (any folder; --db defaults to the general scraper database, ~/cloudstaff_data/work/signals/news.db)
 
 Labels, merged (a label in gold_identity.csv wins over gold_events.csv for the same article):
   gold_identity.csv  company_id + dedupe_key -> about_company_claude_labelled. From `nlp label` sheets labelled by Claude from the headline
@@ -22,11 +22,10 @@ import sqlite3
 import sys
 from collections import Counter, defaultdict
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(HERE)
-sys.path.insert(0, ROOT)
+from cloudstaff_dev.common import paths
+from cloudstaff_dev.signals.news.pipeline import judge_all
 
-from news_scraper.pipeline import judge_all  # noqa: E402
+HERE = os.path.dirname(os.path.abspath(__file__))
 
 TARGET_PRECISION = 0.90
 
@@ -70,7 +69,7 @@ def pct(a, b):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--db", default=os.path.join(ROOT, "data", "news.db"))
+    ap.add_argument("--db", default=str(paths.SIGNALS_WORK / "news.db"))
     ap.add_argument("--settings", default=None)
     ap.add_argument("--show", choices=["none", "errors", "all"], default="errors", help="list the mistakes (default) or every scored article")
     ap.add_argument("--company", help="only this company (name or id)")

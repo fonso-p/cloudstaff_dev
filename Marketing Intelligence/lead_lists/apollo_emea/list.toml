@@ -1,0 +1,154 @@
+# Everything specific to one lead list lives in its folder, Marketing Intelligence/lead_lists/<name>/: this file
+# (settings, steps, target markets) and the hand-kept CSVs (overrides, manual events, event corrections, register
+# reviews). The code in src/cloudstaff_dev is the same for every list.
+# New list: copy this folder to lead_lists/<name>/, edit this file, put the export in <MI>/inputs/apollo/<region>/,
+# then: python -m cloudstaff_dev.leads run <name>
+
+name = "apollo_emea"
+title = "EMEA Lead Grades"                 # dashboard title, and the dashboards/<folder> and <date>_<file>.html name
+subtitle = "Apollo leads · UK"
+source = "Apollo export + News Scraper"
+inputs = "apollo/emea"                     # the export CSVs, in <MI>/inputs/ (every *.csv there is read)
+
+# What `run` does, in order. Remove a step to skip it for this list (e.g. the CQC steps for a list with no care homes).
+#   prepare   Apollo export -> <work>/companies.csv + parents.csv
+#   filings   Companies House + Gazette (--registers uk)          news     news for companies.csv (+ article text)
+#   jobs      careers pages                                       parents  news for parents.csv
+#   nlp       event details (entities, events)                    export   company_summary.csv + signal_events.csv
+#   cqc       CQC register (England)                              contracts  Find a Tender awards (after cqc)
+#   ownership Companies House PSC + charities (after cqc)         officers   Companies House API (after ownership)
+#   grade     lead grades xlsx + JSON                             build    the dashboard HTML (+ check)
+steps = ["prepare", "filings", "news", "jobs", "parents", "nlp", "export", "cqc", "contracts", "ownership", "officers",
+         "grade", "build"]
+registers = "uk"                           # filings: au, uk or au,uk
+news_lookback_days = 365                   # export window
+
+# ---------------------------------------------------------------- who works the list, and how fit is looked up
+team = 'BDM Marketing'                    # decision 2026-11-18: one list, no SDR / BDM / Marketing split yet
+fit_country = 'Unknown'                   # decision 2026-11-18: only 26 UK clients (2 Healthcare, 2 Technology), too few
+                                         # for a UK fit, so the industry-only Client Propensity profile (all countries)
+template = 'lead_grades.html'            # page template: a file in this folder, else src/cloudstaff_dev/dashboards/templates/
+# Apollo industry groups that, for these markets, mean a supplier (builders, architects, designers, agencies, investors):
+# their websites mention care because they sell to care homes, so the website alone can't put them in the target
+supplier_groups = ['Construction & Engineering', 'Hospitality, Travel & Leisure', 'Manufacturing & Industrial', 'Marketing, Media & Creative', 'Professional Services', 'Real Estate', 'Retail & Consumer Goods']
+
+[downloads]                                # monthly refresh flags passed when `run --download` is given
+cqc = true
+ownership = true
+
+# ---------------------------------------------------------------- target markets
+# One [markets."<name>"] per market in the export. A lead belongs to the first market whose apollo_list text is in
+# its Apollo list name (lower case). Everything here is descriptive or a gate: no points.
+#   industry_groups  the groups the market is meant to be in (an off-target lead is flagged "Check fit")
+#   target_codes     activity codes that mean the target business: first 4 digits of US SIC / NAICS, UK SIC prefixes
+#   service_lines    regexes on the company's website card (description, title, keywords): targeting and the pitch
+#   subsectors       what kind of business: cqc = regex on CQC service types (care, England), else sic / naics / uk
+#                    codes; pitch = back-office work it typically has (a first draft for BDM Marketing to correct)
+
+[markets."UK care homes"]
+apollo_list = 'care home'
+industry_groups = ['Healthcare & Wellness']
+
+[markets."UK care homes".target_codes]
+sic = ['8051', '8052', '8059', '8082', '8361']
+naics = ['6216', '6231', '6232', '6233', '6239', '6241']
+uk = ['87', '88']
+
+[markets."UK care homes".service_lines]
+"Residential care" = 'residential care|care home'
+"Nursing care" = 'nursing (care|home)'
+"Dementia care" = 'dementia'
+"Home care" = 'home care|domiciliary|homecare|care at home'
+"Live-in care" = 'live[- ]in care'
+"Supported living" = 'supported living'
+"Learning disability / autism" = 'learning disabilit|autis'
+"Mental health" = 'mental health'
+"Children's services" = "child(ren)?'?s? (care|home|service)"
+"Retirement living" = 'retirement (living|village|communit)|later living'
+"Complex care" = 'complex care'
+"End of life" = 'end of life|palliative'
+Respite = 'respite'
+
+[markets."UK care homes".subsectors."Nursing homes"]
+cqc = 'Care home service with nursing'
+sic = ['8051']
+naics = ['6231']
+uk = ['871']
+pitch = 'rostering and agency-shift admin, payroll, care-fee and NHS funded-nursing invoicing'
+
+[markets."UK care homes".subsectors."Residential care"]
+cqc = 'Care home service without nursing'
+sic = ['8052', '8059', '8361']
+naics = ['6233']
+uk = ['873']
+pitch = 'care-fee and council-funding invoicing, payroll, recruitment admin, compliance paperwork'
+
+[markets."UK care homes".subsectors."Learning disability / mental health"]
+cqc = 'learning disability|mental health|Supported living|Shared Lives'
+sic = []
+naics = ['6232']
+uk = ['872']
+pitch = 'rotas, support-plan and compliance admin, council billing, payroll'
+
+[markets."UK care homes".subsectors."Home care"]
+cqc = 'Domiciliary care service|Extra Care housing'
+sic = ['8082']
+naics = ['6216']
+uk = ['881']
+pitch = 'rostering and visit scheduling, call-monitoring checks, payroll and mileage, recruitment and onboarding'
+
+[markets."UK care homes".subsectors."Care staffing agency"]
+cqc = 'Nurses Agency'
+sic = ['7361', '7363']
+naics = ['5613']
+uk = ['78']
+pitch = 'candidate compliance and vetting checks, shift booking, timesheets and payroll'
+
+[markets."UK cybersecurity"]
+apollo_list = 'cyber'
+industry_groups = ['Technology']
+
+[markets."UK cybersecurity".target_codes]
+sic = ['7371', '7372', '7373', '7374', '7375', '7379']
+naics = ['5112', '5132', '5182', '5192', '5415']
+uk = ['62', '63']
+
+[markets."UK cybersecurity".service_lines]
+"Penetration testing" = 'penetration test|pen ?test|red team|ethical hack'
+"SOC / MDR" = '\bsoc\b|security operations|mdr\b|managed detection|siem'
+"Managed security (MSSP)" = 'managed (security|service)|mssp'
+"GRC / compliance" = 'complian|iso ?27001|cyber essentials|governance|\bgrc\b|nis2|dora\b'
+"Identity & access" = 'identity|access control|authori[sz]ation|authentication|\biam\b|passwordless|login'
+"Data security" = 'data (security|protection|loss)|dspm|\bdlp\b|encrypt'
+"Threat intelligence" = 'threat intel|dark web|threat landscape'
+"OT / maritime security" = '\bot\b security|operational technology|maritime|industrial control|\bics\b'
+"Human risk / awareness" = 'human risk|awareness|behaviou?r|phishing simulation'
+"Cloud security" = 'cloud security|cspm|cloud posture'
+"App / API security" = 'api (security|attack|protection)|app(lication)? security|mobile app'
+"Risk analytics / insurance" = 'insur|risk analytic|cyber risk'
+"Forensics / incident response" = 'forensic|incident response|\bdfir\b'
+"Cryptography / post-quantum" = 'post[- ]quantum|cryptograph|quantum'
+
+[markets."UK cybersecurity".subsectors."Cyber services / consultancy"]
+sic = ['7371', '7373', '7379', '8742']
+naics = ['5415', '5416']
+uk = ['62020', '62090']
+pitch = 'SOC triage, GRC and compliance documentation, project coordination, bid support'
+
+[markets."UK cybersecurity".subsectors."Software product"]
+sic = ['7372']
+naics = ['5112', '5132']
+uk = ['58290', '62012']
+pitch = 'developers and QA, customer support, technical writing, customer success'
+
+[markets."UK cybersecurity".subsectors."Managed / hosted services"]
+sic = ['7374']
+naics = ['5182']
+uk = ['63110']
+pitch = 'service desk, monitoring, billing'
+
+[markets."UK cybersecurity".subsectors.Training]
+sic = ['8243']
+naics = ['6114', '6115']
+uk = ['8559']
+pitch = 'course admin, content production, sales support'
